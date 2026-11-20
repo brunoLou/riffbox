@@ -18,6 +18,8 @@ export const PRESETS = [
 export interface Tile {
   id: string; name: string; sub: string; bg: string; fg: string;
   on?: boolean; a: number; b: number; wide?: boolean; to: string;
+  /** Only in the catalog, not on the default board. */
+  extra?: boolean;
 }
 
 export const TILES: Tile[] = [
@@ -31,7 +33,15 @@ export const TILES: Tile[] = [
   { id: 'voix', name: 'Voix', sub: 'Justesse vocale', bg: '#2c2825', fg: '#efe6d2', a: 70, b: -30, to: '/voix' },
   { id: 'capo', name: 'Capo', sub: 'Calculateur', bg: '#2c2825', fg: '#efe6d2', a: -20, b: 100, to: '/outils/capo' },
   { id: 'setlists', name: 'Setlists', sub: 'Bar du Port · 9 titres', bg: '#efe6d2', fg: '#1a1816', a: 30, b: -120, wide: true, to: '/scene' },
+  { id: 'accords', name: 'Accords', sub: '17 types · CAGED', bg: '#2c2825', fg: '#efe6d2', a: 110, b: -60, to: '/pratiquer/accords', extra: true },
+  { id: 'morceaux', name: 'Morceaux', sub: 'Paroles et accords', bg: '#4a3020', fg: '#efe6d2', on: true, a: -80, b: 40, to: '/scene/morceaux', extra: true },
+  { id: 'tonalite', name: 'Tonalité', sub: 'Trouver ma tonalité', bg: '#2c2825', fg: '#efe6d2', a: 15, b: 95, to: '/voix/tonalite', extra: true },
+  { id: 'reglages', name: 'Réglages', sub: 'Données et sauvegarde', bg: '#2c2825', fg: '#efe6d2', a: -120, b: 10, to: '/reglages', extra: true },
 ];
+
+/** A tile on the home board: which one, and whether it spans both columns. */
+export interface Slot { id: string; wide: boolean }
+export const DEFAULT_LAYOUT: Slot[] = TILES.filter(t => !t.extra).map(t => ({ id: t.id, wide: !!t.wide }));
 
 /** Placeholder lyrics written for the mock-up. */
 export const SONG = `{c:Couplet 1}
