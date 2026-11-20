@@ -78,3 +78,4 @@
 .rec-cancel { height: 56px; padding: 0 20px; border-radius: 28px; background: var(--surface-2); color: var(--muted-3); font-weight: 700; font-size: 16px; }
 .rec-save { height: 56px; border-radius: 28px; background: var(--amber); color: var(--ink); font-weight: 700; font-size: 17px; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .18); }
 .rec-error { margin: 0; font-size: 15px; line-height: 1.4; color: var(--muted-3); }
+.idea-action.danger { margin-left: auto; color: var(--muted-3); border-color: var(--line); }

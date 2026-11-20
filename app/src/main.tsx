@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import './fonts';
 import './styles.css';
+import { requestPersistence } from './lib/store';
 import Accueil from './screens/Accueil';
 import Accordeur from './screens/Accordeur';
 import Grille from './screens/Grille';
@@ -14,6 +15,8 @@ import { SetlistDetail, SetlistsScreen } from './screens/Setlists';
 import Pratiquer from './screens/Pratiquer';
 import Routine from './screens/Routine';
 import Backing from './screens/Backing';
+
+requestPersistence();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

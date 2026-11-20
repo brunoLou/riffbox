@@ -43,3 +43,6 @@
 .presets { display: flex; flex-direction: column; gap: 10px; }
 .preset { height: 48px; padding: 0 18px; border-radius: 24px; }
 .preset-add { background: transparent; border: 1.5px dashed var(--dash); color: var(--muted-3); font-weight: 600; }
+.needle.idle { opacity: .35; }
+.mic-msg { font-size: 16px; font-weight: 700; color: var(--amber); }
+.mic-retry { height: 36px; padding: 0 14px; border-radius: 18px; border: 1.5px solid var(--amber); color: var(--amber-hi); font-weight: 700; font-size: 14px; }

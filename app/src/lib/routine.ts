@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { readStored, writeStored } from './store';
 
 export interface RoutineStep { id: string; name: string; short: string; detail: string; min: number; link?: { label: string; to: string } }
 
@@ -15,13 +16,22 @@ export interface RoutineState { date: string; step: number; elapsed: number[]; r
 
 export const dayKey = (d = new Date()) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 
-// Demo: today's routine is already under way (steps 1–2 done, on step 3).
-let state: RoutineState = { date: dayKey(), step: 2, elapsed: [300, 480, 0, 0], running: false, done: false };
+// Demo on first launch: today's routine is already under way (steps 1–2 done, on step 3).
+// Afterwards the saved state is restored (paused; the timer never runs in the background of a closed app).
+let state: RoutineState = { ...readStored<RoutineState>('routine', { date: dayKey(), step: 2, elapsed: [300, 480, 0, 0], running: false, done: false }), running: false };
 const listeners = new Set<() => void>();
 let timer: number | null = null;
 
 function set(next: RoutineState) {
+  const prev = state;
   state = next;
+  writeStored('routine', next);
+  // Keep today's minutes in the practice log; whole minutes only, so this writes about once a minute.
+  const min = Math.floor(doneSeconds(next) / 60);
+  if (min !== Math.floor(doneSeconds(prev) / 60) || prev.date !== next.date) {
+    const log = readLog();
+    if (log[next.date] !== min) writeStored(LOG_KEY, { ...log, [next.date]: min });
+  }
   listeners.forEach(l => l());
 }
 
@@ -83,17 +93,29 @@ export const doneSeconds = (s: RoutineState) => s.elapsed.reduce((a, b) => a + b
 
 /* ---------- Weekly log ---------- */
 
-/** Minutes practised on the previous days (demo data); today comes from the routine. */
-const PAST = [32, 25, 0, 41, 27, 18];
+const LOG_KEY = 'practice.log';
+type Log = Record<string, number>;
+
+/** Minutes per day. Seeded once with demo values for the six previous days. */
+function readLog(): Log {
+  const log = readStored<Log | null>(LOG_KEY, null);
+  if (log) return log;
+  const demo = [32, 25, 0, 41, 27, 18];
+  const seeded: Log = {};
+  demo.forEach((m, i) => { seeded[dayKey(new Date(Date.now() - (6 - i) * 86400000))] = m; });
+  writeStored(LOG_KEY, seeded);
+  return seeded;
+}
 
 export function week(s: RoutineState) {
+  const log = readLog();
   const days: { label: string; long: string; min: number; today: boolean }[] = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date(Date.now() - i * 86400000);
     const long = new Intl.DateTimeFormat('fr-FR', { weekday: 'long' }).format(d);
     days.push({
       label: long.charAt(0).toUpperCase(), long: long.charAt(0).toUpperCase() + long.slice(1),
-      min: i === 0 ? Math.floor(doneSeconds(s) / 60) : PAST[6 - i],
+      min: i === 0 ? Math.floor(doneSeconds(s) / 60) : log[dayKey(d)] ?? 0,
       today: i === 0,
     });
   }
@@ -102,3 +124,6 @@ export function week(s: RoutineState) {
 
 export const fmtHM = (min: number) => (min >= 60 ? `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')}` : `${min} min`);
 export const mmss = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
+
+// A new day starts a fresh routine (yesterday's minutes stay in the log).
+ensureToday();

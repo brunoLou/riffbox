@@ -1,28 +1,66 @@
 import { useCallback, useState } from 'react';
 
+/**
+ * Small persistent store: values live in memory and are mirrored to
+ * localStorage, so they survive reloads and app restarts.
+ */
+const PREFIX = 'riffbox:v1:';
 const mem = new Map<string, unknown>();
+
+function load<T>(key: string): { found: boolean; value?: T } {
+  if (mem.has(key)) return { found: true, value: mem.get(key) as T };
+  try {
+    const raw = localStorage.getItem(PREFIX + key);
+    if (raw !== null) {
+      const value = JSON.parse(raw) as T;
+      mem.set(key, value);
+      return { found: true, value };
+    }
+  } catch { /* storage blocked or corrupt: fall back to defaults */ }
+  return { found: false };
+}
+
+/** Write a value now (memory + disk). Per-key serializers can strip fields that must not be saved. */
+export function writeStored<T>(key: string, value: T) {
+  mem.set(key, value);
+  try {
+    const ser = SERIALIZERS[key];
+    localStorage.setItem(PREFIX + key, JSON.stringify(ser ? ser(value) : value));
+  } catch { /* quota or private mode: keep in memory */ }
+}
+
+const SERIALIZERS: Record<string, (v: unknown) => unknown> = {};
+export function registerSerializer<T>(key: string, fn: (v: T) => unknown) {
+  SERIALIZERS[key] = fn as (v: unknown) => unknown;
+}
 
 /** Read a stored value without subscribing (e.g. for a summary on another screen). */
 export function readStored<T>(key: string, fallback: T): T {
-  return mem.has(key) ? (mem.get(key) as T) : fallback;
+  const r = load<T>(key);
+  return r.found ? (r.value as T) : fallback;
 }
 
 /**
- * useState whose value survives navigating away from a screen and back
- * (in memory for the session; nothing is written to disk).
- * Writes reach the store synchronously, so a screen opened right after
- * an update (e.g. a just-created setlist) already sees it.
+ * useState whose value is persisted. Writes reach the store synchronously,
+ * so a screen opened right after an update already sees it.
  */
 export function useStoredState<T>(key: string, init: T) {
   const [v, setV] = useState<T>(() => {
-    if (!mem.has(key)) mem.set(key, init);
-    return mem.get(key) as T;
+    const r = load<T>(key);
+    if (r.found) return r.value as T;
+    mem.set(key, init);
+    return init;
   });
   const set = useCallback((u: T | ((prev: T) => T)) => {
     const prev = mem.get(key) as T;
     const next = typeof u === 'function' ? (u as (p: T) => T)(prev) : u;
-    mem.set(key, next);
+    writeStored(key, next);
     setV(next);
   }, [key]);
   return [v, set] as const;
+}
+
+/** Ask the browser not to evict our data under storage pressure (best effort). */
+export function requestPersistence() {
+  try { void navigator.storage?.persist?.(); } catch { /* ignore */ }
 }

@@ -1,4 +1,7 @@
 import { KEY_FR } from './music';
+import { registerSerializer } from './store';
+
+registerSerializer<Idea[]>('ideas', list => list.map(({ audioUrl: _url, ...rest }) => rest));
 
 export type IdeaKind = 'riff' | 'grille' | 'paroles' | 'memo';
 
@@ -18,7 +21,9 @@ export interface Idea {
   wave?: number[];
   chords?: string[];
   text?: string;
-  /** Object URL of a real recording. */
+  /** A real recording exists in IndexedDB under this idea's id. */
+  hasAudio?: boolean;
+  /** Object URL of that recording, for this session only (never saved). */
   audioUrl?: string;
   /** MIDI notes of a synthesized example phrase (8th notes). */
   lick?: number[];

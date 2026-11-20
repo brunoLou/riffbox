@@ -10,7 +10,7 @@ function ctx() {
 
 export interface Recording {
   /** Stops and returns the clip; `wave` has `bars` values in 0–1. */
-  stop(bars?: number): Promise<{ url: string; duration: number; wave: number[] }>;
+  stop(bars?: number): Promise<{ url: string; blob: Blob; duration: number; wave: number[] }>;
   cancel(): void;
 }
 
@@ -53,8 +53,8 @@ export async function startRecording(onLevel: (level: number) => void): Promise<
       rec.onstop = () => {
         cleanup();
         const duration = (performance.now() - t0) / 1000;
-        const url = URL.createObjectURL(new Blob(chunks, { type: rec.mimeType || 'audio/webm' }));
-        resolve({ url, duration, wave: downsample(levels, bars) });
+        const blob = new Blob(chunks, { type: rec.mimeType || 'audio/webm' });
+        resolve({ url: URL.createObjectURL(blob), blob, duration, wave: downsample(levels, bars) });
       };
       rec.stop();
     }),

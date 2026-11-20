@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Phone, StatusBar, TabBar } from '../components/Chrome';
 import { playLick, playUrl, startRecording, type Playback, type Recording } from '../lib/audio';
 import { INITIAL_IDEAS, KIND_LABEL, MOODS, STYLES, keyLabel, mmss, relativeDay, type Idea, type IdeaKind } from '../lib/ideas';
+import { deleteBlob, getBlob, putBlob } from '../lib/blobs';
 import { useStoredState } from '../lib/store';
 import './Carnet.css';
 
@@ -65,6 +66,7 @@ export default function Carnet() {
     if (same) return;
     const end = () => { player.current = null; setPlaying(null); setProgress(0); };
     if (i.audioUrl) player.current = playUrl(i.audioUrl, end);
+    else if (i.hasAudio) return; // still loading from the device
     else if (i.lick) player.current = playLick(i.lick, i.bpm ?? 90, end);
     else return;
     setPlaying({ id: i.id, t0: performance.now(), dur: i.duration ?? 1 });
@@ -110,9 +112,11 @@ export default function Carnet() {
     recording.current = null;
     setRecState('idle');
     if (!r) return;
-    const { url, duration, wave } = await r.stop();
+    const { url, blob, duration, wave } = await r.stop();
     const when = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date());
-    const idea: Idea = { id: 'rec' + Date.now(), kind: 'memo', title: `Mémo du ${when}`, created: Date.now(), duration, wave, audioUrl: url };
+    const id = 'rec' + Date.now();
+    const saved = await putBlob(id, blob);
+    const idea: Idea = { id, kind: 'memo', title: `Mémo du ${when}`, created: Date.now(), duration, wave, audioUrl: url, hasAudio: saved };
     setIdeas(list => [idea, ...list]);
     setKind('all'); setFKey(''); setFStyle(''); setFMood('');
     setOpen(idea.id);
@@ -129,6 +133,28 @@ export default function Carnet() {
   }, []); // once, on arrival
 
   useEffect(() => () => { player.current?.stop(); recording.current?.cancel(); }, []);
+
+  // Recordings saved on the device: rebuild playable URLs after a reload.
+  useEffect(() => {
+    const missing = ideas.filter(i => i.hasAudio && !i.audioUrl);
+    if (!missing.length) return;
+    let alive = true;
+    void Promise.all(missing.map(async i => [i.id, await getBlob(i.id)] as const)).then(found => {
+      if (!alive) return;
+      const urls = new Map(found.filter(([, b]) => b).map(([id, b]) => [id, URL.createObjectURL(b!)]));
+      setIdeas(list => list.map(i => (urls.has(i.id) ? { ...i, audioUrl: urls.get(i.id) } : i.hasAudio && !i.audioUrl ? { ...i, hasAudio: false } : i)));
+    });
+    return () => { alive = false; };
+  }, []); // once, on arrival
+
+  const remove = (i: Idea) => {
+    if (!window.confirm(`Supprimer « ${i.title} » ?`)) return;
+    if (playing?.id === i.id) stopPlayback();
+    if (i.hasAudio) void deleteBlob(i.id);
+    if (i.audioUrl) URL.revokeObjectURL(i.audioUrl);
+    setIdeas(list => list.filter(x => x.id !== i.id));
+    setOpen(null);
+  };
 
   const keyOptions = useMemo(() => [...new Set(ideas.filter(i => i.key != null).map(keyLabel))].sort(), [ideas]);
   const shown = ideas.filter(i =>
@@ -160,7 +186,7 @@ export default function Carnet() {
 
         {shown.map(i => {
           const isOpen = open === i.id;
-          const audio = !!(i.audioUrl || i.lick);
+          const audio = !!(i.audioUrl || i.hasAudio || i.lick);
           const isPlaying = playing?.id === i.id;
           const meta = [KIND_LABEL[i.kind], relativeDay(i.created), i.duration != null ? mmss(i.duration) : null].filter(Boolean).join(' · ');
           return (
@@ -197,7 +223,9 @@ export default function Carnet() {
                 <div className="idea-actions">
                   {i.to
                     ? <button className="idea-action primary" onClick={() => nav(i.to!)}>Ouvrir la grille ›</button>
-                    : <button className="idea-action primary" onClick={() => nav('/composer/grille')}>Ajouter à une grille ›</button>}                </div>
+                    : <button className="idea-action primary" onClick={() => nav('/composer/grille')}>Ajouter à une grille ›</button>}
+                  <button className="idea-action danger" onClick={() => remove(i)}>Supprimer</button>
+                </div>
               )}
             </div>
           );

@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import { PRESETS } from '../lib/data';
 import { FR, SHARP } from '../lib/music';
+import { hzToMidi, startPitch, type PitchTracker } from '../lib/pitch';
 import { useStoredState } from '../lib/store';
 import './Accordeur.css';
 
@@ -11,30 +12,79 @@ for (let c = -50; c <= 50; c += 5) {
 }
 const sharpToGlyph = (s: string) => s.replace('#', '♯');
 
+type Mic = 'starting' | 'on' | 'denied' | 'unsupported';
+
+/** How long without a pitch before the needle is released. */
+const HOLD_MS = 450;
+const median = (a: number[]) => { const b = [...a].sort((x, y) => x - y); return b[Math.floor(b.length / 2)]; };
+
 export default function Accordeur() {
   const [auto, setAuto] = useStoredState('tuner.auto', true);
   const [preset, setPreset] = useStoredState('tuner.preset', 0);
-  const [str, setStr] = useState(1);
-  const [cents, setCents] = useState(-18);
-
-  // Simulated pitch detection: the needle settles toward 0 with some jitter.
-  useEffect(() => {
-    const t = setInterval(() => {
-      setCents(s => {
-        const noise = (Math.random() - 0.5) * (Math.abs(s) < 4 ? 1.6 : 4);
-        let c = s * 0.86 + noise;
-        if (Math.random() < 0.015) c = (Math.random() - 0.5) * 60;
-        return Math.max(-50, Math.min(50, c));
-      });
-    }, 160);
-    return () => clearInterval(t);
-  }, []);
+  const [str, setStr] = useStoredState('tuner.string', 1);
+  const [mic, setMic] = useState<Mic>('starting');
+  const [reading, setReading] = useState<{ hz: number; cents: number } | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   const pr = PRESETS[preset];
+  // Latest settings for the audio callback.
+  const cfg = useRef({ auto, str, pr });
+  cfg.current = { auto, str, pr };
+  const recent = useRef<number[]>([]);
+  const lastHeard = useRef(0);
+  const smooth = useRef<number | null>(null);
+
+  // Live pitch from the microphone. Released when the screen is hidden or left.
+  useEffect(() => {
+    let tracker: PitchTracker | null = null;
+    let cancelled = false;
+    const onPitch = (hz: number | null) => {
+      const now = performance.now();
+      if (hz === null) {
+        if (now - lastHeard.current > HOLD_MS) { recent.current = []; smooth.current = null; setReading(null); }
+        return;
+      }
+      lastHeard.current = now;
+      recent.current = [...recent.current.slice(-4), hz];
+      const f = median(recent.current);
+      const m = hzToMidi(f);
+      const { auto: isAuto, str: s, pr: p } = cfg.current;
+      let target = p.m[s];
+      if (isAuto) {
+        let best = 0;
+        p.m.forEach((n, i) => { if (Math.abs(n - m) < Math.abs(p.m[best] - m)) best = i; });
+        target = p.m[best];
+        if (best !== s) { setStr(best); smooth.current = null; }
+      }
+      const raw = (m - target) * 100;
+      smooth.current = smooth.current === null ? raw : smooth.current + 0.4 * (raw - smooth.current);
+      setReading({ hz: f, cents: smooth.current });
+    };
+    const start = async () => {
+      setMic('starting');
+      try {
+        const t = await startPitch(onPitch);
+        if (cancelled) { t.stop(); return; }
+        tracker = t;
+        setMic('on');
+      } catch (e) {
+        if (!cancelled) setMic((e as Error).message === 'unsupported' ? 'unsupported' : 'denied');
+      }
+    };
+    const onVis = () => {
+      if (document.hidden) { tracker?.stop(); tracker = null; setReading(null); }
+      else if (!tracker) void start();
+    };
+    void start();
+    document.addEventListener('visibilitychange', onVis);
+    return () => { cancelled = true; tracker?.stop(); document.removeEventListener('visibilitychange', onVis); };
+  }, [attempt, setStr]);
+
   const midi = pr.m[str];
+  const cents = reading?.cents ?? 0;
   const rc = Math.round(cents);
-  const inTune = Math.abs(rc) <= 3;
-  const hz = (440 * Math.pow(2, (midi - 69 + cents / 100) / 12)).toFixed(1);
+  const inTune = !!reading && Math.abs(rc) <= 3;
+  const needle = Math.max(-50, Math.min(50, cents));
 
   return (
     <Phone label="02 Accordeur">
@@ -62,7 +112,7 @@ export default function Accordeur() {
             <div className="face-lbl face-zero">0</div>
             <div className="face-lbl" style={{ right: 22, top: 52 }}>+50</div>
             <div className="face-cents">CENTS</div>
-            <div className="needle" style={{ transform: `rotate(${cents * 0.9}deg)` }} />
+            <div className={'needle' + (reading ? '' : ' idle')} style={{ transform: `rotate(${needle * 0.9}deg)` }} />
             <div className="hub" />
           </div>
           <div className="tuner-foot">
@@ -81,8 +131,21 @@ export default function Accordeur() {
           </div>
           <div className="readout-info">
             <span className="readout-fr">{FR[midi % 12]} · corde {6 - str}</span>
-            <span className="mono readout-hz">{hz} Hz</span>
-            <span className="mono readout-cents" style={{ color: inTune ? 'var(--led)' : 'var(--amber)' }}>{(rc > 0 ? '+' : '') + rc} ct</span>
+            {mic === 'on' ? (
+              <>
+                <span className="mono readout-hz">{reading ? `${reading.hz.toFixed(1)} Hz` : 'Jouez une corde'}</span>
+                <span className="mono readout-cents" style={{ color: !reading ? 'var(--muted)' : inTune ? 'var(--led)' : 'var(--amber)' }}>
+                  {!reading ? '— ct' : `${rc > 0 ? '+' : ''}${rc} ct${Math.abs(rc) > 50 ? (rc > 0 ? ' ↓' : ' ↑') : ''}`}
+                </span>
+              </>
+            ) : mic === 'starting' ? (
+              <span className="mono readout-hz">Micro…</span>
+            ) : (
+              <>
+                <span className="mic-msg">{mic === 'denied' ? 'Micro refusé' : 'Micro indisponible'}</span>
+                {mic === 'denied' && <button className="mic-retry" onClick={() => setAttempt(a => a + 1)}>Réessayer</button>}
+              </>
+            )}
           </div>
         </div>
 
@@ -91,7 +154,8 @@ export default function Accordeur() {
             <button
               key={i}
               className={'chip string-btn' + (i === str ? ' on-amber' : '')}
-              onClick={() => { setStr(i); setCents((Math.random() > 0.5 ? 1 : -1) * (15 + Math.random() * 30)); }}
+              onClick={() => { setStr(i); setAuto(false); smooth.current = null; }}
+              aria-pressed={i === str}
             >
               <span className="string-n">{sharpToGlyph(SHARP[m % 12])}</span>
               <span className="string-num">{6 - i}</span>
@@ -103,7 +167,7 @@ export default function Accordeur() {
           <span className="kicker" style={{ padding: '0 4px' }}>Accordage</span>
           <div className="hscroll" style={{ gap: 8 }}>
             {PRESETS.map((x, i) => (
-              <button key={x.label} className={'chip preset' + (i === preset ? ' on-cream' : '')} onClick={() => { setPreset(i); setCents(-25); }}>
+              <button key={x.label} className={'chip preset' + (i === preset ? ' on-cream' : '')} onClick={() => { setPreset(i); smooth.current = null; }}>
                 {x.label}
               </button>
             ))}
