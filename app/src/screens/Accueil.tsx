@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Phone, StatusBar, TabBar } from '../components/Chrome';
 import { SETTINGS, TILES, type Tile } from '../lib/data';
 import { INITIAL_IDEAS } from '../lib/ideas';
+import { ROUTINE, ROUTINE_MIN, doneSeconds, useRoutine } from '../lib/routine';
 import { INITIAL_SETLISTS, titlesLabel } from '../lib/setlists';
 import { readStored, useStoredState } from '../lib/store';
 import './Accueil.css';
@@ -46,6 +47,7 @@ export default function Accueil() {
   const nav = useNavigate();
   const [edit, setEdit] = useState(false);
   const [removed, setRemoved] = useStoredState<string[]>('home.removed', []);
+  const r = useRoutine();
   const metroSub = `${readStored('metro.bpm', 92)} BPM · ${readStored('metro.sig', '4/4')}`;
   const carnetSub = `${readStored('ideas', INITIAL_IDEAS).length} idées`;
   const nextSet = [...readStored('setlists', INITIAL_SETLISTS)].filter(s => s.date >= Date.now()).sort((a, b) => a.date - b.date)[0];
@@ -53,7 +55,10 @@ export default function Accueil() {
   const tiles = TILES.filter(t => !removed.includes(t.id)).map(t =>
     t.id === 'metro' ? { ...t, sub: metroSub }
       : t.id === 'carnet' ? { ...t, sub: carnetSub }
-        : t.id === 'setlists' ? { ...t, sub: setsSub } : t);
+        : t.id === 'setlists' ? { ...t, sub: setsSub }
+          : t.id === 'routine' ? { ...t, sub: `${Math.floor(doneSeconds(r) / 60)}/${ROUTINE_MIN} min aujourd’hui`, to: '/pratiquer/routine' } : t);
+  const step = ROUTINE[r.step];
+  const left = Math.ceil((step.min * 60 - r.elapsed[r.step]) / 60);
 
   return (
     <Phone label="01 Accueil">
@@ -68,11 +73,12 @@ export default function Accueil() {
         </div>
 
         <div className="home-widgets" style={{ gridTemplateColumns: SETTINGS.showStreak ? 'minmax(0,1fr) 112px' : 'minmax(0,1fr)' }}>
-          <div role="button" tabIndex={0} className="card resume" onClick={() => nav('/pratiquer')}>
-            <div className="resume-kicker"><span className="resume-dot" /><span>Reprendre</span></div>
-            <div className="resume-title">Impro blues en La</div>
-            <div className="resume-sub">Routine · étape 3/4 · 8 min</div>
-            <div className="progress"><div style={{ width: '62%' }} /></div>
+          <div role="button" tabIndex={0} className="card resume" onClick={() => nav('/pratiquer/routine')}
+            onKeyDown={e => { if (e.key === 'Enter') nav('/pratiquer/routine'); }}>
+            <div className="resume-kicker"><span className="resume-dot" /><span>{r.done ? 'Routine faite' : r.running ? 'En cours' : 'Reprendre'}</span></div>
+            <div className="resume-title">{r.done ? 'Routine du jour terminée' : step.short}</div>
+            <div className="resume-sub">{r.done ? `${ROUTINE_MIN} min de pratique` : `Routine · étape ${r.step + 1}/${ROUTINE.length} · ${left} min`}</div>
+            <div className="progress"><div style={{ width: `${(doneSeconds(r) / (ROUTINE_MIN * 60)) * 100}%` }} /></div>
           </div>
           {SETTINGS.showStreak && (
             <div className="card streak">

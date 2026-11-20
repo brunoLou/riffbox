@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import { GRID_BAR_MS, GRID_INITIAL, GRID_SECTIONS } from '../lib/data';
 import { IN_N, KFR, OUT_N, OUT_PC, chordName, degreeOf, mod12, type Chord } from '../lib/music';
+import { fmtDate, titlesLabel, type Setlist } from '../lib/setlists';
 import { useStoredState } from '../lib/store';
+import { useSetlists } from './Setlists';
 import './Grille.css';
+
+/** The song this grid belongs to in the setlist catalog. */
+const GRID_SONG_ID = 's3';
 
 const MAX_CHORDS = 8;
 const R = 159; // wheel radius (318 / 2)
@@ -14,6 +20,13 @@ export default function Grille() {
   const [sec, setSec] = useState(0);
   const [mode, setMode] = useState<'add' | 'key'>('add');
   const [playing, setPlaying] = useState(false);
+  const [picking, setPicking] = useState(false);
+  const [sets, setSets] = useSetlists();
+  const nav = useNavigate();
+  const addToSet = (s: Setlist) => {
+    if (!s.songIds.includes(GRID_SONG_ID)) setSets(all => all.map(x => (x.id === s.id ? { ...x, songIds: [...x.songIds, GRID_SONG_ID] } : x)));
+    nav(`/scene/${s.id}`);
+  };
   const [step, setStep] = useState(0);
 
   useEffect(() => {
@@ -109,9 +122,35 @@ export default function Grille() {
         </div>
       </div>
 
-      <button className={'cta' + (playing ? ' on' : '')} onClick={() => { setPlaying(!playing); setStep(0); }}>
-        {playing ? 'Arrêter la boucle' : '▶  Boucle · 92 BPM · shuffle'}
-      </button>
+      <div className="grid-actions">
+        <button className={'cta grid-loop' + (playing ? ' on' : '')} onClick={() => { setPlaying(!playing); setStep(0); }}>
+          {playing ? 'Arrêter la boucle' : '▶  Boucle · 92 BPM'}
+        </button>
+        <button className="grid-to-set" onClick={() => setPicking(true)}>Setlist +</button>
+      </div>
+
+      {picking && (
+        <div className="sheet-backdrop" onClick={() => setPicking(false)}>
+          <div className="set-sheet" role="dialog" aria-label="Ajouter à une setlist" onClick={e => e.stopPropagation()}>
+            <div className="set-sheet-head">
+              <span className="kicker" style={{ color: 'var(--amber)' }}>Ajouter « Minuit Shuffle » à…</span>
+              <button className="player-close" onClick={() => setPicking(false)} aria-label="Fermer">✕</button>
+            </div>
+            {[...sets].sort((a, b) => a.date - b.date).map(s => {
+              const inSet = s.songIds.includes(GRID_SONG_ID);
+              return (
+                <button key={s.id} className="pick-row" onClick={() => addToSet(s)}>
+                  <div className="song-text">
+                    <span className="song-title">{s.name}</span>
+                    <span className="song-meta">{fmtDate(s.date)} · {titlesLabel(s.songIds.length)}</span>
+                  </div>
+                  {inSet ? <span className="in-set">Déjà dedans ›</span> : <span className="pick-plus">+</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
       <TabBar active={1} />
     </Phone>
   );

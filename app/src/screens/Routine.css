@@ -1,0 +1,26 @@
+.rring { position: relative; width: 220px; height: 220px; margin: 0 auto; border-radius: 50%; padding: 12px; transition: background .3s; }
+.rring.running { box-shadow: 0 0 24px rgba(233, 162, 59, .18); }
+.rring.done { box-shadow: 0 0 24px rgba(98, 217, 138, .2); }
+.rring-cap {
+  width: 100%; height: 100%; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  background: radial-gradient(circle at 40% 35%, #3a332e, #171513); box-shadow: 0 0 0 3px #2e2925, inset 0 2px 0 rgba(255, 255, 255, .08);
+}
+.rring-name { font-family: var(--f-display); font-weight: 900; font-size: 24px; text-transform: uppercase; color: var(--amber); letter-spacing: .03em; }
+.rring.done .rring-name { color: var(--led); }
+.rring-time { font-family: var(--f-display); font-weight: 900; font-size: 64px; line-height: .9; color: var(--cream); font-variant-numeric: tabular-nums; }
+.rring-sub { font-size: 12px; color: var(--muted); }
+
+.rdetail { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; min-height: 72px; }
+.rdetail p { margin: 0; font-size: 16px; line-height: 1.35; color: var(--muted-3); text-wrap: pretty; }
+.rlink { height: 40px; padding: 0 16px; border-radius: 20px; border: 1.5px solid var(--amber); color: var(--amber-hi); font-weight: 700; font-size: 14px; }
+
+.rlist { display: flex; flex-direction: column; gap: 6px; }
+.rlist-row { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 12px; background: var(--surface-2); color: var(--muted-3); font-weight: 600; font-size: 15px; text-align: left; }
+.rlist-row .rstep-dot { background: rgba(0, 0, 0, .3); }
+.rlist-row.done .rstep-dot { background: var(--led); color: var(--ink); }
+.rlist-row.cur { background: var(--surface-3); color: var(--cream); font-weight: 700; box-shadow: inset 0 0 0 1.5px var(--amber); }
+.rlist-row.cur .rstep-dot { background: var(--amber); color: var(--ink); }
+.rlist-name { flex: 1; }
+.rlist-time { font-size: 12px; color: var(--muted-2); }
+
+.rtransport { position: absolute; left: 18px; right: 18px; bottom: 100px; display: flex; align-items: center; justify-content: space-between; }

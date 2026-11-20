@@ -42,3 +42,18 @@
 .hub-kicker { font-family: var(--f-mono); font-size: 10px; letter-spacing: .12em; color: var(--muted); }
 .hub-key { font-family: var(--f-display); font-weight: 900; font-size: 28px; line-height: 1; color: var(--amber); }
 .hub-rel { font-family: var(--f-mono); font-size: 11px; color: var(--muted-2); white-space: nowrap; }
+
+.grid-actions { position: absolute; left: 18px; right: 18px; bottom: 104px; display: flex; gap: 10px; }
+.grid-actions .grid-loop { position: static; flex: 1; min-width: 0; }
+.grid-to-set {
+  flex: none; height: 56px; padding: 0 18px; border-radius: 28px; background: var(--surface-2); border: 1.5px solid var(--line-2);
+  color: var(--cream); font-weight: 700; font-size: 16px; white-space: nowrap;
+}
+
+.sheet-backdrop { position: absolute; inset: 0; background: rgba(10, 9, 8, .55); z-index: 5; display: flex; align-items: flex-end; }
+.set-sheet {
+  width: 100%; padding: 16px 18px 30px; background: #1f1c1a; border-top: 1px solid #322e2a; border-radius: 24px 24px 0 0;
+  display: flex; flex-direction: column; gap: 8px; animation: rec-up .2s ease-out; box-shadow: 0 -16px 32px rgba(0, 0, 0, .45);
+}
+.set-sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.in-set { flex: none; font-size: 13px; font-weight: 700; color: var(--led); }

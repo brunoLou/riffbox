@@ -1,7 +1,10 @@
 /** Web Audio metronome / drum machine with a look-ahead scheduler. */
 
-export type Hit = 'accent' | 'beat' | 'sub' | 'kick' | 'snare' | 'ghost' | 'hat' | 'hatAcc';
-export interface Step { beat: number | null; hits: Hit[] }
+export type Drum = 'accent' | 'beat' | 'sub' | 'kick' | 'snare' | 'ghost' | 'hat' | 'hatAcc';
+/** Pitched notes for backing tracks: a bass note, or a chord (MIDI numbers), lasting `dur` seconds. */
+export type Tone = { bass: number; dur: number } | { chord: number[]; dur: number; vol?: number };
+export type Hit = Drum | Tone;
+export interface Step { beat: number | null; bar?: number; hits: Hit[] }
 export interface Pattern { steps: Step[]; stepDur: number }
 
 const LOOKAHEAD_MS = 25;
@@ -14,7 +17,10 @@ export class MetronomeEngine {
   private next = 0;
   private i = 0;
 
-  constructor(private getPattern: () => Pattern, private onBeat: (beat: number) => void) {}
+  constructor(private getPattern: () => Pattern, private onBeat: (beat: number, bar: number) => void) {}
+
+  /** Restart from the first step on the next tick (e.g. after changing the track). */
+  rewind() { this.i = 0; }
 
   get running() { return this.timer !== null; }
 
@@ -53,9 +59,9 @@ export class MetronomeEngine {
       const step = p.steps[this.i % p.steps.length];
       for (const h of step.hits) this.play(h, this.next);
       if (step.beat !== null) {
-        const beat = step.beat;
+        const beat = step.beat, bar = step.bar ?? 0;
         const delay = Math.max(0, (this.next - ctx.currentTime) * 1000);
-        window.setTimeout(() => this.running && this.onBeat(beat), delay);
+        window.setTimeout(() => this.running && this.onBeat(beat, bar), delay);
       }
       this.next += p.stepDur;
       this.i = (this.i + 1) % p.steps.length;
@@ -88,8 +94,40 @@ export class MetronomeEngine {
     s.start(t); s.stop(t + decay + 0.02);
   }
 
+  private tone(h: Tone, t: number) {
+    const ctx = this.ctx!;
+    const hz = (m: number) => 440 * 2 ** ((m - 69) / 12);
+    if ('bass' in h) {
+      const o = ctx.createOscillator();
+      o.type = 'triangle'; o.frequency.value = hz(h.bass);
+      const o2 = ctx.createOscillator();
+      o2.type = 'sawtooth'; o2.frequency.value = hz(h.bass);
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass'; f.frequency.value = 520;
+      const g2 = ctx.createGain(); g2.gain.value = 0.35;
+      o2.connect(g2); g2.connect(f); o.connect(f);
+      f.connect(this.env(t, 0.5, Math.max(0.12, h.dur)));
+      o.start(t); o2.start(t); o.stop(t + h.dur + 0.05); o2.stop(t + h.dur + 0.05);
+      return;
+    }
+    const vol = h.vol ?? 0.1;
+    const f = ctx.createBiquadFilter();
+    f.type = 'lowpass';
+    f.frequency.setValueAtTime(2200, t);
+    f.frequency.exponentialRampToValueAtTime(900, t + Math.max(0.1, h.dur));
+    f.connect(this.env(t, vol, Math.max(0.1, h.dur)));
+    for (const m of h.chord) {
+      const o = ctx.createOscillator();
+      o.type = 'sawtooth'; o.frequency.value = hz(m);
+      o.detune.value = (Math.random() - 0.5) * 8;
+      o.connect(f);
+      o.start(t); o.stop(t + h.dur + 0.05);
+    }
+  }
+
   private play(h: Hit, t: number) {
     const ctx = this.ctx!;
+    if (typeof h !== 'string') return this.tone(h, t);
     switch (h) {
       case 'accent': return this.blip(t, 1760, 0.32);
       case 'beat': return this.blip(t, 1100, 0.22);
