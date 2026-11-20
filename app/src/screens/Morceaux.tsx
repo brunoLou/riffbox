@@ -7,6 +7,7 @@ import {
   FEELS, allSongs, fmtDur, songById, hasLyrics, keyChords, materializeGridSong, songMeta, type Setlist, type Song,
 } from '../lib/setlists';
 import { useGrids, useSetlists, useSongs } from '../lib/hooks';
+import { noteFr, noteSci } from '../lib/voice';
 import './Morceaux.css';
 
 
@@ -86,6 +87,8 @@ export function MorceauRoute() {
   if (id !== songId) return <Navigate to={`/scene/morceau/${id}`} replace />;
   return <MorceauEditor key={id} id={id} />;
 }
+
+const MELODY_NOTES = Array.from({ length: 49 }, (_, i) => 36 + i); // C2–C6
 
 const HELP = 'Écrivez chaque accord entre crochets juste avant la syllabe où il tombe : [A]J’ai pris la route [D7]avant le jour. Une ligne {c:Refrain} ouvre une section.';
 
@@ -214,7 +217,17 @@ function MorceauEditor({ id }: { id: string }) {
                 <button onClick={() => update({ duration: Math.min(1200, song.duration + 15) })} aria-label="Plus long">+</button>
               </div>
             </div>
+            {(['melodyLow', 'melodyHigh'] as const).map(f => (
+              <label key={f} className="sheet-field">
+                <span>{f === 'melodyLow' ? 'Mélodie : note grave' : 'Mélodie : note aiguë'}</span>
+                <select className="text-input" value={song[f] ?? ''} onChange={e => update({ [f]: e.target.value === '' ? undefined : Number(e.target.value) })}>
+                  <option value="">—</option>
+                  {MELODY_NOTES.map(m => <option key={m} value={m}>{noteFr(m)} ({noteSci(m)})</option>)}
+                </select>
+              </label>
+            ))}
           </div>
+          <p className="help">L’étendue de la mélodie sert à « Trouver ma tonalité » (Pratiquer › Justesse vocale).</p>
         </div>
 
         <div className="lyrics-head">

@@ -59,3 +59,4 @@
 .week-axis span.today { color: var(--muted-3); font-weight: 700; }
 .week-axis span.sel { color: var(--cream); }
 .week-foot { font-size: 13px; color: var(--muted-2); }
+.prat-tool.cream { background: var(--cream); color: var(--ink); }

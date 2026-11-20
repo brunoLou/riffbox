@@ -13,6 +13,10 @@ import Metronome from './screens/Metronome';
 import Carnet from './screens/Carnet';
 import { SetlistDetail, SetlistsScreen } from './screens/Setlists';
 import { MorceauRoute, MorceauxScreen } from './screens/Morceaux';
+import Voix, { VoixListe, VoixPrises } from './screens/Voix';
+import { VoixExercice, VoixPrise } from './screens/VoixSession';
+import { Tessiture, Tonalite } from './screens/VoixTessiture';
+import Capo from './screens/Capo';
 import Pratiquer from './screens/Pratiquer';
 import Routine from './screens/Routine';
 import Backing from './screens/Backing';
@@ -38,6 +42,15 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/pratiquer/routine" element={<Routine />} />
           <Route path="/pratiquer/gammes" element={<Gammes />} />
           <Route path="/pratiquer/backing" element={<Backing />} />
+          <Route path="/voix" element={<Voix />} />
+          <Route path="/voix/exercices" element={<VoixListe kind="warmup" />} />
+          <Route path="/voix/melodies" element={<VoixListe kind="melody" />} />
+          <Route path="/voix/ex/:pieceId" element={<VoixExercice />} />
+          <Route path="/voix/prises" element={<VoixPrises />} />
+          <Route path="/voix/prise/:takeId" element={<VoixPrise />} />
+          <Route path="/voix/tessiture" element={<Tessiture />} />
+          <Route path="/voix/tonalite" element={<Tonalite />} />
+          <Route path="/outils/capo" element={<Capo />} />
           <Route path="/scene" element={<SetlistsScreen />} />
           <Route path="/scene/morceaux" element={<MorceauxScreen />} />
           <Route path="/scene/morceau/:songId" element={<MorceauRoute />} />

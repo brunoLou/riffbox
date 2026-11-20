@@ -41,13 +41,19 @@ export function yin(buf: Float32Array, sr: number): number | null {
   return sr / (tau + shift);
 }
 
-export interface PitchTracker { stop(): void; sampleRate: number }
+export interface PitchTracker {
+  stop(): void;
+  sampleRate: number;
+  /** The audio context and microphone stream, to schedule sounds or record on the same clock. */
+  ctx: AudioContext;
+  stream: MediaStream;
+}
 
 /**
  * Open the microphone and report the detected pitch (Hz, or null when silent/unclear)
  * about 20 times per second.
  */
-export async function startPitch(onPitch: (hz: number | null, level: number) => void): Promise<PitchTracker> {
+export async function startPitch(onPitch: (hz: number | null, level: number, time: number) => void): Promise<PitchTracker> {
   if (!navigator.mediaDevices?.getUserMedia) throw new Error('unsupported');
   // Raw signal: voice processing would distort a guitar's pitch and level.
   const stream = await navigator.mediaDevices.getUserMedia({
@@ -67,11 +73,13 @@ export async function startPitch(onPitch: (hz: number | null, level: number) => 
     let sum = 0;
     for (const v of buf) sum += v * v;
     const rms = Math.sqrt(sum / buf.length);
-    onPitch(rms < 0.008 ? null : yin(buf, ac.sampleRate), rms);
+    onPitch(rms < 0.008 ? null : yin(buf, ac.sampleRate), rms, ac.currentTime);
   }, 50);
 
   return {
     sampleRate: ac.sampleRate,
+    ctx: ac,
+    stream,
     stop() {
       clearInterval(timer);
       src.disconnect();

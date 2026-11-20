@@ -28,6 +28,8 @@ export const TILES: Tile[] = [
   { id: 'backing', name: 'Backing tracks', sub: 'Blues en La · shuffle 90', bg: '#4a3020', fg: '#efe6d2', on: true, a: 45, b: -45, wide: true, to: '/pratiquer/backing' },
   { id: 'manche', name: 'Manche', sub: 'Penta mineure · La', bg: '#2c2825', fg: '#efe6d2', a: 0, b: 120, to: '/pratiquer/gammes' },
   { id: 'routine', name: 'Routine', sub: '25 min aujourd’hui', bg: '#2c2825', fg: '#efe6d2', a: -60, b: 80, to: '/pratiquer' },
+  { id: 'voix', name: 'Voix', sub: 'Justesse vocale', bg: '#2c2825', fg: '#efe6d2', a: 70, b: -30, to: '/voix' },
+  { id: 'capo', name: 'Capo', sub: 'Calculateur', bg: '#2c2825', fg: '#efe6d2', a: -20, b: 100, to: '/outils/capo' },
   { id: 'setlists', name: 'Setlists', sub: 'Bar du Port · 9 titres', bg: '#efe6d2', fg: '#1a1816', a: 30, b: -120, wide: true, to: '/scene' },
 ];
 

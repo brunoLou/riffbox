@@ -11,6 +11,9 @@ export interface Song {
   chordpro?: string;
   /** True when `chordpro` is a chord chart generated from a grid (no lyrics). */
   fromGrid?: boolean;
+  /** Lowest and highest sung notes (MIDI), to find the singer's key. */
+  melodyLow?: number;
+  melodyHigh?: number;
 }
 
 export interface Setlist { id: string; name: string; date: number; songIds: string[] }
@@ -18,13 +21,13 @@ export interface Setlist { id: string; name: string; date: number; songIds: stri
 /** Example songs on first launch (invented titles; only Minuit Shuffle has lyrics). Editable afterwards. */
 export const INITIAL_SONGS: Song[] = [
   { id: 's1', title: 'Réveil électrique', key: 4, bpm: 128, feel: 'rock', capo: 0, duration: 200 },
-  { id: 's2', title: 'Café noir', key: 2, minor: true, bpm: 98, feel: 'funk', capo: 0, duration: 245 },
-  { id: 's3', title: 'Minuit Shuffle', key: 9, bpm: 92, feel: 'shuffle', capo: 0, duration: 250, chordpro: SONG },
+  { id: 's2', title: 'Café noir', key: 2, minor: true, bpm: 98, feel: 'funk', capo: 0, duration: 245, melodyLow: 50, melodyHigh: 62 },
+  { id: 's3', title: 'Minuit Shuffle', key: 9, bpm: 92, feel: 'shuffle', capo: 0, duration: 250, chordpro: SONG, melodyLow: 55, melodyHigh: 64 },
   { id: 's4', title: 'Rouille et chrome', key: 7, bpm: 110, feel: 'rock', capo: 0, duration: 225 },
   { id: 's5', title: 'Le train de 6 h 12', key: 4, bpm: 104, feel: 'shuffle', capo: 0, duration: 235 },
   { id: 's6', title: 'Bayou sec', key: 0, bpm: 84, feel: 'blues lent', capo: 0, duration: 330 },
   { id: 's7', title: 'Talons hauts', key: 4, minor: true, bpm: 106, feel: 'funk 16e', capo: 0, duration: 220 },
-  { id: 's8', title: 'Néons du quai', key: 11, minor: true, bpm: 72, feel: 'ballade', capo: 2, duration: 260 },
+  { id: 's8', title: 'Néons du quai', key: 11, minor: true, bpm: 72, feel: 'ballade', capo: 2, duration: 260, melodyLow: 59, melodyHigh: 74 },
   { id: 's9', title: 'Dernier verre', key: 9, bpm: 140, feel: 'rock', capo: 0, duration: 175 },
   { id: 's10', title: 'Poussière d’août', key: 2, bpm: 96, feel: 'shuffle', capo: 0, duration: 240 },
   { id: 's11', title: 'Ligne blanche', key: 7, bpm: 118, feel: 'rock', capo: 0, duration: 210 },
