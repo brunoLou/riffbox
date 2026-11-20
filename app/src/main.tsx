@@ -15,6 +15,7 @@ import { SetlistDetail, SetlistsScreen } from './screens/Setlists';
 import Pratiquer from './screens/Pratiquer';
 import Routine from './screens/Routine';
 import Backing from './screens/Backing';
+import Reglages from './screens/Reglages';
 
 requestPersistence();
 
@@ -26,6 +27,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/" element={<Accueil />} />
           <Route path="/accordeur" element={<Accordeur />} />
           <Route path="/metronome" element={<Metronome />} />
+          <Route path="/reglages" element={<Reglages />} />
           <Route path="/idee" element={<Navigate to="/composer" replace state={{ record: true }} />} />
           <Route path="/composer" element={<Carnet />} />
           <Route path="/composer/grille" element={<Grille />} />

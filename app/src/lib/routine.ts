@@ -18,7 +18,8 @@ export const dayKey = (d = new Date()) => `${d.getFullYear()}-${d.getMonth() + 1
 
 // Demo on first launch: today's routine is already under way (steps 1–2 done, on step 3).
 // Afterwards the saved state is restored (paused; the timer never runs in the background of a closed app).
-let state: RoutineState = { ...readStored<RoutineState>('routine', { date: dayKey(), step: 2, elapsed: [300, 480, 0, 0], running: false, done: false }), running: false };
+const DEMO_ELAPSED = [300, 480, 0, 0];
+let state: RoutineState = { ...readStored<RoutineState>('routine', { date: dayKey(), step: 2, elapsed: DEMO_ELAPSED, running: false, done: false }), running: false };
 const listeners = new Set<() => void>();
 let timer: number | null = null;
 
@@ -104,7 +105,40 @@ function readLog(): Log {
   const seeded: Log = {};
   demo.forEach((m, i) => { seeded[dayKey(new Date(Date.now() - (6 - i) * 86400000))] = m; });
   writeStored(LOG_KEY, seeded);
+  writeStored(SEEDED_KEY, Object.keys(seeded));
   return seeded;
+}
+const SEEDED_KEY = 'practice.seeded';
+
+/** Example practice data still present: seeded past days, and today's untouched demo routine. */
+export function demoPractice() {
+  const seeded = readStored<string[]>(SEEDED_KEY, []);
+  const log = readLog();
+  const days = seeded.filter(d => d in log);
+  const routineIsDemo = state.date === dayKey() && !state.running && state.elapsed.join() === DEMO_ELAPSED.join();
+  return { days: days.length, routineIsDemo };
+}
+
+/** Remove the example practice data, keeping real sessions. */
+export function clearDemoPractice() {
+  const seeded = new Set(readStored<string[]>(SEEDED_KEY, []));
+  const log = readLog();
+  writeStored(LOG_KEY, Object.fromEntries(Object.entries(log).filter(([d]) => !seeded.has(d))));
+  writeStored(SEEDED_KEY, []);
+  if (demoPractice().routineIsDemo) routine.restart();
+}
+
+/** Consecutive days with practice, ending today (or yesterday if today is still empty). */
+export function streak(s: RoutineState) {
+  const log = readLog();
+  const minutesOn = (d: Date) => (dayKey(d) === s.date ? Math.floor(doneSeconds(s) / 60) : log[dayKey(d)] ?? 0);
+  let n = 0;
+  const day = new Date();
+  if (!minutesOn(day)) day.setDate(day.getDate() - 1);
+  while (minutesOn(day) > 0) { n++; day.setDate(day.getDate() - 1); }
+  // The last five days, oldest first, for the dots on the home card.
+  const recent = [4, 3, 2, 1, 0].map(i => minutesOn(new Date(Date.now() - i * 86400000)) > 0);
+  return { days: n, recent };
 }
 
 export function week(s: RoutineState) {

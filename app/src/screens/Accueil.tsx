@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Phone, StatusBar, TabBar } from '../components/Chrome';
 import { SETTINGS, TILES, type Tile } from '../lib/data';
 import { INITIAL_IDEAS } from '../lib/ideas';
-import { ROUTINE, ROUTINE_MIN, doneSeconds, useRoutine } from '../lib/routine';
+import { ROUTINE, ROUTINE_MIN, doneSeconds, streak, useRoutine } from '../lib/routine';
 import { INITIAL_SETLISTS, titlesLabel } from '../lib/setlists';
 import { readStored, useStoredState } from '../lib/store';
 import './Accueil.css';
@@ -48,8 +48,11 @@ export default function Accueil() {
   const [edit, setEdit] = useState(false);
   const [removed, setRemoved] = useStoredState<string[]>('home.removed', []);
   const r = useRoutine();
+  const showStreak = readStored(SETTINGS.showStreak.key, SETTINGS.showStreak.def);
+  const st = streak(r);
   const metroSub = `${readStored('metro.bpm', 92)} BPM · ${readStored('metro.sig', '4/4')}`;
-  const carnetSub = `${readStored('ideas', INITIAL_IDEAS).length} idées`;
+  const nIdeas = readStored('ideas', INITIAL_IDEAS).length;
+  const carnetSub = `${nIdeas} idée${nIdeas > 1 ? 's' : ''}`;
   const nextSet = [...readStored('setlists', INITIAL_SETLISTS)].filter(s => s.date >= Date.now()).sort((a, b) => a.date - b.date)[0];
   const setsSub = nextSet ? `${nextSet.name} · ${titlesLabel(nextSet.songIds.length)}` : 'Aucun concert prévu';
   const tiles = TILES.filter(t => !removed.includes(t.id)).map(t =>
@@ -72,7 +75,7 @@ export default function Accueil() {
           <button className={'edit-btn' + (edit ? ' on' : '')} onClick={() => setEdit(!edit)}>{edit ? 'Terminé' : 'Modifier'}</button>
         </div>
 
-        <div className="home-widgets" style={{ gridTemplateColumns: SETTINGS.showStreak ? 'minmax(0,1fr) 112px' : 'minmax(0,1fr)' }}>
+        <div className="home-widgets" style={{ gridTemplateColumns: showStreak ? 'minmax(0,1fr) 112px' : 'minmax(0,1fr)' }}>
           <div role="button" tabIndex={0} className="card resume" onClick={() => nav('/pratiquer/routine')}
             onKeyDown={e => { if (e.key === 'Enter') nav('/pratiquer/routine'); }}>
             <div className="resume-kicker"><span className="resume-dot" /><span>{r.done ? 'Routine faite' : r.running ? 'En cours' : 'Reprendre'}</span></div>
@@ -80,11 +83,11 @@ export default function Accueil() {
             <div className="resume-sub">{r.done ? `${ROUTINE_MIN} min de pratique` : `Routine · étape ${r.step + 1}/${ROUTINE.length} · ${left} min`}</div>
             <div className="progress"><div style={{ width: `${(doneSeconds(r) / (ROUTINE_MIN * 60)) * 100}%` }} /></div>
           </div>
-          {SETTINGS.showStreak && (
-            <div className="card streak">
-              <span className="streak-num">12</span>
-              <span className="streak-lbl">jours de pratique</span>
-              <div className="streak-dots">{[0, 1, 2, 3, 4].map(i => <span key={i} className={i === 4 ? 'today' : ''} />)}</div>
+          {showStreak && (
+            <div className="card streak" role="button" tabIndex={0} onClick={() => nav('/pratiquer')} aria-label={`${st.days} jours de pratique d’affilée`}>
+              <span className="streak-num">{st.days}</span>
+              <span className="streak-lbl">{st.days > 1 ? 'jours' : 'jour'} de pratique</span>
+              <div className="streak-dots">{st.recent.map((on, i) => <span key={i} className={(on ? 'on' : '') + (i === 4 ? ' today' : '')} />)}</div>
             </div>
           )}
         </div>
@@ -99,6 +102,8 @@ export default function Accueil() {
             </button>
           )}
         </div>
+
+        <button className="settings-link" onClick={() => nav('/reglages')}><span>Réglages et données</span><span>›</span></button>
       </div>
 
       <button className="fab" onClick={() => nav('/composer', { state: { record: true } })}><span>+</span>Idée</button>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Phone, StatusBar, TabBar } from '../components/Chrome';
 import { TRACKS } from '../lib/backing';
 import { KEY_FR } from '../lib/music';
-import { GOAL_MIN, ROUTINE, ROUTINE_MIN, doneSeconds, fmtHM, routine, useRoutine, week } from '../lib/routine';
+import { GOAL_MIN, ROUTINE, ROUTINE_MIN, doneSeconds, fmtHM, routine, streak, useRoutine, week } from '../lib/routine';
 import { readStored } from '../lib/store';
 import './Pratiquer.css';
 
@@ -48,6 +48,7 @@ export default function Pratiquer() {
   const nav = useNavigate();
   const r = useRoutine();
   const doneMin = Math.floor(doneSeconds(r) / 60);
+  const streakDays = streak(r).days;
   const started = doneSeconds(r) > 0;
   const scaleKey = readStored('scale.key', 9), scaleMaj = readStored('scale.maj', false);
 
@@ -63,7 +64,7 @@ export default function Pratiquer() {
             <span className="kicker">Pratiquer</span>
             <span className="display" style={{ fontSize: 30 }}>PRATIQUER</span>
           </div>
-          <span className="prat-streak mono"><span />12 jours</span>
+          <span className="prat-streak mono"><span />{streakDays} {streakDays > 1 ? 'jours' : 'jour'}</span>
         </div>
 
         <div className="routine-card">

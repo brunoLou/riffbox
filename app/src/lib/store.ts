@@ -64,3 +64,18 @@ export function useStoredState<T>(key: string, init: T) {
 export function requestPersistence() {
   try { void navigator.storage?.persist?.(); } catch { /* ignore */ }
 }
+
+/** Erase every saved value (memory and disk). The caller reloads the app afterwards. */
+export function clearAllStored() {
+  mem.clear();
+  try {
+    Object.keys(localStorage).filter(k => k.startsWith(PREFIX)).forEach(k => localStorage.removeItem(k));
+  } catch { /* ignore */ }
+}
+
+/** Approximate size of the saved values, in bytes. */
+export function storedBytes() {
+  let n = 0;
+  try { for (const k of Object.keys(localStorage)) if (k.startsWith(PREFIX)) n += (k.length + (localStorage.getItem(k)?.length ?? 0)) * 2; } catch { /* ignore */ }
+  return n;
+}

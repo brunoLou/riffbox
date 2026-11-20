@@ -27,3 +27,6 @@ function run<T>(mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRequest<
 export const putBlob = (id: string, blob: Blob) => run('readwrite', s => s.put(blob, id)).then(() => true, () => false);
 export const getBlob = (id: string) => run<Blob | undefined>('readonly', s => s.get(id)).catch(() => undefined);
 export const deleteBlob = (id: string) => run('readwrite', s => s.delete(id)).catch(() => undefined);
+export const clearBlobs = () => run('readwrite', s => s.clear()).catch(() => undefined);
+/** Total size of the saved recordings, in bytes. */
+export const blobsBytes = () => run<Blob[]>('readonly', s => s.getAll() as IDBRequest<Blob[]>).then(l => l.reduce((t, b) => t + b.size, 0)).catch(() => 0);

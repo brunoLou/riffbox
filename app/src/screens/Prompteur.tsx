@@ -30,7 +30,7 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
   const pos = useRef(0);
 
   const lines = useMemo(() => (song.chordpro ? parseChordPro(song.chordpro, trans) : []), [song, trans]);
-  const fs = SETTINGS.stageFontSize;
+  const fs = readStored(SETTINGS.stageFontSize.key, SETTINGS.stageFontSize.def);
   const total = set.songIds.length;
   const hasPrev = index > 0, hasNext = index < total - 1;
 

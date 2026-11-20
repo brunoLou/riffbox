@@ -1,10 +1,10 @@
 import type { Chord } from './music';
 
-/** Former design-tool tweak props, now app settings. */
+/** User settings (Réglages): storage keys and defaults. */
 export const SETTINGS = {
-  showStreak: true,
+  showStreak: { key: 'settings.showStreak', def: true },
   /** Prompteur lyric size in px (design range 20–40). */
-  stageFontSize: 26,
+  stageFontSize: { key: 'settings.stageFontSize', def: 26, min: 20, max: 40 },
 };
 
 export const PRESETS = [
