@@ -79,3 +79,15 @@ export function storedBytes() {
   try { for (const k of Object.keys(localStorage)) if (k.startsWith(PREFIX)) n += (k.length + (localStorage.getItem(k)?.length ?? 0)) * 2; } catch { /* ignore */ }
   return n;
 }
+
+/** Every saved value, as stored on disk (for backups). */
+export function allStored(): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  try {
+    for (const k of Object.keys(localStorage)) {
+      if (!k.startsWith(PREFIX)) continue;
+      try { out[k.slice(PREFIX.length)] = JSON.parse(localStorage.getItem(k) ?? 'null'); } catch { /* skip corrupt value */ }
+    }
+  } catch { /* storage blocked */ }
+  return out;
+}

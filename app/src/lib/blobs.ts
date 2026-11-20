@@ -30,3 +30,9 @@ export const deleteBlob = (id: string) => run('readwrite', s => s.delete(id)).ca
 export const clearBlobs = () => run('readwrite', s => s.clear()).catch(() => undefined);
 /** Total size of the saved recordings, in bytes. */
 export const blobsBytes = () => run<Blob[]>('readonly', s => s.getAll() as IDBRequest<Blob[]>).then(l => l.reduce((t, b) => t + b.size, 0)).catch(() => 0);
+/** Every saved recording with its id (for backups). */
+export const allBlobs = () => run<IDBValidKey[]>('readonly', s => s.getAllKeys()).then(async keys => {
+  const out: { id: string; blob: Blob }[] = [];
+  for (const k of keys) { const b = await getBlob(String(k)); if (b) out.push({ id: String(k), blob: b }); }
+  return out;
+}).catch(() => [] as { id: string; blob: Blob }[]);

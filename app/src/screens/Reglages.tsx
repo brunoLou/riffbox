@@ -1,5 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
+import {
+  buildBackup, readBackup, restoreMerge, restoreReplace, saveBackup, summarize, type BackupFile,
+} from '../lib/backup';
 import { blobsBytes, clearBlobs } from '../lib/blobs';
 import { SETTINGS } from '../lib/data';
 import { INITIAL_GRIDS, type Grid } from '../lib/grids';
@@ -124,6 +127,8 @@ export default function Reglages() {
           <p className="settings-note">Tout reste sur ce téléphone : rien n’est envoyé sur internet.</p>
         </div>
 
+        <BackupCard />
+
         <div className="settings-card">
           <div className="settings-action">
             <span className="settings-label">Effacer les exemples</span>
@@ -157,5 +162,102 @@ export default function Reglages() {
       </div>
       <TabBar active={0} />
     </Phone>
+  );
+}
+
+/* ---------- Sauvegarde : export et import ---------- */
+
+function BackupCard() {
+  const [last, setLast] = useStoredState<string | null>('backup.last', null);
+  const [busy, setBusy] = useState<null | 'export' | 'import'>(null);
+  const [msg, setMsg] = useState<{ text: string; error?: boolean } | null>(null);
+  const [pending, setPending] = useState<BackupFile | null>(null);
+  const [confirmReplace, setConfirmReplace] = useState(false);
+  const input = useRef<HTMLInputElement>(null);
+
+  const doExport = async () => {
+    setBusy('export'); setMsg(null);
+    try {
+      const b = await buildBackup();
+      const how = await saveBackup(b);
+      if (how === 'cancelled') { setMsg({ text: 'Export annulé.' }); return; }
+      setLast(b.exportedAt);
+      const n = Object.keys(b.audio).length;
+      setMsg({ text: `Sauvegarde ${how === 'shared' ? 'partagée' : 'téléchargée'}${n ? ` avec ${plural(n, 'enregistrement', 'enregistrements')}` : ''}. Gardez ce fichier hors du téléphone.` });
+    } catch {
+      setMsg({ text: 'L’export a échoué. Réessayez.', error: true });
+    } finally { setBusy(null); }
+  };
+
+  const onFile = async (f: File | undefined) => {
+    if (!f) return;
+    setMsg(null); setConfirmReplace(false);
+    try { setPending(await readBackup(f)); }
+    catch (e) { setPending(null); setMsg({ text: (e as Error).message, error: true }); }
+    finally { if (input.current) input.current.value = ''; }
+  };
+
+  const restart = () => { window.location.hash = '#/reglages'; window.location.reload(); };
+  const doMerge = async () => {
+    if (!pending) return;
+    setBusy('import');
+    try { const n = await restoreMerge(pending); setMsg({ text: `${n ? `${plural(n, 'élément ajouté', 'éléments ajoutés')}` : 'Rien de nouveau à ajouter'}. Redémarrage…` }); setTimeout(restart, 900); }
+    catch { setBusy(null); setMsg({ text: 'L’import a échoué. Vos données n’ont pas été modifiées.', error: true }); }
+  };
+  const doReplace = async () => {
+    if (!pending) return;
+    setBusy('import');
+    routine.pause();
+    try { await restoreReplace(pending); setMsg({ text: 'Données remplacées. Redémarrage…' }); setTimeout(restart, 900); }
+    catch { setBusy(null); setMsg({ text: 'L’import a échoué en cours de route. Réimportez le fichier.', error: true }); }
+  };
+
+  const sum = pending ? summarize(pending) : null;
+  const lastLabel = last ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(last)) : null;
+
+  return (
+    <div className="settings-card">
+      <div className="settings-action">
+        <span className="settings-label">Sauvegarde</span>
+        <span className="settings-help">
+          Un fichier avec toutes vos données et vos enregistrements, pour changer de téléphone ou ne rien perdre.
+          {' '}{lastLabel ? `Dernière sauvegarde : ${lastLabel}.` : 'Aucune sauvegarde pour l’instant.'}
+        </span>
+        <div className="confirm-row">
+          <button className="btn-primary" onClick={() => void doExport()} disabled={busy !== null}>{busy === 'export' ? 'Préparation…' : 'Exporter'}</button>
+          <button className="btn-outline" onClick={() => input.current?.click()} disabled={busy !== null}>Importer…</button>
+        </div>
+        <input ref={input} type="file" accept=".json,application/json" hidden onChange={e => void onFile(e.target.files?.[0])} aria-label="Fichier de sauvegarde" />
+        {msg && <p className={'backup-msg' + (msg.error ? ' error' : '')} role="status">{msg.text}</p>}
+
+        {pending && sum && busy !== 'import' && (
+          <div className="backup-import">
+            <span className="settings-label">Sauvegarde du {sum.date}</span>
+            <dl className="data-list">
+              <div><dt>Idées</dt><dd>{sum.ideas}</dd></div>
+              <div><dt>Grilles · morceaux</dt><dd>{sum.grids} · {sum.songs}</dd></div>
+              <div><dt>Setlists</dt><dd>{sum.setlists}</dd></div>
+              <div><dt>Prises vocales</dt><dd>{sum.takes}</dd></div>
+              <div><dt>Enregistrements audio</dt><dd>{sum.recordings}</dd></div>
+              <div><dt>Jours de pratique</dt><dd>{sum.days}</dd></div>
+            </dl>
+            <button className="btn-primary" onClick={() => void doMerge()}>Ajouter à mes données</button>
+            <span className="settings-help">Garde tout ce qui est sur ce téléphone et ajoute ce qui manque.</span>
+            {confirmReplace ? (
+              <>
+                <span className="settings-help warn">Tout ce qui est sur ce téléphone sera effacé et remplacé par cette sauvegarde.</span>
+                <div className="confirm-row">
+                  <button className="btn-outline" onClick={() => setConfirmReplace(false)}>Annuler</button>
+                  <button className="btn-danger" onClick={() => void doReplace()}>Tout remplacer</button>
+                </div>
+              </>
+            ) : (
+              <button className="btn-outline danger" onClick={() => setConfirmReplace(true)}>Tout remplacer…</button>
+            )}
+            <button className="btn-link" onClick={() => { setPending(null); setConfirmReplace(false); }}>Ne pas importer</button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
