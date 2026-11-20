@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Phone, StatusBar, TabBar } from '../components/Chrome';
 import { SETTINGS, TILES, type Tile } from '../lib/data';
-import { useStoredState } from '../lib/store';
+import { readStored, useStoredState } from '../lib/store';
 import './Accueil.css';
 
 function todayLabel() {
@@ -44,7 +44,8 @@ export default function Accueil() {
   const nav = useNavigate();
   const [edit, setEdit] = useState(false);
   const [removed, setRemoved] = useStoredState<string[]>('home.removed', []);
-  const tiles = TILES.filter(t => !removed.includes(t.id));
+  const metroSub = `${readStored('metro.bpm', 92)} BPM · ${readStored('metro.sig', '4/4')}`;
+  const tiles = TILES.filter(t => !removed.includes(t.id)).map(t => (t.id === 'metro' ? { ...t, sub: metroSub } : t));
 
   return (
     <Phone label="01 Accueil">

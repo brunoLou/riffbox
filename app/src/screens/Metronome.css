@@ -1,0 +1,46 @@
+.metro-sig { height: 36px; padding: 0 12px; border-radius: 18px; background: var(--surface-2); display: flex; align-items: center; font-size: 15px; font-weight: 700; color: var(--amber); }
+
+.beats { display: flex; gap: 6px; background: var(--surface-2); border-radius: 18px; padding: 8px; }
+.beat-lamp {
+  flex: 1; min-width: 0; height: 32px; border-radius: 16px; background: #2a2623; border: 1.5px solid var(--line);
+  font-family: var(--f-mono); font-size: 12px; font-weight: 700; color: var(--muted);
+  display: flex; align-items: center; justify-content: center; transition: background .06s, box-shadow .06s;
+}
+.beat-lamp.accent { border-color: var(--amber); color: var(--amber-hi); }
+.beat-lamp.lit { background: var(--led); border-color: var(--led); color: var(--ink); box-shadow: 0 0 12px var(--led); }
+.beat-lamp.accent.lit { background: var(--amber); border-color: var(--amber); box-shadow: 0 0 14px rgba(233, 162, 59, .7); }
+
+.knob-row { display: flex; align-items: center; justify-content: space-between; }
+.nudge {
+  width: 52px; height: 52px; border-radius: 26px; background: var(--surface-2); border: 1.5px solid var(--line);
+  display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700;
+}
+
+.tap {
+  position: relative; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; gap: 12px;
+  background: var(--surface-3); color: var(--cream); font-family: var(--f-display); font-weight: 900; font-size: 22px; letter-spacing: .08em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), inset 0 -3px 0 rgba(0, 0, 0, .25), 0 6px 14px rgba(0, 0, 0, .35);
+  touch-action: manipulation; user-select: none; transition: transform .06s;
+}
+.tap.hit { transform: translateY(2px); }
+.tap-switch {
+  width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #d9d4cc, #7d776f 70%);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, .25), 0 2px 4px rgba(0, 0, 0, .4);
+}
+.tap.hit .tap-switch { box-shadow: 0 0 0 3px var(--amber), 0 0 12px rgba(233, 162, 59, .6); }
+
+.sigs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.sig-chip { height: 44px; border-radius: 12px; font-family: var(--f-mono); }
+
+.seg.locked > button { opacity: .4; cursor: default; }
+
+.grooves { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.groove {
+  position: relative; height: 64px; border-radius: 14px; background: var(--surface-3); color: var(--cream);
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; padding: 8px 10px; text-align: left;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), inset 0 -3px 0 rgba(0, 0, 0, .25);
+}
+.groove.on { background: var(--amber); color: var(--ink); }
+.groove-led { position: absolute; top: 9px; right: 10px; width: 8px; height: 8px; }
+.groove-name { font-family: var(--f-display); font-weight: 900; font-size: 20px; line-height: 1; text-transform: uppercase; }
+.groove-sub { font-size: 12px; font-weight: 500; opacity: .75; }

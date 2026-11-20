@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react';
 
 const mem = new Map<string, unknown>();
 
+/** Read a stored value without subscribing (e.g. for a summary on another screen). */
+export function readStored<T>(key: string, fallback: T): T {
+  return mem.has(key) ? (mem.get(key) as T) : fallback;
+}
+
 /**
  * useState whose value survives navigating away from a screen and back
  * (in memory for the session; nothing is written to disk).

@@ -57,11 +57,6 @@ export const SceneHome = () => (
     note="Liste des setlists, détail d’un set avec titres réordonnables et « ▶ Jouer le set »." />
 );
 
-export const Metronome = () => (
-  <Stub label="03 Métronome" kicker="Outil" title="MÉTRONOME" tab={0} back="/"
-    note="Bouton rotatif BPM, tap tempo, signatures, subdivisions, accents et grooves blues shuffle, rock et funk." />
-);
-
 export const Backing = () => (
   <Stub label="07 Backing tracks" kicker="Pratiquer" title="BACKING TRACKS" tab={2} back="/pratiquer"
     note="Pistes par style et tonalité (ex. « Blues en La, 90 BPM, shuffle ») avec filtres et lecture." />

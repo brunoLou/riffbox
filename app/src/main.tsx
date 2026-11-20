@@ -7,7 +7,8 @@ import Accordeur from './screens/Accordeur';
 import Grille from './screens/Grille';
 import Gammes from './screens/Gammes';
 import Prompteur from './screens/Prompteur';
-import { Backing, ComposerHome, Idee, Metronome, PratiquerHome, SceneHome } from './screens/Stub';
+import Metronome from './screens/Metronome';
+import { Backing, ComposerHome, Idee, PratiquerHome, SceneHome } from './screens/Stub';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
