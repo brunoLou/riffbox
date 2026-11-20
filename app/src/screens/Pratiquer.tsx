@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Phone, StatusBar, TabBar } from '../components/Chrome';
 import { TRACKS } from '../lib/backing';
+import { scaleDef } from '../lib/scales';
 import { KEY_FR } from '../lib/music';
 import { GOAL_MIN, ROUTINE, ROUTINE_MIN, doneSeconds, fmtHM, routine, streak, useRoutine, week } from '../lib/routine';
 import { readStored } from '../lib/store';
@@ -50,7 +51,8 @@ export default function Pratiquer() {
   const doneMin = Math.floor(doneSeconds(r) / 60);
   const streakDays = streak(r).days;
   const started = doneSeconds(r) > 0;
-  const scaleKey = readStored('scale.key', 9), scaleMaj = readStored('scale.maj', false);
+  const scaleKey = readStored('scale.key', 9);
+  const scale = scaleDef(readStored('scale.id', readStored('scale.maj', false) ? 'pmaj' : 'pmin'));
 
   const action = r.done ? 'Recommencer la routine' : r.running ? 'Continuer · étape en cours' : started ? `▶  Reprendre · étape ${r.step + 1}/${ROUTINE.length}` : '▶  Démarrer la routine';
   const go = () => { if (r.done) routine.restart(); nav('/pratiquer/routine'); };
@@ -92,7 +94,7 @@ export default function Pratiquer() {
           <button className="prat-tool" onClick={() => nav('/pratiquer/gammes')}>
             <span className="led on prat-tool-led" />
             <span className="prat-tool-name">Gammes</span>
-            <span className="prat-tool-sub">{KEY_FR[scaleKey]} · penta {scaleMaj ? 'majeure' : 'mineure'}</span>
+            <span className="prat-tool-sub">{KEY_FR[scaleKey]} {scale.fr}</span>
           </button>
           <button className="prat-tool" onClick={() => nav('/pratiquer/accords')}>
             <span className="led on prat-tool-led" />

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Phone, StatusBar, TabBar } from '../components/Chrome';
 import { SETTINGS, TILES, type Tile } from '../lib/data';
 import { readGrids } from '../lib/grids';
+import { KEY_FR } from '../lib/music';
+import { scaleDef } from '../lib/scales';
 import { INITIAL_IDEAS } from '../lib/ideas';
 import { ROUTINE, ROUTINE_MIN, doneSeconds, streak, useRoutine } from '../lib/routine';
 import { INITIAL_SETLISTS, titlesLabel } from '../lib/setlists';
@@ -63,6 +65,7 @@ export default function Accueil() {
       : t.id === 'carnet' ? { ...t, sub: carnetSub }
         : t.id === 'setlists' ? { ...t, sub: setsSub }
         : t.id === 'grilles' ? { ...t, sub: `${nGrids} grille${nGrids > 1 ? 's' : ''}` }
+          : t.id === 'manche' ? { ...t, sub: `${scaleDef(readStored('scale.id', 'pmin')).chip} · ${KEY_FR[readStored('scale.key', 9)]}` }
           : t.id === 'routine' ? { ...t, sub: `${Math.floor(doneSeconds(r) / 60)}/${ROUTINE_MIN} min aujourd’hui`, to: '/pratiquer/routine' } : t);
   const step = ROUTINE[r.step];
   const left = Math.ceil((step.min * 60 - r.elapsed[r.step]) / 60);

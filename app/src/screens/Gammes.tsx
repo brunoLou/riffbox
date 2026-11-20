@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Phone, StatusBar, TabBar } from '../components/Chrome';
-import { KEY_FR, KEY_ORDER, NOTE_L, SCALES, STR_PC, mod12 } from '../lib/music';
-import { useStoredState } from '../lib/store';
+import { playLick, type Playback } from '../lib/audio';
+import { KEY_FR, KEY_ORDER, NOTE_L, STR_PC, mod12 } from '../lib/music';
+import { SCALE_DEFS, ivLabel, listenNotes, positions, relatedLine, scaleDef, type Box, type ScaleDef } from '../lib/scales';
+import { readStored, useStoredState } from '../lib/store';
 import { LibTabs } from './Accords';
 import './Gammes.css';
 
@@ -11,63 +13,42 @@ const STRING_LABELS = ['E', 'A', 'D', 'G', 'B', 'e'];
 
 interface Cell { dot: boolean; label: string; root: boolean; blue: boolean; inBox: boolean }
 
-/** Compute the fretboard: rows from high e (top) to low E (bottom). */
-function buildNeck(key: number, maj: boolean, blue: boolean, showInt: boolean, boxN: number) {
-  const sc = maj ? SCALES.maj : SCALES.min;
-  const ivOf = (pc: number) => mod12(pc - key);
-  // Fret of the root on the low E string, 0–11.
-  const r0 = mod12(key - 4);
-
-  // Position N: two scale notes per string starting from the N-th scale degree on low E.
-  let box: Record<number, [number, number]> | null = null;
-  if (boxN > 0) {
-    const start = r0 + sc.iv[boxN - 1] - 1;
-    let pts: [number, number][] = [];
-    STR_PC.forEach((sp, si) => {
-      let n = 0;
-      for (let f = Math.max(0, start); f < start + 8 && n < 2; f++) {
-        if (sc.iv.includes(ivOf(sp + f))) { pts.push([si, f]); n++; }
-      }
-    });
-    // Fold a box that runs off the end of the neck down an octave.
-    if (Math.max(...pts.map(p => p[1])) > LAST && Math.min(...pts.map(p => p[1])) >= 12) pts = pts.map(([s, f]) => [s, f - 12]);
-    box = {};
-    for (const [si, f] of pts) {
-      const b = box[si] || (box[si] = [99, -1]);
-      b[0] = Math.min(b[0], f); b[1] = Math.max(b[1], f);
-    }
-  }
-
+/** The fretboard, rows from high e (top) to low E (bottom); notes outside the position are dimmed. */
+function buildNeck(def: ScaleDef, key: number, blue: boolean, showInt: boolean, box: Box | null) {
   const rows = [5, 4, 3, 2, 1, 0].map(si => {
     const sp = STR_PC[si];
     const cells: Cell[] = [];
     for (let f = 0; f <= LAST; f++) {
-      const iv = ivOf(sp + f);
-      const isBlue = blue && iv === sc.blue;
-      const dot = sc.iv.includes(iv) || isBlue;
+      const iv = mod12(sp + f - key);
+      const isBlue = (blue && def.blue?.iv === iv) || (def.id === 'blues' && iv === 6);
+      const dot = def.iv.includes(iv) || isBlue;
       const inBox = !box || (!!box[si] && f >= box[si][0] && f <= box[si][1]);
       cells.push({
         dot, root: iv === 0, blue: isBlue, inBox,
-        label: dot ? (showInt ? (isBlue ? sc.blueLab : sc.lab[iv]) : NOTE_L[mod12(sp + f)]) : '',
+        label: dot ? (showInt ? (isBlue && def.blue ? def.blue.lab : ivLabel(def, iv)) : NOTE_L[mod12(sp + f)]) : '',
       });
     }
     return { si, label: STRING_LABELS[si], cells };
   });
-
-  const boxStart = box ? Math.min(...Object.values(box).map(b => b[0])) : null;
-  return { rows, boxStart };
+  return rows;
 }
 
 export default function Gammes() {
+  // First launch after the update: keep the pentatonic chosen before.
+  const [scaleId, setScaleId] = useStoredState('scale.id', readStored('scale.maj', false) ? 'pmaj' : 'pmin');
   const [key, setKey] = useStoredState('scale.key', 9);
-  const [maj, setMaj] = useStoredState('scale.maj', false);
   const [blue, setBlue] = useStoredState('scale.blue', false);
   const [showInt, setShowInt] = useStoredState('scale.int', false);
   const [boxN, setBoxN] = useStoredState('scale.box', 1);
   const neckRef = useRef<HTMLDivElement>(null);
   const firstScroll = useRef(true);
+  const player = useRef<Playback | null>(null);
 
-  const { rows, boxStart } = useMemo(() => buildNeck(key, maj, blue, showInt, boxN), [key, maj, blue, showInt, boxN]);
+  const def = scaleDef(scaleId);
+  const pos = useMemo(() => positions(def, key), [def, key]);
+  const sel = boxN > 0 ? pos[Math.min(boxN, pos.length) - 1] : null;
+  const rows = useMemo(() => buildNeck(def, key, blue, showInt, sel?.box ?? null), [def, key, blue, showInt, sel]);
+  const boxStart = sel ? Math.min(...Object.values(sel.box).map(b => b[0])) : null;
 
   // Bring the selected position into view.
   useEffect(() => {
@@ -76,10 +57,13 @@ export default function Gammes() {
     const left = boxStart == null ? 0 : Math.max(0, fretX(boxStart) - 40);
     el.scrollTo({ left, behavior: firstScroll.current ? 'auto' : 'smooth' });
     firstScroll.current = false;
-  }, [boxStart, key, maj]);
+  }, [boxStart, key, scaleId]);
+  useEffect(() => () => player.current?.stop(), []);
 
-  const relPc = maj ? mod12(key + 9) : mod12(key + 3);
-  const neckW = OPEN_W + LAST * FRET_W;
+  const listen = () => {
+    player.current?.stop();
+    player.current = playLick(listenNotes(def, key, blue), 132, () => { player.current = null; });
+  };
 
   return (
     <Phone label="06 Gammes">
@@ -98,23 +82,30 @@ export default function Gammes() {
 
         <LibTabs active={0} />
 
-        <div className="scale-types">
-          <button className={'scale-type' + (!maj ? ' on' : '')} onClick={() => setMaj(false)}>Penta mineure</button>
-          <button className={'scale-type' + (maj ? ' on' : '')} onClick={() => setMaj(true)}>Penta majeure</button>
-          <button className={'blue-btn' + (blue ? ' on' : '')} onClick={() => setBlue(!blue)} aria-pressed={blue}>
-            <span className="blue-led" />Note bleue
-          </button>
+        <div className="hscroll scale-chips" role="group" aria-label="Gamme">
+          {SCALE_DEFS.map((d, i) => (
+            <button key={d.id} className={'chip scale-chip' + (d.id === scaleId ? ' on-cream' : '') + (i > 0 && SCALE_DEFS[i - 1].group !== d.group ? ' sep' : '')}
+              onClick={() => { setScaleId(d.id); setBoxN(1); }} aria-pressed={d.id === scaleId}>{d.chip}</button>
+          ))}
         </div>
 
-        <div className="hscroll" style={{ gap: 6 }}>
+        <div className="hscroll" style={{ gap: 6 }} role="group" aria-label="Tonalité">
           {KEY_ORDER.map(pc => (
             <button key={pc} className={'chip key-chip' + (pc === key ? ' on-amber' : '')} onClick={() => setKey(pc)}>{KEY_FR[pc]}</button>
           ))}
         </div>
 
-        <div className="scale-title">
-          <span className="scale-title-main">{KEY_FR[key]}{maj ? ' penta majeure' : ' penta mineure'}</span>
-          <span>· mêmes notes que {KEY_FR[relPc]}{maj ? ' penta mineure' : ' penta majeure'}</span>
+        <div className="scale-head">
+          <div className="scale-title">
+            <span className="scale-title-main">{KEY_FR[key]} {def.fr}</span>
+            <span>· {relatedLine(def, key)}</span>
+          </div>
+          {def.blue && (
+            <button className={'blue-btn small' + (blue ? ' on' : '')} onClick={() => setBlue(!blue)} aria-pressed={blue}>
+              <span className="blue-led" />Note bleue
+            </button>
+          )}
+          <button className="scale-listen" onClick={listen} aria-label="Écouter la gamme">▶</button>
         </div>
 
         <div className="neck-wrap">
@@ -122,7 +113,7 @@ export default function Gammes() {
             {rows.map(r => <span key={r.si}>{r.label}</span>)}
           </div>
           <div className="neck-scroll" ref={neckRef}>
-            <div className="neck" style={{ width: neckW }}>
+            <div className="neck" style={{ width: OPEN_W + LAST * FRET_W }}>
               {rows.map(r => (
                 <div key={r.si} className="neck-row">
                   {r.cells.map((c, f) => (
@@ -152,9 +143,13 @@ export default function Gammes() {
           </div>
         </div>
 
-        <div className="boxes">
-          {['Tout', '1', '2', '3', '4', '5'].map((l, i) => (
-            <button key={l} className={'chip box-btn' + (i === boxN ? ' on-cream' : '')} onClick={() => setBoxN(i)}>{l}</button>
+        <div className="pos-head">
+          <span className="kicker">{def.group === 'penta' ? 'Positions' : 'Positions CAGED'}</span>
+          {sel?.shape && <span className="pos-shape">forme de l’accord en {sel.shape}</span>}
+        </div>
+        <div className="boxes" style={{ gridTemplateColumns: `auto repeat(${pos.length},minmax(0,1fr))` }}>
+          {['Tout', ...pos.map(p => p.label)].map((l, i) => (
+            <button key={l + i} className={'chip box-btn' + (i === Math.min(boxN, pos.length) ? ' on-cream' : '')} onClick={() => setBoxN(i)}>{l}</button>
           ))}
         </div>
       </div>

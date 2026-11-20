@@ -72,8 +72,3 @@ export const NOTE_L = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 
 /** Key chips order on the Gammes screen (starts on La). */
 export const KEY_ORDER = [9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8];
 
-export interface ScaleDef { iv: number[]; lab: Record<number, string>; blue: number; blueLab: string }
-export const SCALES: { min: ScaleDef; maj: ScaleDef } = {
-  min: { iv: [0, 3, 5, 7, 10], lab: { 0: '1', 3: '♭3', 5: '4', 7: '5', 10: '♭7' }, blue: 6, blueLab: '♭5' },
-  maj: { iv: [0, 2, 4, 7, 9], lab: { 0: '1', 2: '2', 4: '3', 7: '5', 9: '6' }, blue: 3, blueLab: '♭3' },
-};
