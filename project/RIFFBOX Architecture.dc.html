@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;background:#f3f0ea;color:#24211e;font-family:'Barlow',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#b46a12}a:hover{color:#7a460a}
+*{box-sizing:border-box}
+</style>
+</helmet>
+<section style="padding:64px 72px 96px;display:flex;flex-direction:column;gap:56px;min-width:1400px">
+
+  <div style="display:flex;flex-direction:column;gap:8px;max-width:820px">
+    <div style="font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.12em;color:#b46a12;text-transform:uppercase">RIFFBOX · Wireframe d'architecture</div>
+    <div style="font-family:'Space Mono',monospace;font-weight:700;font-size:40px;line-height:1.1">Comment les pages s'enchaînent</div>
+    <div style="font-size:17px;color:#5e5850;line-height:1.5;text-wrap:pretty">Chaque colonne correspond à un onglet de la barre du bas. Dans une colonne, les écrans se lisent de haut en bas et les flèches indiquent le bouton qui mène à l'écran suivant. Les étiquettes « → » signalent les liens vers un autre onglet.</div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:stretch">
+    <div style="flex:1 1 420px;border:1.5px solid #24211e;border-radius:16px;background:#fbfaf7;padding:24px;display:flex;flex-direction:column;gap:16px">
+      <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">Navigation globale</div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+        <div style="height:52px;border:1.5px solid #24211e;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700">Accueil</div>
+        <div style="height:52px;border:1.5px solid #24211e;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700">Composer</div>
+        <div style="height:52px;border:1.5px solid #24211e;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700">Pratiquer</div>
+        <div style="height:52px;border:1.5px solid #24211e;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700">Scène</div>
+      </div>
+      <div style="font-size:15px;color:#5e5850;line-height:1.5">Barre d'onglets présente sur tous les écrans, sauf le prompteur plein écran.</div>
+    </div>
+    <div style="flex:1 1 320px;border:1.5px solid #24211e;border-radius:16px;background:#fbfaf7;padding:24px;display:flex;flex-direction:column;gap:16px">
+      <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">Bouton flottant</div>
+      <div style="align-self:flex-start;height:52px;padding:0 22px;border-radius:26px;border:2px dashed #b46a12;color:#b46a12;display:flex;align-items:center;font-weight:700;font-size:17px">+ Idée</div>
+      <div style="font-size:15px;color:#5e5850;line-height:1.5">Visible partout. Ouvre la fiche de capture rapide, puis range l'idée dans le Carnet.</div>
+    </div>
+    <div style="flex:1 1 320px;border:1.5px solid #24211e;border-radius:16px;background:#fbfaf7;padding:24px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">Légende</div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:15px"><span style="width:44px;height:22px;border-radius:6px;background:#e4dfd6"></span>Contenu / zone d'affichage</div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:15px"><span style="width:44px;height:22px;border-radius:6px;border:2px dashed #b46a12"></span>Bouton d'action</div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:15px"><span style="width:44px;height:22px;border-radius:6px;background:#24211e"></span>Action principale de l'écran</div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:15px"><span style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:#b46a12;background:#f6e6cf;padding:3px 8px;border-radius:5px">→ Onglet</span>Lien vers un autre onglet</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(5,minmax(240px,1fr));gap:28px;align-items:start">
+    <sc-for list="{{ columns }}" as="col" hint-placeholder-count="5">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0">
+        <div style="width:100%;height:56px;border-radius:12px;background:{{ col.headBg }};color:{{ col.headFg }};border:1.5px solid #24211e;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:20px">
+          <span style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.75">{{ col.kicker }}</span>
+          <span style="font-weight:700;font-size:20px">{{ col.name }}</span>
+        </div>
+        <sc-for list="{{ col.screens }}" as="sc" hint-placeholder-count="3">
+          <sc-if value="{{ sc.hasVia }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;align-items:center;padding:6px 0">
+              <span style="width:2px;height:16px;background:#24211e"></span>
+              <span style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:#b46a12;background:#f3f0ea;padding:2px 6px;text-align:center">{{ sc.via }}</span>
+              <span style="width:2px;height:12px;background:#24211e"></span>
+              <span style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:9px solid #24211e"></span>
+            </div>
+          </sc-if>
+          <div style="width:220px;border:1.5px solid #24211e;border-radius:24px;background:#fbfaf7;padding:12px;display:flex;flex-direction:column;gap:7px;box-shadow:4px 4px 0 #d9d3c8">
+            <div style="display:flex;align-items:center;gap:8px;padding:0 2px 4px">
+              <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;background:#24211e;color:#fbfaf7;padding:2px 6px;border-radius:4px">{{ sc.num }}</span>
+              <span style="font-weight:700;font-size:15px;line-height:1.15">{{ sc.title }}</span>
+            </div>
+            <sc-for list="{{ sc.els }}" as="el" hint-placeholder-count="4">
+              <div style="min-height:{{ el.h }};border-radius:8px;background:{{ el.bg }};border:{{ el.bd }};color:{{ el.fg }};display:flex;align-items:center;justify-content:center;padding:4px 8px;font-size:12.5px;font-weight:{{ el.fw }};text-align:center;line-height:1.25">{{ el.label }}</div>
+            </sc-for>
+            <sc-if value="{{ sc.hasTabs }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:4px;padding-top:7px;border-top:1.5px solid #24211e">
+                <sc-for list="{{ sc.tabs }}" as="t" hint-placeholder-count="4">
+                  <span style="height:8px;border-radius:3px;background:{{ t }}"></span>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ sc.hasCross }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:2px">
+                <sc-for list="{{ sc.cross }}" as="x" hint-placeholder-count="1">
+                  <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#b46a12;background:#f6e6cf;padding:3px 7px;border-radius:5px">{{ x }}</span>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="border:1.5px solid #24211e;border-radius:16px;background:#fbfaf7;padding:28px;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">Flux clé · du riff à la scène</div>
+      <div style="font-size:15px;color:#5e5850">Cinq écrans et quatre boutons, à travers trois onglets.</div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+      <sc-for list="{{ flow }}" as="f" hint-placeholder-count="9">
+        <sc-if value="{{ f.isStep }}" hint-placeholder-val="{{ true }}">
+          <div style="width:170px;min-height:92px;border:1.5px solid #24211e;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:6px;background:#fff">
+            <span style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;color:#8a8176;text-transform:uppercase">{{ f.tab }}</span>
+            <span style="font-weight:700;font-size:16px;line-height:1.2">{{ f.label }}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ f.isArrow }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="font-family:'Space Mono',monospace;font-size:11.5px;font-weight:700;color:#b46a12;border:1.5px dashed #b46a12;border-radius:6px;padding:3px 7px;white-space:nowrap">{{ f.label }}</span>
+            <span style="font-size:20px;line-height:1">→</span>
+          </div>
+        </sc-if>
+      </sc-for>
+    </div>
+  </div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const C = (label, h) => ({ label, h: (h || 28) + 'px', bg: '#e4dfd6', bd: 'none', fg: '#5e5850', fw: 500 });
+const B = (label) => ({ label, h: '30px', bg: 'transparent', bd: '1.5px dashed #b46a12', fg: '#b46a12', fw: 700 });
+const P = (label) => ({ label, h: '34px', bg: '#24211e', bd: 'none', fg: '#fbfaf7', fw: 700 });
+const TABS = i => [0,1,2,3].map(j => j === i ? '#24211e' : '#d9d3c8');
+
+const COLS = [
+  { kicker: 'Onglet 1', name: 'Accueil', tab: 0, screens: [
+    { num: '01', title: 'Mon pedalboard', els: [C('En-tête · [Modifier]', 26), C('Carte « Reprendre »', 40), C('Série de jours', 24), C('Grille de tuiles-pédales', 90), B('+ Idée')],
+      cross: ['→ Composer', '→ Pratiquer', '→ Scène'] },
+    { via: '[Modifier]', num: '01b', title: 'Mode édition', els: [C('Tuiles déplaçables', 70), B('− Retirer une tuile'), B('+ Ajouter une pédale'), P('Terminé')] },
+    { via: 'Tuile « Accordeur »', num: '02', title: 'Accordeur', els: [C('VU-mètre à aiguille', 64), C('Note · Hz · cents', 28), C('6 cordes', 26), B('Accordages · + Perso'), B('Auto on/off')] },
+    { via: 'Tuile « Métronome »', num: '03', title: 'Métronome', els: [C('Bouton rotatif BPM', 64), B('Tap tempo'), C('Signature · subdivisions', 26), C('Grooves blues / rock / funk', 26), P('▶ Lecture')] }
+  ]},
+  { kicker: 'Onglet 2', name: 'Composer', tab: 1, screens: [
+    { num: '04', title: 'Carnet d\u2019idées', els: [C('Filtres : ton · tempo · style', 26), C('Liste des fragments', 90), P('● Enregistrer')] },
+    { via: 'Toucher une idée', num: '04b', title: 'Détail d\u2019une idée', els: [C('Forme d\u2019onde · lecture', 48), C('Tags', 24), C('Notes / paroles', 40), P('Ajouter à une grille')] },
+    { via: '[Ajouter à une grille]', num: '05', title: 'Éditeur de grille', els: [C('Sections couplet · refrain · pont', 26), C('Accords de la section', 32), C('Roue des quintes', 80), B('Transposer ½ ton'), P('▶ Boucle')],
+      cross: ['→ Scène · Ajouter à une setlist'] }
+  ]},
+  { kicker: 'Onglet 3', name: 'Pratiquer', tab: 2, screens: [
+    { num: '07a', title: 'Pratiquer', els: [C('Routine du jour', 40), P('Démarrer la routine'), B('Gammes & accords'), B('Backing tracks'), C('Progression hebdo', 36)] },
+    { via: '[Gammes & accords]', num: '06', title: 'Gammes & accords', els: [C('Mineure / majeure · note bleue', 26), C('Tonalités', 24), C('Manche horizontal', 64), B('Positions 1 à 5'), B('Notes / intervalles')] },
+    { via: '[Backing tracks]', num: '07', title: 'Backing tracks', els: [C('Filtres style · ton · BPM', 26), C('Liste de pistes', 70), P('▶ Lecture')], cross: ['→ Accueil · Métronome'] }
+  ]},
+  { kicker: 'Onglet 4', name: 'Scène', tab: 3, screens: [
+    { num: '08a', title: 'Setlists', els: [C('Liste des setlists', 90), P('+ Nouvelle setlist')] },
+    { via: 'Toucher une setlist', num: '08b', title: 'Setlist', els: [C('Titres réordonnables', 90), B('+ Ajouter un titre'), P('▶ Jouer le set')] },
+    { via: '[Jouer le set]', num: '08', title: 'Prompteur plein écran', full: true, els: [C('Titre · ton · BPM', 28), C('Accords + paroles défilants', 100), B('Transpo. · vitesse'), P('Lecture / pause'), C('Pédalier BT : préc. / suiv.', 26)] }
+  ]},
+  { kicker: 'Partout', name: '+ Idée', tab: -1, special: true, screens: [
+    { num: 'FAB', title: 'Capture rapide', sheet: true, els: [C('Fiche qui monte du bas', 26), P('● Enregistrer un riff'), C('Forme d\u2019onde en direct', 44), C('Tags rapides', 26), B('Ranger dans le carnet')], cross: ['→ Composer · Carnet'] }
+  ]}
+];
+
+const FLOW = [
+  ['s', 'Partout', 'Bouton + Idée'], ['a', 'toucher'],
+  ['s', 'Fiche', 'Capture rapide'], ['a', '[Ranger]'],
+  ['s', 'Composer', 'Carnet → idée'], ['a', '[Ajouter à une grille]'],
+  ['s', 'Composer', 'Éditeur de grille'], ['a', '[Ajouter à une setlist]'],
+  ['s', 'Scène', 'Setlist → Prompteur']
+];
+
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      columns: COLS.map(c => ({
+        kicker: c.kicker, name: c.name,
+        headBg: c.special ? '#f6e6cf' : '#24211e', headFg: c.special ? '#7a460a' : '#fbfaf7',
+        screens: c.screens.map(s => ({
+          ...s, hasVia: !!s.via, via: s.via || '',
+          hasTabs: !s.full && !s.sheet, tabs: TABS(c.tab),
+          hasCross: !!(s.cross && s.cross.length), cross: s.cross || []
+        }))
+      })),
+      flow: FLOW.map(f => f[0] === 's'
+        ? { isStep: true, isArrow: false, tab: f[1], label: f[2] }
+        : { isStep: false, isArrow: true, tab: '', label: f[1] })
+    };
+  }
+}
+</script>
+</body>
+</html>
