@@ -94,7 +94,12 @@ export default function Pratiquer() {
             <span className="prat-tool-name">Gammes</span>
             <span className="prat-tool-sub">{KEY_FR[scaleKey]} · penta {scaleMaj ? 'majeure' : 'mineure'}</span>
           </button>
-          <button className="prat-tool wood" onClick={() => nav('/pratiquer/backing')}>
+          <button className="prat-tool" onClick={() => nav('/pratiquer/accords')}>
+            <span className="led on prat-tool-led" />
+            <span className="prat-tool-name">Accords</span>
+            <span className="prat-tool-sub">17 types · formes CAGED</span>
+          </button>
+          <button className="prat-tool wood" style={{ gridColumn: 'span 2' }} onClick={() => nav('/pratiquer/backing')}>
             <span className="led prat-tool-led" />
             <span className="prat-tool-name">Backing tracks</span>
             <span className="prat-tool-sub">{TRACKS.length} pistes · blues, rock, funk</span>

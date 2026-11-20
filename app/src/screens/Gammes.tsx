@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Phone, StatusBar, TabBar } from '../components/Chrome';
 import { KEY_FR, KEY_ORDER, NOTE_L, SCALES, STR_PC, mod12 } from '../lib/music';
 import { useStoredState } from '../lib/store';
+import { LibTabs } from './Accords';
 import './Gammes.css';
 
 const OPEN_W = 34, FRET_W = 46, LAST = 17;
@@ -94,6 +95,8 @@ export default function Gammes() {
             <button className={showInt ? 'on' : ''} onClick={() => setShowInt(true)}>Intervalles</button>
           </div>
         </div>
+
+        <LibTabs active={0} />
 
         <div className="scale-types">
           <button className={'scale-type' + (!maj ? ' on' : '')} onClick={() => setMaj(false)}>Penta mineure</button>

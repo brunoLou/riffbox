@@ -1,0 +1,14 @@
+.chord-svg { display: block; overflow: visible; }
+.cd-fret { stroke: #6f665a; stroke-width: 1.5; }
+.cd-nut { stroke: var(--cream); stroke-width: 5; stroke-linecap: round; }
+.cd-string { stroke: #bdb3a0; opacity: .8; }
+.cd-pos { font: 700 13px var(--f-mono); fill: var(--tan); }
+.cd-mute { font: 700 16px var(--f-mono); fill: var(--muted); }
+.cd-mute.small { font-size: 9px; }
+.cd-open { fill: none; stroke: var(--cream); stroke-width: 1.8; }
+.cd-open.root { stroke: var(--amber); }
+.cd-dot { fill: var(--cream); }
+.cd-dot.root { fill: var(--amber); }
+.cd-barre { fill: rgba(239, 230, 210, .35); }
+.cd-label { font: 700 10px var(--f-mono); fill: var(--ink); letter-spacing: -.04em; pointer-events: none; }
+.cd-open-label { font: 700 9px var(--f-mono); fill: var(--muted-3); }

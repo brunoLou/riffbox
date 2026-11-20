@@ -110,3 +110,29 @@ export function playUrl(url: string, onEnd: () => void): Playback {
   void a.play().catch(onEnd);
   return { stop: () => { a.onended = null; a.pause(); } };
 }
+
+/** Strum a chord: plucked notes from low to high, a few milliseconds apart. */
+export function strum(notes: number[]): Playback {
+  const ac = ctx();
+  const t0 = ac.currentTime + 0.03;
+  const master = ac.createGain();
+  master.gain.value = 0.28;
+  master.connect(ac.destination);
+  notes.forEach((m, i) => {
+    const t = t0 + i * 0.035;
+    const o = ac.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.value = 440 * 2 ** ((m - 69) / 12);
+    const f = ac.createBiquadFilter();
+    f.type = 'lowpass';
+    f.frequency.setValueAtTime(3200, t);
+    f.frequency.exponentialRampToValueAtTime(700, t + 0.6);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.7, t + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 2.2);
+    o.connect(f); f.connect(g); g.connect(master);
+    o.start(t); o.stop(t + 2.3);
+  });
+  return { stop: () => master.disconnect() };
+}
