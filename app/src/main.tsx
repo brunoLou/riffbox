@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
+import './fonts';
 import './styles.css';
 import Accueil from './screens/Accueil';
 import Accordeur from './screens/Accordeur';
