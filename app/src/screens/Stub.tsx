@@ -45,12 +45,6 @@ export const PratiquerHome = () => (
     note="Routine du jour minutée (échauffement, technique, impro) et progression hebdomadaire." />
 );
 
-export const SceneHome = () => (
-  <Stub label="08a Setlists" kicker="Scène" title="SETLISTS" tab={3}
-    links={[{ title: 'Bar du Port', sub: '9 titres · 3. Minuit Shuffle', to: '/scene/prompteur' }]}
-    note="Liste des setlists, détail d’un set avec titres réordonnables et « ▶ Jouer le set »." />
-);
-
 export const Backing = () => (
   <Stub label="07 Backing tracks" kicker="Pratiquer" title="BACKING TRACKS" tab={2} back="/pratiquer"
     note="Pistes par style et tonalité (ex. « Blues en La, 90 BPM, shuffle ») avec filtres et lecture." />

@@ -30,3 +30,9 @@
   box-shadow: 0 0 0 5px #2e2a26, 0 6px 16px rgba(0, 0, 0, .5), inset 0 -4px 0 rgba(0, 0, 0, .2);
 }
 .play-btn.on { background: var(--led); }
+
+.no-lyrics { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; padding: 18px 16px; border-radius: 16px; border: 1.5px dashed var(--dash); font-size: 17px; line-height: 1.4; color: var(--muted-3); }
+.no-lyrics .mono { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--amber); }
+.up-next { margin-top: 18px; padding-top: 14px; border-top: 1px solid #2a2622; font-size: 15px; color: var(--muted-2); }
+.up-next b { color: var(--cream); }
+.page-btn:disabled, .play-btn:disabled { opacity: .35; cursor: default; }

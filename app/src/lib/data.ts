@@ -55,7 +55,6 @@ export const SONG = `{c:Couplet 1}
 [A7]Les néons tremblent au [A7]bord du quai
 [D7]Minuit shuffle, je [A7]tape du pied
 [E7]Jusqu'à l'aube [D7]on va [A7]jouer [E7]`;
-export const SONG_KEY = 9; // La
 
 export const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 

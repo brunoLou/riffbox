@@ -9,7 +9,8 @@ import Gammes from './screens/Gammes';
 import Prompteur from './screens/Prompteur';
 import Metronome from './screens/Metronome';
 import Carnet from './screens/Carnet';
-import { Backing, PratiquerHome, SceneHome } from './screens/Stub';
+import { SetlistDetail, SetlistsScreen } from './screens/Setlists';
+import { Backing, PratiquerHome } from './screens/Stub';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -25,8 +26,10 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/pratiquer" element={<PratiquerHome />} />
           <Route path="/pratiquer/gammes" element={<Gammes />} />
           <Route path="/pratiquer/backing" element={<Backing />} />
-          <Route path="/scene" element={<SceneHome />} />
-          <Route path="/scene/prompteur" element={<Prompteur />} />
+          <Route path="/scene" element={<SetlistsScreen />} />
+          <Route path="/scene/prompteur" element={<Navigate to="/scene/bar-du-port/play/2" replace />} />
+          <Route path="/scene/:setId" element={<SetlistDetail />} />
+          <Route path="/scene/:setId/play/:index" element={<Prompteur />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Phone, StatusBar, TabBar } from '../components/Chrome';
 import { SETTINGS, TILES, type Tile } from '../lib/data';
 import { INITIAL_IDEAS } from '../lib/ideas';
+import { INITIAL_SETLISTS, titlesLabel } from '../lib/setlists';
 import { readStored, useStoredState } from '../lib/store';
 import './Accueil.css';
 
@@ -47,8 +48,12 @@ export default function Accueil() {
   const [removed, setRemoved] = useStoredState<string[]>('home.removed', []);
   const metroSub = `${readStored('metro.bpm', 92)} BPM · ${readStored('metro.sig', '4/4')}`;
   const carnetSub = `${readStored('ideas', INITIAL_IDEAS).length} idées`;
+  const nextSet = [...readStored('setlists', INITIAL_SETLISTS)].filter(s => s.date >= Date.now()).sort((a, b) => a.date - b.date)[0];
+  const setsSub = nextSet ? `${nextSet.name} · ${titlesLabel(nextSet.songIds.length)}` : 'Aucun concert prévu';
   const tiles = TILES.filter(t => !removed.includes(t.id)).map(t =>
-    t.id === 'metro' ? { ...t, sub: metroSub } : t.id === 'carnet' ? { ...t, sub: carnetSub } : t);
+    t.id === 'metro' ? { ...t, sub: metroSub }
+      : t.id === 'carnet' ? { ...t, sub: carnetSub }
+        : t.id === 'setlists' ? { ...t, sub: setsSub } : t);
 
   return (
     <Phone label="01 Accueil">
