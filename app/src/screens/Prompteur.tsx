@@ -86,7 +86,7 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
   const prevOff = edges.top && !hasPrev, nextOff = edges.bottom && !hasNext;
 
   return (
-    <Phone label="08 Scène" bg="#0f0e0d" column>
+    <Phone label="08 Scène" bg="#0f0e0d" column theme="dark">
       <StatusBar stage />
       <div className="stage-head">
         <div className="stage-top">

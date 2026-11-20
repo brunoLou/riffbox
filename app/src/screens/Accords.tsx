@@ -103,7 +103,7 @@ export default function Accords() {
         </div>
 
         {v && (
-          <div className="diagram-card">
+          <div className="diagram-card" data-theme="dark">
             <div className="diagram-row">
               <button className="nav-pos" onClick={() => setIdx((idx - 1 + list.length) % list.length)} aria-label="Position précédente">‹</button>
               <div className="diagram-main">
@@ -119,7 +119,7 @@ export default function Accords() {
         )}
 
         <span className="kicker" style={{ padding: '0 4px' }}>{list.length === 5 ? 'Les 5 formes CAGED' : 'Positions'}</span>
-        <div className="hscroll thumbs">
+        <div className="hscroll thumbs" data-theme="dark">
           {list.map((x, i) => (
             <button key={i} className={'thumb' + (i === idx ? ' on' : '')} onClick={() => setIdx(i)} aria-label={`Forme de ${SHAPE_FR[x.shape]}, ${capPos(x) ? 'case ' + capPos(x) : 'position ouverte'}`}>
               <ChordDiagram v={x} root={root} type={type} size="small" />
@@ -129,7 +129,7 @@ export default function Accords() {
         </div>
 
         <span className="kicker" style={{ padding: '0 4px' }}>Sur le manche</span>
-        <div className="neck-wrap">
+        <div className="neck-wrap" data-theme="dark">
           <div className="neck-strings">
             {[5, 4, 3, 2, 1, 0].map(s => <span key={s}>{STRING_LABELS[s]}</span>)}
           </div>

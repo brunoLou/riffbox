@@ -1,4 +1,4 @@
-.metro-sig { height: 36px; padding: 0 12px; border-radius: 18px; background: var(--surface-2); display: flex; align-items: center; font-size: 15px; font-weight: 700; color: var(--amber); }
+.metro-sig { height: 36px; padding: 0 12px; border-radius: 18px; background: var(--surface-2); display: flex; align-items: center; font-size: 15px; font-weight: 700; color: var(--accent-text); }
 
 .beats { display: flex; gap: 6px; background: var(--surface-2); border-radius: 18px; padding: 8px; }
 .beat-lamp {

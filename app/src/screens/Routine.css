@@ -5,8 +5,8 @@
   width: 100%; height: 100%; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
   background: radial-gradient(circle at 40% 35%, #3a332e, #171513); box-shadow: 0 0 0 3px #2e2925, inset 0 2px 0 rgba(255, 255, 255, .08);
 }
-.rring-name { font-family: var(--f-display); font-weight: 900; font-size: 24px; text-transform: uppercase; color: var(--amber); letter-spacing: .03em; }
-.rring.done .rring-name { color: var(--led); }
+.rring-name { font-family: var(--f-display); font-weight: 900; font-size: 24px; text-transform: uppercase; color: var(--accent-text); letter-spacing: .03em; }
+.rring.done .rring-name { color: var(--led-text); }
 .rring-time { font-family: var(--f-display); font-weight: 900; font-size: 64px; line-height: .9; color: var(--cream); font-variant-numeric: tabular-nums; }
 .rring-sub { font-size: 12px; color: var(--muted); }
 

@@ -1,7 +1,7 @@
-.roll { display: block; border-radius: 14px; background: #0f0e0d; }
+.roll { display: block; border-radius: 14px; background: var(--well); }
 .roll-row { fill: transparent; }
 .roll-row.sharp { fill: rgba(255, 255, 255, .025); }
-.roll-label { font: 700 9px var(--f-mono); fill: #6f665a; }
+.roll-label { font: 700 9px var(--f-mono); fill: var(--faint); }
 .roll-label.c { fill: var(--tan); }
 .roll-note { fill: rgba(233, 162, 59, .22); stroke: rgba(233, 162, 59, .55); stroke-width: 1; }
 .roll-note.on { fill: rgba(233, 162, 59, .45); stroke: var(--amber); }
@@ -11,4 +11,4 @@
 .roll-voice { stroke-width: 3.5; stroke-linecap: round; }
 .roll-now { stroke: var(--cream); stroke-width: 1.5; stroke-dasharray: 3 4; opacity: .55; }
 .roll-now.play { stroke: var(--amber); opacity: .9; stroke-dasharray: none; }
-.roll-dot { stroke: #0f0e0d; stroke-width: 2; }
+.roll-dot { stroke: var(--well); stroke-width: 2; }

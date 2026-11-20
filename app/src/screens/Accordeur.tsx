@@ -134,7 +134,7 @@ export default function Accordeur() {
             {mic === 'on' ? (
               <>
                 <span className="mono readout-hz">{reading ? `${reading.hz.toFixed(1)} Hz` : 'Jouez une corde'}</span>
-                <span className="mono readout-cents" style={{ color: !reading ? 'var(--muted)' : inTune ? 'var(--led)' : 'var(--amber)' }}>
+                <span className="mono readout-cents" style={{ color: !reading ? 'var(--muted)' : inTune ? 'var(--led-text)' : 'var(--accent-text)' }}>
                   {!reading ? '— ct' : `${rc > 0 ? '+' : ''}${rc} ct${Math.abs(rc) > 50 ? (rc > 0 ? ' ↓' : ' ↑') : ''}`}
                 </span>
               </>

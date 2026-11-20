@@ -1,4 +1,10 @@
-:root {
+/*
+ * Theme tokens. Dark is the default; [data-theme] on <html> picks the theme, and an element can
+ * force one for its subtree (the stage prompter always stays dark).
+ * --cream is the foreground (text, selected fills) and --on-cream the text on it; --ink stays
+ * dark for text on amber/green fills; --paper stays cream for physical parts (neck, knobs, dials).
+ */
+:root, [data-theme='dark'] {
   --canvas: #11100f;
   --surface: #1a1816;
   --surface-2: #25221f;
@@ -7,15 +13,72 @@
   --line-2: #4a443d;
   --dash: #5a524a;
   --cream: #efe6d2;
+  --on-cream: #1a1816;
   --ink: #1a1816;
+  --paper: #efe6d2;
   --amber: #e9a23b;
   --amber-hi: #f6c977;
+  --accent-text: #e9a23b;
   --led: #62d98a;
+  --led-text: #62d98a;
   --led-off: #3d3833;
   --muted: #8f8573;
   --muted-2: #a89e8a;
   --muted-3: #b8ad98;
   --tan: #c9a878;
+  --faint: #6f665a;
+  --card-border: #34302b;
+  --panel: #1f1c1a;
+  --panel-border: #322e2a;
+  --well: #0f0e0d;
+  --hint-bg: #2a1f17;
+  --wood-1: #3b2a1d;
+  --wood-2: #2a1e15;
+  --wood-border: #5a3f26;
+  --warn: #f08a63;
+  --bar-dim: #8a6a3e;
+  --acc-good: #62d98a;
+  --acc-close: #e9a23b;
+  --acc-off: #e0603a;
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  --canvas: #e7e0d4;
+  --surface: #f6f1e8;
+  --surface-2: #fffcf6;
+  --surface-3: #ece5d8;
+  --line: #ddd4c4;
+  --line-2: #c8bba6;
+  --dash: #b9ab95;
+  --cream: #241f1a;
+  --on-cream: #fbf8f2;
+  --amber-hi: #9a5a08;
+  --accent-text: #a5600a;
+  --led-text: #1d8a4b;
+  --led-off: #d3c9b8;
+  --muted: #8b7f6c;
+  --muted-2: #6e6352;
+  --muted-3: #5a4f40;
+  --tan: #8a6a3e;
+  --faint: #a59884;
+  --card-border: #e4dbcc;
+  --panel: #fbf7f0;
+  --panel-border: #e0d6c6;
+  --well: #ece5d9;
+  --hint-bg: #fbecd6;
+  --wood-1: #f3e1c5;
+  --wood-2: #ead2ad;
+  --wood-border: #d9b585;
+  --warn: #b4471f;
+  --bar-dim: #e0c08f;
+  --acc-good: #1d8a4b;
+  --acc-close: #b86e0c;
+  --acc-off: #c2451c;
+  color-scheme: light;
+}
+
+:root {
   --f-display: 'Big Shoulders Display', sans-serif;
   --f-body: 'Barlow', sans-serif;
   --f-mono: 'Space Mono', monospace;
@@ -23,7 +86,9 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--canvas); color: var(--cream); font-family: var(--f-body); -webkit-font-smoothing: antialiased; }
-a { color: var(--amber); }
+/* A forced theme subtree takes its own text colour. */
+[data-theme] { color: var(--cream); }
+a { color: var(--accent-text); }
 a:hover { color: var(--amber-hi); }
 ::-webkit-scrollbar { width: 0; height: 0; }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -54,8 +119,9 @@ button:focus-visible, a:focus-visible, [role='button']:focus-visible { outline: 
 
 /* ---------- Tab bar ---------- */
 .tabbar {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 88px; background: #1f1c1a;
-  border-top: 1px solid #322e2a; display: grid; grid-template-columns: repeat(4, 1fr); padding: 0 8px 24px;
+  position: absolute; left: 0; right: 0; bottom: 0; height: 88px; background: var(--panel);
+  border-top: 1px solid var(--panel-border); display: grid; grid-template-columns: repeat(4, 1fr); padding: 0 8px 24px;
+  z-index: 4; /* above scrolling content that sets its own z-index (chart labels, lifted tiles) */
 }
 .tab {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
@@ -63,7 +129,7 @@ button:focus-visible, a:focus-visible, [role='button']:focus-visible { outline: 
 }
 .tab:hover { color: var(--muted-3); }
 .tab::before { content: ''; width: 22px; height: 4px; border-radius: 2px; background: var(--line); }
-.tab.on, .tab.on:hover { color: var(--amber); font-weight: 700; }
+.tab.on, .tab.on:hover { color: var(--accent-text); font-weight: 700; }
 .tab.on::before { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
 
 /* ---------- Shared bits ---------- */
@@ -85,7 +151,7 @@ button:focus-visible, a:focus-visible, [role='button']:focus-visible { outline: 
 /* Segmented control on a dark track */
 .seg { display: grid; gap: 6px; background: var(--surface-2); border-radius: 14px; padding: 4px; }
 .seg > button { height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; color: var(--muted-3); }
-.seg > button.on { background: var(--cream); color: var(--ink); }
+.seg > button.on { background: var(--cream); color: var(--on-cream); }
 
 /* Chip / pill with border */
 .chip {
@@ -93,7 +159,7 @@ button:focus-visible, a:focus-visible, [role='button']:focus-visible { outline: 
   white-space: nowrap; background: var(--surface-2); color: var(--cream); border: 1.5px solid var(--line);
   transition: background .15s;
 }
-.chip.on-cream { background: var(--cream); color: var(--ink); border-color: var(--cream); }
+.chip.on-cream { background: var(--cream); color: var(--on-cream); border-color: var(--cream); }
 .chip.on-amber { background: var(--amber); color: var(--ink); border-color: var(--amber); }
 
 .cta {

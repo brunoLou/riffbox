@@ -108,7 +108,7 @@ export default function Gammes() {
           <button className="scale-listen" onClick={listen} aria-label="Écouter la gamme">▶</button>
         </div>
 
-        <div className="neck-wrap">
+        <div className="neck-wrap" data-theme="dark">
           <div className="neck-strings">
             {rows.map(r => <span key={r.si}>{r.label}</span>)}
           </div>

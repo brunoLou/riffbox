@@ -29,7 +29,7 @@
   position: absolute; border-radius: 50%; background: #2a2623; color: var(--muted); border: 1.5px solid var(--line);
   display: flex; flex-direction: column; align-items: center; justify-content: center; transition: background .15s, box-shadow .15s;
 }
-.wheel-chord.lit-maj { background: var(--cream); color: var(--ink); border-color: var(--cream); }
+.wheel-chord.lit-maj { background: var(--paper); color: var(--ink); border-color: var(--paper); }
 .wheel-chord.lit-min { background: #3e342a; color: var(--amber-hi); border-color: var(--amber); }
 .wheel-chord.tonic { background: var(--amber); color: var(--ink); border-color: var(--amber); box-shadow: 0 0 16px rgba(233, 162, 59, .55); }
 .wc-name { font-family: var(--f-mono); font-weight: 700; line-height: 1; }
@@ -52,19 +52,19 @@
 
 .sheet-backdrop { position: absolute; inset: 0; background: rgba(10, 9, 8, .55); z-index: 5; display: flex; align-items: flex-end; }
 .set-sheet {
-  width: 100%; padding: 16px 18px 30px; background: #1f1c1a; border-top: 1px solid #322e2a; border-radius: 24px 24px 0 0;
+  width: 100%; padding: 16px 18px 30px; background: var(--panel); border-top: 1px solid var(--panel-border); border-radius: 24px 24px 0 0;
   display: flex; flex-direction: column; gap: 8px; animation: rec-up .2s ease-out; box-shadow: 0 -16px 32px rgba(0, 0, 0, .45);
 }
 .set-sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-.in-set { flex: none; font-size: 13px; font-weight: 700; color: var(--led); }
+.in-set { flex: none; font-size: 13px; font-weight: 700; color: var(--led-text); }
 
 .grid-head { min-width: 0; text-align: left; padding: 0; }
-.grid-kicker { color: var(--amber); white-space: nowrap; }
+.grid-kicker { color: var(--accent-text); white-space: nowrap; }
 .grid-title { font-size: 24px; letter-spacing: .03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; max-width: 170px; }
 .slots-empty { display: flex; align-items: center; height: 64px; padding: 0 14px; border-radius: 12px; border: 1.5px dashed var(--line-2); color: var(--muted-3); font-size: 14px; white-space: nowrap; }
 .cta:disabled { opacity: .45; cursor: default; }
 
-.sheet-kicker { color: var(--amber); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sheet-kicker { color: var(--accent-text); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sheet-empty { margin: 0; font-size: 14px; line-height: 1.4; color: var(--muted-3); }
 .sheet-field { display: flex; flex-direction: column; gap: 6px; padding: 4px 0; }
 .sheet-field > span { font-size: 13px; font-weight: 600; color: var(--muted-2); }

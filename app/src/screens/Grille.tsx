@@ -164,7 +164,7 @@ function Grille({ id }: { id: string }) {
           <button className={mode === 'key' ? 'on' : ''} onClick={() => setMode('key')}>Changer de ton</button>
         </div>
 
-        <div className="wheel">
+        <div className="wheel" data-theme="dark">
           {OUT_PC.map((pc, i) => {
             const a = ((i * 30 - 90) * Math.PI) / 180;
             return ([

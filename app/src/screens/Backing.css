@@ -7,9 +7,9 @@
 
 .track {
   display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 10px 14px 10px 10px;
-  background: var(--surface-2); border: 1px solid #34302b; border-radius: 18px;
+  background: var(--surface-2); border: 1px solid var(--card-border); border-radius: 18px;
 }
-.track.sel { border-color: var(--amber); background: linear-gradient(#3b2a1d, #2a1e15); }
+.track.sel { border-color: var(--amber); background: linear-gradient(var(--wood-1), var(--wood-2)); }
 .track-play {
   flex: none; width: 52px; height: 52px; border-radius: 50%; background: var(--amber); color: var(--ink);
   display: flex; align-items: center; justify-content: center; font-size: 16px;
@@ -23,12 +23,12 @@
 .track-bpm { font-size: 12px; color: var(--muted-3); }
 
 .player {
-  position: absolute; left: 0; right: 0; bottom: 88px; padding: 14px 18px 16px; background: #1f1c1a;
-  border-top: 1px solid #322e2a; border-radius: 24px 24px 0 0; box-shadow: 0 -16px 32px rgba(0, 0, 0, .45);
+  position: absolute; left: 0; right: 0; bottom: 88px; padding: 14px 18px 16px; background: var(--panel);
+  border-top: 1px solid var(--panel-border); border-radius: 24px 24px 0 0; box-shadow: 0 -16px 32px rgba(0, 0, 0, .45);
   display: flex; flex-direction: column; gap: 12px; animation: rec-up .2s ease-out;
 }
 .player-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.player-kicker { display: flex; align-items: center; gap: 8px; min-width: 0; font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--amber); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player-kicker { display: flex; align-items: center; gap: 8px; min-width: 0; font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .player-close { flex: none; width: 44px; height: 44px; margin: -8px -8px -8px 0; border-radius: 22px; color: var(--muted-3); font-size: 18px; }
 
 .player-now { display: flex; align-items: center; gap: 14px; }

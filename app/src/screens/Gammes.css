@@ -4,7 +4,7 @@
 
 .scale-types { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; }
 .scale-type { height: 44px; border-radius: 12px; background: var(--surface-2); color: var(--muted-3); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
-.scale-type.on { background: var(--cream); color: var(--ink); }
+.scale-type.on { background: var(--cream); color: var(--on-cream); }
 .blue-btn {
   height: 44px; padding: 0 12px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface-2);
   color: var(--cream); display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; white-space: nowrap;
@@ -28,7 +28,7 @@
 .fret.open { border-right: 4px solid #e8dcc2; background: rgba(0, 0, 0, .25); }
 .wire { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); background: #bdb3a0; opacity: .75; }
 .dot {
-  position: relative; width: 24px; height: 24px; border-radius: 50%; background: var(--cream); color: var(--ink);
+  position: relative; width: 24px; height: 24px; border-radius: 50%; background: var(--cream); color: var(--on-cream);
   display: flex; align-items: center; justify-content: center; font-family: var(--f-mono); font-size: 10px; font-weight: 700;
   letter-spacing: -.04em; transition: opacity .15s;
 }
@@ -42,7 +42,7 @@
 
 .scale-chips { gap: 6px; }
 .scale-chip { height: 40px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: var(--muted-3); }
-.scale-chip.on-cream { color: var(--ink); }
+.scale-chip.on-cream { color: var(--on-cream); }
 .scale-chip.sep { margin-left: 8px; }
 .scale-head { display: flex; align-items: center; gap: 8px; }
 .scale-head .scale-title { flex: 1; min-width: 0; }

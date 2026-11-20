@@ -42,7 +42,7 @@ export default function Capo() {
         </div>
 
         <div className="capo-best">
-          <span className="kicker" style={{ color: 'var(--amber)' }}>Le plus simple</span>
+          <span className="kicker" style={{ color: 'var(--accent-text)' }}>Le plus simple</span>
           <b className="display">{best.capo ? `CAPO ${best.capo}` : 'SANS CAPO'}</b>
           <span>Jouez en formes de <b>{best.label}</b> : {shapeChords(best.shapes, minor).join(' · ')}</span>
         </div>

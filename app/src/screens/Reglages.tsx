@@ -5,6 +5,7 @@ import {
 } from '../lib/backup';
 import { blobsBytes, clearBlobs } from '../lib/blobs';
 import { SETTINGS } from '../lib/data';
+import { THEME_KEY, applyTheme, type ThemePref } from '../lib/theme';
 import { INITIAL_GRIDS, type Grid } from '../lib/grids';
 import { INITIAL_IDEAS, type Idea } from '../lib/ideas';
 import { clearDemoPractice, demoPractice, routine } from '../lib/routine';
@@ -23,6 +24,7 @@ const plural = (n: number, one: string, many: string) => `${n} ${n > 1 ? many : 
 export default function Reglages() {
   const [showStreak, setShowStreak] = useStoredState(SETTINGS.showStreak.key, SETTINGS.showStreak.def);
   const [fontSize, setFontSize] = useStoredState(SETTINGS.stageFontSize.key, SETTINGS.stageFontSize.def);
+  const [theme, setTheme] = useStoredState<ThemePref>(THEME_KEY, 'dark');
   const [, refresh] = useState(0);
   const [confirming, setConfirming] = useState(false);
   const [audioBytes, setAudioBytes] = useState(0);
@@ -94,6 +96,15 @@ export default function Reglages() {
 
         <span className="kicker settings-section">Affichage</span>
         <div className="settings-card">
+          <div className="settings-row col">
+            <span className="settings-label">Thème</span>
+            <div className="seg" style={{ gridTemplateColumns: 'repeat(3,minmax(0,1fr))' }} role="group" aria-label="Thème">
+              {([['dark', 'Sombre'], ['light', 'Clair'], ['auto', 'Automatique']] as const).map(([v, l]) => (
+                <button key={v} className={theme === v ? 'on' : ''} aria-pressed={theme === v} onClick={() => { setTheme(v); applyTheme(v); }}>{l}</button>
+              ))}
+            </div>
+            <span className="settings-help">Automatique suit le réglage du téléphone. Le prompteur de scène reste toujours sombre.</span>
+          </div>
           <button className="settings-row" onClick={() => setShowStreak(!showStreak)} aria-pressed={showStreak}>
             <span className="settings-label">Série de jours sur l’accueil</span>
             <span className={'switch' + (showStreak ? ' on' : '')}><span /></span>

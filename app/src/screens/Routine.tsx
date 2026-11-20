@@ -25,7 +25,7 @@ export default function Routine() {
           </div>
         </div>
 
-        <div className={'rring' + (r.done ? ' done' : '') + (r.running ? ' running' : '')}
+        <div data-theme="dark" className={'rring' + (r.done ? ' done' : '') + (r.running ? ' running' : '')}
           style={{ background: `conic-gradient(${r.done ? 'var(--led)' : 'var(--amber)'} 0turn ${frac}turn, #3a3530 ${frac}turn 1turn)` }}>
           <div className="rring-cap">
             <span className="rring-name">{r.done ? 'Bravo' : step.name}</span>

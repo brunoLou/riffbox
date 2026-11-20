@@ -70,9 +70,9 @@ export function PitchRoll({ lo, hi, height, window: win, now, playhead, targets 
           </g>
         );
       })}
-      {segs.map((s, i) => <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} stroke={s.c} className="roll-voice" />)}
+      {segs.map((s, i) => <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} style={{ stroke: s.c }} className="roll-voice" />)}
       {now !== undefined && <line x1={x(now)} x2={x(now)} y1={0} y2={height} className="roll-now" />}
-      {now !== undefined && lastDot && <circle cx={lastDot.x} cy={lastDot.y} r={5.5} fill={lastDot.c} className="roll-dot" />}
+      {now !== undefined && lastDot && <circle cx={lastDot.x} cy={lastDot.y} r={5.5} style={{ fill: lastDot.c }} className="roll-dot" />}
       {playhead !== undefined && <line x1={x(playhead)} x2={x(playhead)} y1={0} y2={height} className="roll-now play" />}
     </svg>
   );

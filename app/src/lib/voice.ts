@@ -21,7 +21,8 @@ export const foldTo = (m: number, ref: number) => m - 12 * Math.round((m - ref) 
 export type Accuracy = 'good' | 'close' | 'off';
 export const accuracy = (cents: number, tol: number): Accuracy =>
   Math.abs(cents) <= tol ? 'good' : Math.abs(cents) <= tol * 2 ? 'close' : 'off';
-export const ACC_COLOR: Record<Accuracy, string> = { good: '#62d98a', close: '#e9a23b', off: '#e0603a' };
+/** Theme-aware (darker on the light theme); use in style props, not SVG presentation attributes. */
+export const ACC_COLOR: Record<Accuracy, string> = { good: 'var(--acc-good)', close: 'var(--acc-close)', off: 'var(--acc-off)' };
 export const TOL = { key: 'voice.tol', def: 25, min: 5, max: 50, step: 5 };
 
 /* ---------- Range (tessiture) ---------- */

@@ -2,10 +2,10 @@ import type { CSSProperties, ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 /** The 390×844 device. Full-bleed on real phones, framed on desktop. */
-export function Phone({ children, bg, column, label }: { children: ReactNode; bg?: string; column?: boolean; label: string }) {
+export function Phone({ children, bg, column, label, theme }: { children: ReactNode; bg?: string; column?: boolean; label: string; theme?: 'dark' | 'light' }) {
   const style: CSSProperties = { background: bg };
   return (
-    <div className={'phone' + (column ? ' phone-col' : '')} style={style} data-screen-label={label}>
+    <div className={'phone' + (column ? ' phone-col' : '')} style={style} data-screen-label={label} data-theme={theme}>
       {children}
     </div>
   );

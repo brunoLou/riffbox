@@ -29,6 +29,7 @@ export function TempoKnob({ value, min, max, onChange }: { value: number; min: n
     <div
       ref={ref}
       className="tknob"
+      data-theme="dark"
       role="slider"
       tabIndex={0}
       aria-label="Tempo"

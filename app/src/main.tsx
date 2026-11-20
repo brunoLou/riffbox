@@ -4,6 +4,7 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import './fonts';
 import './styles.css';
 import { requestPersistence } from './lib/store';
+import { initTheme } from './lib/theme';
 import Accueil from './screens/Accueil';
 import Accordeur from './screens/Accordeur';
 import Grille from './screens/Grille';
@@ -24,6 +25,7 @@ import Backing from './screens/Backing';
 import Reglages from './screens/Reglages';
 
 requestPersistence();
+initTheme();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
