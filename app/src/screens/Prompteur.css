@@ -2,7 +2,10 @@
 .stage-top { display: flex; align-items: center; justify-content: space-between; }
 .stage-back, .stage-back:hover { font-size: 14px; font-weight: 600; color: var(--muted-2); text-decoration: none; }
 .stage-pedal { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted-2); }
-.stage-pedal span { width: 9px; height: 9px; border-radius: 50%; background: var(--led); box-shadow: 0 0 8px var(--led); }
+.stage-pedal span { width: 9px; height: 9px; border-radius: 50%; background: var(--muted-3); transition: transform .12s, box-shadow .12s; }
+.stage-pedal.seen span { background: var(--led); box-shadow: 0 0 8px var(--led); }
+.stage-pedal.flash span { background: var(--led); box-shadow: 0 0 16px 3px var(--led); transform: scale(1.5); }
+.stage-sleep { color: var(--muted-2); font-weight: 500; border: 1px dashed var(--muted-3); background: transparent; }
 .stage-title { font-size: 40px; letter-spacing: .03em; }
 .stage-tags { display: flex; gap: 8px; flex-wrap: wrap; }
 .stage-tag { height: 30px; padding: 0 12px; border-radius: 15px; background: var(--surface-3); display: flex; align-items: center; font-size: 14px; font-weight: 600; }

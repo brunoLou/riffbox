@@ -5,10 +5,18 @@ import { SETTINGS, SPEEDS } from '../lib/data';
 import { parseChordPro } from '../lib/music';
 import { INITIAL_SETLISTS, songById, songKey, type Setlist, type Song } from '../lib/setlists';
 import { readStored, useStoredState } from '../lib/store';
+import { useWakeLock } from '../lib/wakeLock';
 import './Prompteur.css';
 
 /** Auto-scroll rate at 1×, in px per ms (0.8 px every 30 ms in the prototype). */
 const BASE_RATE = 0.8 / 30;
+
+/**
+ * A web page cannot see which Bluetooth devices are connected, only the keys they send.
+ * So the pedal counts as detected after its first press, for the rest of the visit
+ * (module scope: survives changing song, not a reload).
+ */
+let pedalSeen = false;
 
 /** Route wrapper: /scene/:setId/play/:index. Remounts per song so per-song state resets. */
 export default function PrompteurRoute() {
@@ -26,6 +34,9 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
   const [speed, setSpeed] = useStoredState('stage.speed', 2);
   const [playing, setPlaying] = useState(false);
   const [edges, setEdges] = useState({ top: true, bottom: false });
+  const [pedal, setPedal] = useState(pedalSeen);
+  const [flash, setFlash] = useState(0);
+  const wake = useWakeLock();
   const scrollRef = useRef<HTMLDivElement>(null);
   const pos = useRef(0);
 
@@ -76,10 +87,21 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
       if (['ArrowRight', 'ArrowDown', 'PageDown'].includes(e.key)) { e.preventDefault(); page(1); }
       else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); page(-1); }
       else if (e.key === ' ') { e.preventDefault(); setPlaying(p => !p); }
+      else return;
+      pedalSeen = true;
+      setPedal(true);
+      setFlash(f => f + 1);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [page]);
+
+  // Blink the pedal light briefly on each press.
+  useEffect(() => {
+    if (!flash) return;
+    const t = setTimeout(() => setFlash(0), 220);
+    return () => clearTimeout(t);
+  }, [flash]);
 
   const prevLabel = edges.top ? '‹ Titre préc.' : '‹ Précédent';
   const nextLabel = edges.bottom ? 'Titre suivant ›' : 'Suivant ›';
@@ -88,10 +110,16 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
   return (
     <Phone label="08 Scène" bg="#0f0e0d" column theme="dark">
       <StatusBar stage />
-      <div className="stage-head">
+      <div className="stage-head" data-wakelock={wake}>
         <div className="stage-top">
           <Link to={`/scene/${set.id}`} className="stage-back">‹ {set.name} · {index + 1}/{total}</Link>
-          <div className="stage-pedal"><span />Pédalier connecté</div>
+          <div
+            className={'stage-pedal' + (pedal ? ' seen' : '') + (flash ? ' flash' : '')}
+            role="status"
+            title={pedal ? 'Le pédalier répond.' : 'Appuyez sur une pédale pour vérifier qu’elle est reconnue.'}
+          >
+            <span />{pedal ? 'Pédalier détecté' : 'Pédalier : appuyez'}
+          </div>
         </div>
         <div className="display stage-title">{song.title.toUpperCase()}</div>
         <div className="stage-tags">
@@ -99,6 +127,13 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
           <span className="stage-tag">{song.bpm} BPM · {song.feel}</span>
           <span className="stage-tag">Capo {song.capo}</span>
           <Link to={`/scene/morceau/${song.id}`} className="stage-tag stage-edit" aria-label="Modifier le morceau">✎</Link>
+          {wake !== 'on' && (
+            <span className="stage-tag stage-sleep" title={wake === 'unsupported'
+              ? 'Ce navigateur ne sait pas empêcher la mise en veille : allongez le délai de veille du téléphone.'
+              : 'La mise en veille n’est pas encore bloquée : touchez l’écran.'}>
+              Veille possible
+            </span>
+          )}
         </div>
       </div>
 
