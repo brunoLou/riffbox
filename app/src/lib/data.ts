@@ -24,7 +24,7 @@ export const TILES: Tile[] = [
   { id: 'tuner', name: 'Accordeur', sub: 'Chromatique · Standard', bg: '#efe6d2', fg: '#1a1816', on: true, a: -40, b: 60, to: '/accordeur' },
   { id: 'metro', name: 'Métronome', sub: '92 BPM · 4/4', bg: '#e9a23b', fg: '#1a1816', on: true, a: 20, b: -70, to: '/metronome' },
   { id: 'carnet', name: 'Carnet', sub: '14 idées', bg: '#2c2825', fg: '#efe6d2', a: 90, b: -10, to: '/composer' },
-  { id: 'grilles', name: 'Grilles', sub: '6 progressions', bg: '#2c2825', fg: '#efe6d2', a: -100, b: 30, to: '/composer/grille' },
+  { id: 'grilles', name: 'Grilles', sub: '3 grilles', bg: '#2c2825', fg: '#efe6d2', a: -100, b: 30, to: '/composer/grilles' },
   { id: 'backing', name: 'Backing tracks', sub: 'Blues en La · shuffle 90', bg: '#4a3020', fg: '#efe6d2', on: true, a: 45, b: -45, wide: true, to: '/pratiquer/backing' },
   { id: 'manche', name: 'Manche', sub: 'Penta mineure · La', bg: '#2c2825', fg: '#efe6d2', a: 0, b: 120, to: '/pratiquer/gammes' },
   { id: 'routine', name: 'Routine', sub: '25 min aujourd’hui', bg: '#2c2825', fg: '#efe6d2', a: -60, b: 80, to: '/pratiquer' },
@@ -58,11 +58,8 @@ export const SONG = `{c:Couplet 1}
 
 export const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
-export const GRID_SECTIONS = ['Couplet', 'Refrain', 'Pont'];
 export const GRID_INITIAL: Chord[][] = [
   [{ pc: 9 }, { pc: 2 }, { pc: 9 }, { pc: 4 }],
   [{ pc: 2 }, { pc: 9 }, { pc: 4 }, { pc: 9 }],
   [{ pc: 6, m: true }, { pc: 2 }, { pc: 11, m: true }, { pc: 4 }],
 ];
-/** One 4/4 bar at 92 BPM. */
-export const GRID_BAR_MS = 2609;

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Phone, StatusBar, TabBar } from '../components/Chrome';
 import { SETTINGS, TILES, type Tile } from '../lib/data';
+import { readGrids } from '../lib/grids';
 import { INITIAL_IDEAS } from '../lib/ideas';
 import { ROUTINE, ROUTINE_MIN, doneSeconds, streak, useRoutine } from '../lib/routine';
 import { INITIAL_SETLISTS, titlesLabel } from '../lib/setlists';
@@ -51,7 +52,9 @@ export default function Accueil() {
   const showStreak = readStored(SETTINGS.showStreak.key, SETTINGS.showStreak.def);
   const st = streak(r);
   const metroSub = `${readStored('metro.bpm', 92)} BPM · ${readStored('metro.sig', '4/4')}`;
-  const nIdeas = readStored('ideas', INITIAL_IDEAS).length;
+  const nGrids = readGrids().length;
+  // Same count as the notebook header: ideas and grids.
+  const nIdeas = readStored('ideas', INITIAL_IDEAS).length + nGrids;
   const carnetSub = `${nIdeas} idée${nIdeas > 1 ? 's' : ''}`;
   const nextSet = [...readStored('setlists', INITIAL_SETLISTS)].filter(s => s.date >= Date.now()).sort((a, b) => a.date - b.date)[0];
   const setsSub = nextSet ? `${nextSet.name} · ${titlesLabel(nextSet.songIds.length)}` : 'Aucun concert prévu';
@@ -59,6 +62,7 @@ export default function Accueil() {
     t.id === 'metro' ? { ...t, sub: metroSub }
       : t.id === 'carnet' ? { ...t, sub: carnetSub }
         : t.id === 'setlists' ? { ...t, sub: setsSub }
+        : t.id === 'grilles' ? { ...t, sub: `${nGrids} grille${nGrids > 1 ? 's' : ''}` }
           : t.id === 'routine' ? { ...t, sub: `${Math.floor(doneSeconds(r) / 60)}/${ROUTINE_MIN} min aujourd’hui`, to: '/pratiquer/routine' } : t);
   const step = ROUTINE[r.step];
   const left = Math.ceil((step.min * 60 - r.elapsed[r.step]) / 60);

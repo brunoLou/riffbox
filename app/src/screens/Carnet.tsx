@@ -4,7 +4,11 @@ import { Phone, StatusBar, TabBar } from '../components/Chrome';
 import { playLick, playUrl, startRecording, type Playback, type Recording } from '../lib/audio';
 import { INITIAL_IDEAS, KIND_LABEL, MOODS, STYLES, keyLabel, mmss, relativeDay, type Idea, type IdeaKind } from '../lib/ideas';
 import { deleteBlob, getBlob, putBlob } from '../lib/blobs';
+import { firstChords, gridSongId, grooveDef, type Grid, type GridGroove } from '../lib/grids';
+import { KEY_FR, mod12 } from '../lib/music';
 import { useStoredState } from '../lib/store';
+import { useGrids } from './Grille';
+import { useSetlists } from './Setlists';
 import './Carnet.css';
 
 const KIND_FILTERS: { id: IdeaKind | 'all'; label: string }[] = [
@@ -37,11 +41,25 @@ function FilterSelect({ label, value, options, onChange }: { label: string; valu
   );
 }
 
-export default function Carnet() {
+/** A grid shown as a card in the notebook. */
+type Card = Idea & { grid?: Grid };
+const gridCard = (g: Grid): Card => ({
+  id: g.id, kind: 'grille', title: g.title, created: g.created, key: g.key, bpm: g.bpm, style: grooveDef(g.groove).style,
+  chords: firstChords(g), grid: g,
+});
+const GROOVE_OF_STYLE: Record<string, GridGroove> = { Blues: 'shuffle', Rock: 'rock', Funk: 'funk' };
+
+export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
   const nav = useNavigate();
   const loc = useLocation();
   const [ideas, setIdeas] = useStoredState<Idea[]>('ideas', INITIAL_IDEAS);
-  const [kind, setKind] = useStoredState<IdeaKind | 'all'>('carnet.kind', 'all');
+  const [grids, setGrids] = useGrids();
+  const [, setSets] = useSetlists();
+  const [linking, setLinking] = useState<Idea | null>(null);
+  const [savedKind, setKind] = useStoredState<IdeaKind | 'all'>('carnet.kind', 'all');
+  // Opening "Grilles" from home filters this visit only; the notebook's own filter is left as it was.
+  const [override, setOverride] = useState<IdeaKind | undefined>(initialKind);
+  const kind = override ?? savedKind;
   const [fKey, setFKey] = useStoredState('carnet.key', '');
   const [fStyle, setFStyle] = useStoredState('carnet.style', '');
   const [fMood, setFMood] = useStoredState('carnet.mood', '');
@@ -147,17 +165,45 @@ export default function Carnet() {
     return () => { alive = false; };
   }, []); // once, on arrival
 
-  const remove = (i: Idea) => {
+  const remove = (i: Card) => {
     if (!window.confirm(`Supprimer « ${i.title} » ?`)) return;
     if (playing?.id === i.id) stopPlayback();
-    if (i.hasAudio) void deleteBlob(i.id);
-    if (i.audioUrl) URL.revokeObjectURL(i.audioUrl);
-    setIdeas(list => list.filter(x => x.id !== i.id));
+    if (i.grid) {
+      const g = i.grid;
+      setGrids(all => all.filter(x => x.id !== g.id));
+      if (!g.songId) setSets(all => all.map(s => ({ ...s, songIds: s.songIds.filter(x => x !== gridSongId(g)) })));
+    } else {
+      if (i.hasAudio) void deleteBlob(i.id);
+      if (i.audioUrl) URL.revokeObjectURL(i.audioUrl);
+      setIdeas(list => list.filter(x => x.id !== i.id));
+      setGrids(all => all.map(g => (g.ideaId === i.id ? { ...g, ideaId: undefined } : g)));
+    }
     setOpen(null);
   };
 
-  const keyOptions = useMemo(() => [...new Set(ideas.filter(i => i.key != null).map(keyLabel))].sort(), [ideas]);
-  const shown = ideas.filter(i =>
+  /** New grid, empty or built from a riff (same key, tempo and style; its key becomes the first chord). */
+  const newGrid = (from?: Idea) => {
+    const id = 'grid' + Date.now();
+    const minor = !!from?.minor;
+    const tonic = from?.key ?? 9;
+    const g: Grid = {
+      id, title: from ? from.title : 'Nouvelle grille', created: Date.now(),
+      key: minor ? mod12(tonic + 3) : tonic, bpm: from?.bpm ?? 90,
+      groove: (from?.style && GROOVE_OF_STYLE[from.style]) || 'shuffle',
+      prog: [from?.key != null ? [{ pc: tonic, m: minor }] : [], [], []],
+      ideaId: from?.id,
+    };
+    setGrids(all => [g, ...all]);
+    nav(`/composer/grille/${id}`);
+  };
+  const linkTo = (i: Idea, g: Grid) => {
+    setGrids(all => all.map(x => (x.id === g.id ? { ...x, ideaId: i.id } : x)));
+    nav(`/composer/grille/${g.id}`);
+  };
+
+  const cards: Card[] = [...ideas, ...grids.map(gridCard)].sort((a, b) => b.created - a.created);
+  const keyOptions = useMemo(() => [...new Set(cards.filter(i => i.key != null).map(keyLabel))].sort(), [ideas, grids]);
+  const shown = cards.filter(i =>
     (kind === 'all' || i.kind === kind) && (!fKey || keyLabel(i) === fKey) && (!fStyle || i.style === fStyle) && (!fMood || i.mood === fMood));
 
   return (
@@ -169,12 +215,12 @@ export default function Carnet() {
             <span className="kicker">Composer</span>
             <span className="display" style={{ fontSize: 30 }}>CARNET D’IDÉES</span>
           </div>
-          <span className="carnet-count mono">{ideas.length} idées</span>
+          <span className="carnet-count mono">{cards.length} idée{cards.length > 1 ? 's' : ''}</span>
         </div>
 
         <div className="hscroll" style={{ gap: 6 }}>
           {KIND_FILTERS.map(k => (
-            <button key={k.id} className={'chip kind-chip' + (kind === k.id ? ' on-cream' : '')} onClick={() => setKind(k.id)}>{k.label}</button>
+            <button key={k.id} className={'chip kind-chip' + (kind === k.id ? ' on-cream' : '')} onClick={() => { setOverride(undefined); setKind(k.id); }}>{k.label}</button>
           ))}
         </div>
 
@@ -219,11 +265,19 @@ export default function Carnet() {
                 </div>
               )}
 
+              {!i.grid && grids.some(g => g.ideaId === i.id) && (
+                <div className="idea-links">
+                  {grids.filter(g => g.ideaId === i.id).map(g => (
+                    <button key={g.id} className="idea-link" onClick={() => nav(`/composer/grille/${g.id}`)}>Grille : {g.title} ›</button>
+                  ))}
+                </div>
+              )}
+
               {isOpen && (
                 <div className="idea-actions">
-                  {i.to
-                    ? <button className="idea-action primary" onClick={() => nav(i.to!)}>Ouvrir la grille ›</button>
-                    : <button className="idea-action primary" onClick={() => nav('/composer/grille')}>Ajouter à une grille ›</button>}
+                  {i.grid
+                    ? <button className="idea-action primary" onClick={() => nav(`/composer/grille/${i.grid!.id}`)}>Ouvrir la grille ›</button>
+                    : (i.kind === 'riff' || i.kind === 'memo') && <button className="idea-action primary" onClick={() => setLinking(i)}>Ajouter à une grille ›</button>}
                   <button className="idea-action danger" onClick={() => remove(i)}>Supprimer</button>
                 </div>
               )}
@@ -235,7 +289,39 @@ export default function Carnet() {
       </div>
 
       {recState === 'idle' && (
-        <button className="cta rec-cta" onClick={startRec}><span className="rec-dot" />Enregistrer</button>
+        <div className="carnet-actions">
+          <button className="cta rec-cta" onClick={startRec}><span className="rec-dot" />Enregistrer</button>
+          <button className="grid-to-set" onClick={() => newGrid()}>+ Grille</button>
+        </div>
+      )}
+
+      {linking && (
+        <div className="sheet-backdrop" onClick={() => setLinking(null)}>
+          <div className="set-sheet" role="dialog" aria-label="Ajouter à une grille" onClick={e => e.stopPropagation()}>
+            <div className="set-sheet-head">
+              <span className="kicker sheet-kicker">« {linking.title} » dans une grille</span>
+              <button className="player-close" onClick={() => setLinking(null)} aria-label="Fermer">✕</button>
+            </div>
+            <button className="pick-row new-grid" onClick={() => newGrid(linking)}>
+              <div className="song-text">
+                <span className="song-title">Nouvelle grille avec ce riff</span>
+                <span className="song-meta">
+                  {linking.key != null ? `${KEY_FR[linking.key]}${linking.minor ? ' m' : ''} · ` : ''}{linking.bpm ?? 90} BPM · {linking.style ?? 'Blues'}
+                </span>
+              </div>
+              <span className="pick-plus">+</span>
+            </button>
+            {grids.map(g => (
+              <button key={g.id} className="pick-row" onClick={() => linkTo(linking, g)}>
+                <div className="song-text">
+                  <span className="song-title">Relier à « {g.title} »</span>
+                  <span className="song-meta">{firstChords(g).join(' · ') || 'Grille vide'}</span>
+                </div>
+                {g.ideaId === linking.id ? <span className="in-set">Déjà relié ›</span> : <span className="pick-plus">›</span>}
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
       {recState !== 'idle' && (

@@ -30,7 +30,9 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/reglages" element={<Reglages />} />
           <Route path="/idee" element={<Navigate to="/composer" replace state={{ record: true }} />} />
           <Route path="/composer" element={<Carnet />} />
+          <Route path="/composer/grilles" element={<Carnet initialKind="grille" />} />
           <Route path="/composer/grille" element={<Grille />} />
+          <Route path="/composer/grille/:gridId" element={<Grille />} />
           <Route path="/pratiquer" element={<Pratiquer />} />
           <Route path="/pratiquer/routine" element={<Routine />} />
           <Route path="/pratiquer/gammes" element={<Gammes />} />

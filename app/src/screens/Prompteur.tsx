@@ -106,7 +106,7 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
           l.kind === 'section' ? (
             <div key={i} className="lyric-section">{l.label}</div>
           ) : (
-            <div key={i} className="lyric-line">
+            <div key={i} className={'lyric-line' + (l.segs.every(g => !g.text.trim()) ? ' chords-only' : '')}>
               {l.segs.map((g, j) => (
                 <div key={j} className="lyric-seg">
                   <span className="lyric-chord" style={{ fontSize: Math.round(fs * 0.82) }}>{g.chord}</span>

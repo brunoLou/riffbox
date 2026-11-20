@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import { blobsBytes, clearBlobs } from '../lib/blobs';
 import { SETTINGS } from '../lib/data';
+import { INITIAL_GRIDS, type Grid } from '../lib/grids';
 import { INITIAL_IDEAS, type Idea } from '../lib/ideas';
 import { clearDemoPractice, demoPractice, routine } from '../lib/routine';
 import { INITIAL_SETLISTS, type Setlist } from '../lib/setlists';
@@ -10,6 +11,7 @@ import './Reglages.css';
 
 const DEMO_IDEAS = new Set(INITIAL_IDEAS.map(i => i.id));
 const DEMO_SETS = new Set(INITIAL_SETLISTS.map(s => s.id));
+const DEMO_GRIDS = new Set(INITIAL_GRIDS.map(g => g.id));
 
 const fmtBytes = (n: number) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} Ko` : `${(n / 1024 / 1024).toFixed(1).replace('.', ',')} Mo`);
 const plural = (n: number, one: string, many: string) => `${n} ${n > 1 ? many : one}`;
@@ -30,15 +32,18 @@ export default function Reglages() {
 
   const ideas = readStored<Idea[]>('ideas', INITIAL_IDEAS);
   const sets = readStored<Setlist[]>('setlists', INITIAL_SETLISTS);
+  const grids = readStored<Grid[]>('grids', INITIAL_GRIDS);
   const recordings = ideas.filter(i => i.hasAudio).length;
   const demo = {
     ideas: ideas.filter(i => DEMO_IDEAS.has(i.id)).length,
     sets: sets.filter(s => DEMO_SETS.has(s.id)).length,
+    grids: grids.filter(g => DEMO_GRIDS.has(g.id)).length,
     ...demoPractice(),
   };
-  const hasDemo = demo.ideas + demo.sets + demo.days > 0 || demo.routineIsDemo;
+  const hasDemo = demo.ideas + demo.sets + demo.grids + demo.days > 0 || demo.routineIsDemo;
   const demoParts = [
     demo.ideas && plural(demo.ideas, 'idée', 'idées'),
+    demo.grids && plural(demo.grids, 'grille', 'grilles'),
     demo.sets && plural(demo.sets, 'setlist', 'setlists'),
     demo.days && plural(demo.days, 'jour d’historique', 'jours d’historique'),
     demo.routineIsDemo && 'la routine du jour entamée',
@@ -46,7 +51,10 @@ export default function Reglages() {
 
   const clearDemo = () => {
     writeStored('ideas', ideas.filter(i => !DEMO_IDEAS.has(i.id)));
-    writeStored('setlists', sets.filter(s => !DEMO_SETS.has(s.id)));
+    writeStored('grids', grids.filter(g => !DEMO_GRIDS.has(g.id)));
+    // Remaining setlists lose the example grids' songs.
+    const demoGridSongs = new Set(grids.filter(g => DEMO_GRIDS.has(g.id) && !g.songId).map(g => `g:${g.id}`));
+    writeStored('setlists', sets.filter(s => !DEMO_SETS.has(s.id)).map(s => ({ ...s, songIds: s.songIds.filter(id => !demoGridSongs.has(id)) })));
     clearDemoPractice();
     setCleared(true);
     refresh(n => n + 1);
@@ -100,6 +108,7 @@ export default function Reglages() {
         <div className="settings-card">
           <dl className="data-list">
             <div><dt>Idées</dt><dd>{ideas.length}{recordings ? ` · ${plural(recordings, 'enregistrement', 'enregistrements')}` : ''}</dd></div>
+            <div><dt>Grilles</dt><dd>{grids.length}</dd></div>
             <div><dt>Setlists</dt><dd>{sets.length}</dd></div>
             <div><dt>Espace utilisé</dt><dd>{fmtBytes(storedBytes() + audioBytes)}</dd></div>
             <div><dt>Protection</dt><dd>{persisted ? 'Stockage protégé' : 'Peut être effacé par le navigateur si l’espace manque'}</dd></div>
@@ -112,7 +121,7 @@ export default function Reglages() {
             <span className="settings-label">Effacer les exemples</span>
             <span className="settings-help">
               {hasDemo
-                ? `Retire ${demoParts.join(', ').replace(/, ([^,]*)$/, ' et $1')}. Vos propres idées, setlists et séances sont gardées.`
+                ? `Retire ${demoParts.join(', ').replace(/, ([^,]*)$/, ' et $1')}. Vos propres idées, grilles, setlists et séances sont gardées.`
                 : cleared ? 'Les exemples ont été effacés.' : 'Il n’y a plus d’exemples.'}
             </span>
             <button className="btn-outline" onClick={clearDemo} disabled={!hasDemo}>Effacer les exemples</button>
@@ -123,7 +132,7 @@ export default function Reglages() {
           <div className="settings-action">
             <span className="settings-label">Tout réinitialiser</span>
             <span className="settings-help">
-              Efface tout : idées, enregistrements, setlists, routine, historique et réglages. L’app repart comme au premier lancement, avec les exemples.
+              Efface tout : idées, enregistrements, grilles, setlists, routine, historique et réglages. L’app repart comme au premier lancement, avec les exemples.
             </span>
             {confirming ? (
               <div className="confirm-row">

@@ -5,12 +5,15 @@ export const FR = ['Do', 'Do♯', 'Ré', 'Ré♯', 'Mi', 'Fa', 'Fa♯', 'Sol', '
 export const KEY_FR = ['Do', 'Do♯', 'Ré', 'Mi♭', 'Mi', 'Fa', 'Fa♯', 'Sol', 'La♭', 'La', 'Si♭', 'Si'];
 const LETTER: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
 
-/** Transpose a chord symbol like "F#m7" by n semitones (sharps on output). */
+const FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+/** Transpose a chord symbol like "F#m7" by n semitones. */
 export function transposeChord(ch: string, n: number): string {
+  if (!n) return ch;
   const m = ch.match(/^([A-G])([#b]?)(.*)$/);
   if (!m) return ch;
   const i = LETTER[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0) + n;
-  return SHARP[mod12(i)] + m[3];
+  // Keep the spelling style of the original chord (flats stay flats).
+  return (m[2] === 'b' ? FLAT : SHARP)[mod12(i)] + m[3];
 }
 
 /* ---------- ChordPro ---------- */

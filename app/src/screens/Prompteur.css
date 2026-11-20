@@ -36,3 +36,5 @@
 .up-next { margin-top: 18px; padding-top: 14px; border-top: 1px solid #2a2622; font-size: 15px; color: var(--muted-2); }
 .up-next b { color: var(--cream); }
 .page-btn:disabled, .play-btn:disabled { opacity: .35; cursor: default; }
+.lyric-line.chords-only .lyric-text { display: none; }
+.lyric-line.chords-only .lyric-chord { padding-right: .6em; }

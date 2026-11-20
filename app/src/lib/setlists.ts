@@ -1,4 +1,5 @@
 import { SONG } from './data';
+import { gridBars, gridChordPro, gridForSong, gridSongId, grooveDef, readGrids, type Grid } from './grids';
 import { KEY_FR } from './music';
 
 export interface Song {
@@ -7,6 +8,8 @@ export interface Song {
   duration: number;
   /** ChordPro source, when lyrics and chords exist. */
   chordpro?: string;
+  /** True when `chordpro` is a chord chart generated from a grid (no lyrics). */
+  fromGrid?: boolean;
 }
 
 export interface Setlist { id: string; name: string; date: number; songIds: string[] }
@@ -26,7 +29,27 @@ export const SONGS: Song[] = [
   { id: 's11', title: 'Ligne blanche', key: 7, bpm: 118, feel: 'rock', capo: 0, duration: 210 },
 ];
 
-export const songById = (id: string) => SONGS.find(s => s.id === id);
+const GRID_SONG_SECONDS = 210;
+
+/** A grid that is not a catalog song becomes a song of its own. */
+function gridSong(g: Grid): Song {
+  return {
+    id: gridSongId(g), title: g.title, key: g.key, bpm: g.bpm, feel: grooveDef(g.groove).label.toLowerCase(), capo: 0,
+    // A grid holds the form, not the arrangement: count a typical song length, at least one full pass.
+    duration: Math.max(GRID_SONG_SECONDS, Math.round((gridBars(g) * 4 * 60) / g.bpm)), chordpro: gridChordPro(g), fromGrid: true,
+  };
+}
+
+/** Catalog songs and grid songs. A catalog song without lyrics shows its grid's chords on stage. */
+export function songById(id: string): Song | undefined {
+  const s = SONGS.find(x => x.id === id);
+  const g = gridForSong(id);
+  if (s) return s.chordpro || !g ? s : { ...s, chordpro: gridChordPro(g), fromGrid: true };
+  return g ? gridSong(g) : undefined;
+}
+
+/** Everything that can be added to a setlist. */
+export const allSongs = (): Song[] => [...SONGS, ...readGrids().filter(g => !g.songId).map(gridSong)];
 export const songKey = (s: Song, trans = 0) => KEY_FR[(((s.key + trans) % 12) + 12) % 12] + (s.minor ? ' m' : '');
 export const songMeta = (s: Song) => `${songKey(s)} · ${s.bpm} BPM · ${s.feel}`;
 

@@ -67,10 +67,6 @@ export const INITIAL_IDEAS: Idea[] = [
     lick: [57, 60, 62, 63, 64, 67, 64, 62, 60, 57, 60, 57, 55, 57, 57, 57],
   }),
   example({
-    id: 'i2', kind: 'grille', title: 'Minuit Shuffle', created: now - DAY, key: 9, bpm: 92, style: 'Blues', mood: 'Nostalgique',
-    chords: ['A7', 'D7', 'A7', 'E7'], to: '/composer/grille',
-  }),
-  example({
     id: 'i3', kind: 'paroles', title: 'Néons du quai', created: now - 2 * DAY, style: 'Blues', mood: 'Mélancolique',
     text: 'Les néons tremblent au bord du quai\nLa nuit s’étire, rien n’est pressé\nJe garde la cadence et le pied sur le temps\nUne corde qui sonne, un peu de vent',
   }),

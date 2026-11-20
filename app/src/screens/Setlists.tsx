@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import {
-  INITIAL_SETLISTS, SONGS, fmtDate, fmtDur, fmtMin, setDuration, songById, songMeta, titlesLabel, type Setlist,
+  INITIAL_SETLISTS, allSongs, fmtDate, fmtDur, fmtMin, setDuration, songById, songMeta, titlesLabel, type Setlist,
 } from '../lib/setlists';
 import { useStoredState } from '../lib/store';
 import './Setlists.css';
@@ -84,7 +84,7 @@ export function SetlistDetail() {
   });
   const remove = (i: number) => update(s => ({ ...s, songIds: s.songIds.filter((_, k) => k !== i) }));
   const add = (id: string) => update(s => ({ ...s, songIds: [...s.songIds, id] }));
-  const available = SONGS.filter(s => !set.songIds.includes(s.id));
+  const available = allSongs().filter(s => !set.songIds.includes(s.id));
 
   return (
     <Phone label="08b Setlist">
@@ -123,7 +123,7 @@ export function SetlistDetail() {
                 <span className="song-num mono">{i + 1}</span>
                 <div className="song-text">
                   <span className="song-title">{s.title}</span>
-                  <span className="song-meta">{songMeta(s)}{s.chordpro ? '' : ' · sans paroles'}</span>
+                  <span className="song-meta">{songMeta(s)}{!s.chordpro ? ' · sans grille' : s.fromGrid ? ' · grille' : ''}</span>
                 </div>
                 {edit ? (
                   <div className="song-tools">
