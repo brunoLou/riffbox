@@ -98,6 +98,7 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
           <span className="stage-tag key"><span>Ton :</span><span>{songKey(song, trans)}</span></span>
           <span className="stage-tag">{song.bpm} BPM · {song.feel}</span>
           <span className="stage-tag">Capo {song.capo}</span>
+          <Link to={`/scene/morceau/${song.id}`} className="stage-tag stage-edit" aria-label="Modifier le morceau">✎</Link>
         </div>
       </div>
 
@@ -118,7 +119,8 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
         ) : (
           <div className="no-lyrics">
             <span className="mono">Pas encore de paroles</span>
-            Ce titre n’a pas de grille ChordPro. Jouez-le de mémoire, puis passez au suivant avec le pédalier.
+            Ce titre n’a ni paroles ni accords. Jouez-le de mémoire, puis passez au suivant avec le pédalier.
+            <Link to={`/scene/morceau/${song.id}`} className="write-lyrics">Écrire les paroles ›</Link>
           </div>
         )}
         {lines.length > 0 && hasNext && (

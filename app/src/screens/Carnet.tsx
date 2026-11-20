@@ -7,8 +7,7 @@ import { deleteBlob, getBlob, putBlob } from '../lib/blobs';
 import { firstChords, gridSongId, grooveDef, type Grid, type GridGroove } from '../lib/grids';
 import { KEY_FR, mod12 } from '../lib/music';
 import { useStoredState } from '../lib/store';
-import { useGrids } from './Grille';
-import { useSetlists } from './Setlists';
+import { useGrids, useSetlists } from '../lib/hooks';
 import './Carnet.css';
 
 const KIND_FILTERS: { id: IdeaKind | 'all'; label: string }[] = [

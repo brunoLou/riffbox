@@ -38,3 +38,5 @@
 .page-btn:disabled, .play-btn:disabled { opacity: .35; cursor: default; }
 .lyric-line.chords-only .lyric-text { display: none; }
 .lyric-line.chords-only .lyric-chord { padding-right: .6em; }
+.stage-edit, .stage-edit:hover { color: var(--muted-3); text-decoration: none; min-width: 44px; justify-content: center; }
+.write-lyrics, .write-lyrics:hover { align-self: flex-start; margin-top: 4px; height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid var(--amber); color: var(--amber-hi); font-weight: 700; font-size: 15px; display: flex; align-items: center; text-decoration: none; }

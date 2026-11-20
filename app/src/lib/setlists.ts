@@ -1,6 +1,7 @@
 import { SONG } from './data';
 import { gridBars, gridChordPro, gridForSong, gridSongId, grooveDef, readGrids, type Grid } from './grids';
-import { KEY_FR } from './music';
+import { KEY_FR, mod12 } from './music';
+import { readStored, writeStored } from './store';
 
 export interface Song {
   id: string; title: string; key: number; minor?: boolean; bpm: number; feel: string; capo: number;
@@ -14,8 +15,8 @@ export interface Song {
 
 export interface Setlist { id: string; name: string; date: number; songIds: string[] }
 
-/** Song catalog for the mock-up (invented titles; only Minuit Shuffle has lyrics). */
-export const SONGS: Song[] = [
+/** Example songs on first launch (invented titles; only Minuit Shuffle has lyrics). Editable afterwards. */
+export const INITIAL_SONGS: Song[] = [
   { id: 's1', title: 'Réveil électrique', key: 4, bpm: 128, feel: 'rock', capo: 0, duration: 200 },
   { id: 's2', title: 'Café noir', key: 2, minor: true, bpm: 98, feel: 'funk', capo: 0, duration: 245 },
   { id: 's3', title: 'Minuit Shuffle', key: 9, bpm: 92, feel: 'shuffle', capo: 0, duration: 250, chordpro: SONG },
@@ -41,15 +42,54 @@ function gridSong(g: Grid): Song {
 }
 
 /** Catalog songs and grid songs. A catalog song without lyrics shows its grid's chords on stage. */
+export const readSongs = () => readStored<Song[]>('songs', INITIAL_SONGS);
+
 export function songById(id: string): Song | undefined {
-  const s = SONGS.find(x => x.id === id);
+  const s = readSongs().find(x => x.id === id);
   const g = gridForSong(id);
   if (s) return s.chordpro || !g ? s : { ...s, chordpro: gridChordPro(g), fromGrid: true };
   return g ? gridSong(g) : undefined;
 }
 
 /** Everything that can be added to a setlist. */
-export const allSongs = (): Song[] => [...SONGS, ...readGrids().filter(g => !g.songId).map(gridSong)];
+export const allSongs = (): Song[] => [...readSongs(), ...readGrids().filter(g => !g.songId).map(gridSong)];
+
+/** True when the ChordPro text has words, not only chords and section labels. */
+export const hasLyrics = (src?: string) =>
+  !!src && src.split('\n').some(l => !/^\{.*\}$/.test(l.trim()) && l.replace(/\[[^\]]*\]/g, '').trim().length > 0);
+
+/**
+ * A grid that is its own song ("g:<id>") gets a real song record the first time it is edited:
+ * same id each time (idempotent), the grid points to it and setlists follow.
+ */
+export function materializeGridSong(songId: string): string {
+  if (!songId.startsWith('g:')) return songId;
+  const gridId = songId.slice(2);
+  const newId = `song-${gridId}`;
+  const songs = readSongs();
+  if (!songs.some(s => s.id === newId)) {
+    const g = readGrids().find(x => x.id === gridId);
+    if (!g) return songId;
+    const base = gridSong(g);
+    // Empty text: until lyrics are written, the stage keeps showing the grid's chords.
+    writeStored('songs', [...songs, { ...base, id: newId, chordpro: '', fromGrid: undefined }]);
+  }
+  writeStored('grids', readGrids().map(x => (x.id === gridId ? { ...x, songId: newId } : x)));
+  writeStored('setlists', readStored<Setlist[]>('setlists', INITIAL_SETLISTS).map(s => ({ ...s, songIds: s.songIds.map(x => (x === songId ? newId : x)) })));
+  return newId;
+}
+
+/** Chords of a key to insert quickly: diatonic triads plus the dominant seventh. */
+export function keyChords(key: number, minor?: boolean): string[] {
+  const flats = [5, 10, 3, 8, 1].includes(minor ? mod12(key + 3) : key);
+  const N = flats ? ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'] : ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const n = (iv: number, q = '') => N[mod12(key + iv)] + q;
+  return minor
+    ? [n(0, 'm'), n(3), n(5, 'm'), n(7, 'm'), n(8), n(10), n(7, '7')]
+    : [n(0), n(2, 'm'), n(4, 'm'), n(5), n(7), n(9, 'm'), n(7, '7')];
+}
+
+export const FEELS = ['shuffle', 'rock', 'funk', 'funk 16e', 'blues lent', 'ballade', 'pop', 'reggae', 'autre'];
 export const songKey = (s: Song, trans = 0) => KEY_FR[(((s.key + trans) % 12) + 12) % 12] + (s.minor ? ' m' : '');
 export const songMeta = (s: Song) => `${songKey(s)} · ${s.bpm} BPM · ${s.feel}`;
 

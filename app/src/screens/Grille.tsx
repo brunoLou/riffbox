@@ -5,19 +5,18 @@ import { playLick, playUrl, type Playback } from '../lib/audio';
 import { buildBacking } from '../lib/backing';
 import { getBlob } from '../lib/blobs';
 import {
-  GRID_BPM, GRID_GROOVES, GRID_MAX_CHORDS, GRID_SECTIONS, INITIAL_GRIDS, gridSongId, grooveDef, readGrids, type Grid,
+  GRID_BPM, GRID_GROOVES, GRID_MAX_CHORDS, GRID_SECTIONS, gridSongId, grooveDef, readGrids, type Grid,
 } from '../lib/grids';
 import { INITIAL_IDEAS, type Idea } from '../lib/ideas';
 import { MetronomeEngine, type Pattern } from '../lib/metronome';
 import { IN_N, KFR, OUT_N, OUT_PC, chordName, degreeOf, mod12, type Chord } from '../lib/music';
 import { fmtDate, titlesLabel, type Setlist } from '../lib/setlists';
-import { readStored, useStoredState } from '../lib/store';
-import { useSetlists } from './Setlists';
+import { readStored } from '../lib/store';
+import { useGrids, useSetlists } from '../lib/hooks';
 import './Grille.css';
 
 const R = 159; // wheel radius (318 / 2)
 
-export const useGrids = () => useStoredState<Grid[]>('grids', INITIAL_GRIDS);
 
 /** /composer/grille/:gridId — the old /composer/grille opens the first grid. */
 export default function GrilleRoute() {

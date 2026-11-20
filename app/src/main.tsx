@@ -12,6 +12,7 @@ import Prompteur from './screens/Prompteur';
 import Metronome from './screens/Metronome';
 import Carnet from './screens/Carnet';
 import { SetlistDetail, SetlistsScreen } from './screens/Setlists';
+import { MorceauRoute, MorceauxScreen } from './screens/Morceaux';
 import Pratiquer from './screens/Pratiquer';
 import Routine from './screens/Routine';
 import Backing from './screens/Backing';
@@ -38,6 +39,8 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/pratiquer/gammes" element={<Gammes />} />
           <Route path="/pratiquer/backing" element={<Backing />} />
           <Route path="/scene" element={<SetlistsScreen />} />
+          <Route path="/scene/morceaux" element={<MorceauxScreen />} />
+          <Route path="/scene/morceau/:songId" element={<MorceauRoute />} />
           <Route path="/scene/prompteur" element={<Navigate to="/scene/bar-du-port/play/2" replace />} />
           <Route path="/scene/:setId" element={<SetlistDetail />} />
           <Route path="/scene/:setId/play/:index" element={<Prompteur />} />

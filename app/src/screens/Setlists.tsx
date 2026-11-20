@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import {
-  INITIAL_SETLISTS, allSongs, fmtDate, fmtDur, fmtMin, setDuration, songById, songMeta, titlesLabel, type Setlist,
+  allSongs, fmtDate, hasLyrics, fmtDur, fmtMin, setDuration, songById, songMeta, titlesLabel, type Setlist,
 } from '../lib/setlists';
-import { useStoredState } from '../lib/store';
+import { useSetlists, useSongs } from '../lib/hooks';
+import { SceneTabs } from './Morceaux';
 import './Setlists.css';
 
-export const useSetlists = () => useStoredState<Setlist[]>('setlists', INITIAL_SETLISTS);
 
 /* ---------- 08a · Liste ---------- */
 
@@ -36,6 +36,7 @@ export function SetlistsScreen() {
           </div>
           <span className="sets-count mono">{sets.length} sets</span>
         </div>
+        <SceneTabs active={0} />
 
         {sorted.map(s => {
           const next = s.id === nextId;
@@ -68,6 +69,7 @@ export function SetlistDetail() {
   const { setId } = useParams();
   const nav = useNavigate();
   const [sets, setSets] = useSetlists();
+  const [, setSongs] = useSongs();
   const set = sets.find(s => s.id === setId);
   const loc = useLocation();
   const [edit, setEdit] = useState(() => !!(loc.state as { edit?: boolean } | null)?.edit);
@@ -84,6 +86,11 @@ export function SetlistDetail() {
   });
   const remove = (i: number) => update(s => ({ ...s, songIds: s.songIds.filter((_, k) => k !== i) }));
   const add = (id: string) => update(s => ({ ...s, songIds: [...s.songIds, id] }));
+  const createSong = () => {
+    const id = 'song' + Date.now();
+    setSongs(all => [...all, { id, title: 'Nouveau morceau', key: 9, bpm: 90, feel: 'shuffle', capo: 0, duration: 210, chordpro: '' }]);
+    nav(`/scene/morceau/${id}`, { state: { fresh: true, addToSet: set.id } });
+  };
   const available = allSongs().filter(s => !set.songIds.includes(s.id));
 
   return (
@@ -121,9 +128,9 @@ export function SetlistDetail() {
                 onClick={() => !edit && nav(`/scene/${set.id}/play/${i}`)}
                 onKeyDown={e => { if (!edit && e.key === 'Enter') nav(`/scene/${set.id}/play/${i}`); }}>
                 <span className="song-num mono">{i + 1}</span>
-                <div className="song-text">
-                  <span className="song-title">{s.title}</span>
-                  <span className="song-meta">{songMeta(s)}{!s.chordpro ? ' · sans grille' : s.fromGrid ? ' · grille' : ''}</span>
+                <div className="song-text" onClick={() => edit && nav(`/scene/morceau/${s.id}`)}>
+                  <span className="song-title">{s.title}{edit && <span className="song-edit"> ✎</span>}</span>
+                  <span className="song-meta">{songMeta(s)}{hasLyrics(s.chordpro) ? '' : s.chordpro ? ' · accords' : ' · à écrire'}</span>
                 </div>
                 {edit ? (
                   <div className="song-tools">
@@ -139,12 +146,19 @@ export function SetlistDetail() {
           })}
           {!set.songIds.length && !edit && <div className="songs-empty">Aucun titre. Touchez « Modifier » pour en ajouter.</div>}
           {edit && (
-            <button className="add-song" onClick={() => setPicking(!picking)} disabled={!available.length}>
+            <button className="add-song" onClick={() => setPicking(!picking)}>
               {picking ? 'Fermer la liste' : '+ Ajouter un titre'}
             </button>
           )}
           {edit && picking && (
             <div className="picker">
+              <button className="pick-row new-song" onClick={createSong}>
+                <div className="song-text">
+                  <span className="song-title">Créer un morceau</span>
+                  <span className="song-meta">Titre, ton, tempo, paroles et accords</span>
+                </div>
+                <span className="pick-plus">+</span>
+              </button>
               {available.map(s => (
                 <button key={s.id} className="pick-row" onClick={() => add(s.id)}>
                   <div className="song-text">
