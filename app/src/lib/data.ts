@@ -1,0 +1,69 @@
+import type { Chord } from './music';
+
+/** Former design-tool tweak props, now app settings. */
+export const SETTINGS = {
+  showStreak: true,
+  /** Prompteur lyric size in px (design range 20–40). */
+  stageFontSize: 26,
+};
+
+export const PRESETS = [
+  { label: 'Standard', m: [40, 45, 50, 55, 59, 64] },
+  { label: 'Drop D', m: [38, 45, 50, 55, 59, 64] },
+  { label: 'Open G', m: [38, 43, 50, 55, 59, 62] },
+  { label: 'Open E', m: [40, 47, 52, 56, 59, 64] },
+  { label: '½ ton ↓', m: [39, 44, 49, 54, 58, 63] },
+];
+
+export interface Tile {
+  id: string; name: string; sub: string; bg: string; fg: string;
+  on?: boolean; a: number; b: number; wide?: boolean; to: string;
+}
+
+export const TILES: Tile[] = [
+  { id: 'tuner', name: 'Accordeur', sub: 'Chromatique · Standard', bg: '#efe6d2', fg: '#1a1816', on: true, a: -40, b: 60, to: '/accordeur' },
+  { id: 'metro', name: 'Métronome', sub: '92 BPM · 4/4', bg: '#e9a23b', fg: '#1a1816', on: true, a: 20, b: -70, to: '/metronome' },
+  { id: 'carnet', name: 'Carnet', sub: '14 idées', bg: '#2c2825', fg: '#efe6d2', a: 90, b: -10, to: '/composer' },
+  { id: 'grilles', name: 'Grilles', sub: '6 progressions', bg: '#2c2825', fg: '#efe6d2', a: -100, b: 30, to: '/composer/grille' },
+  { id: 'backing', name: 'Backing tracks', sub: 'Blues en La · shuffle 90', bg: '#4a3020', fg: '#efe6d2', on: true, a: 45, b: -45, wide: true, to: '/pratiquer/backing' },
+  { id: 'manche', name: 'Manche', sub: 'Penta mineure · La', bg: '#2c2825', fg: '#efe6d2', a: 0, b: 120, to: '/pratiquer/gammes' },
+  { id: 'routine', name: 'Routine', sub: '25 min aujourd’hui', bg: '#2c2825', fg: '#efe6d2', a: -60, b: 80, to: '/pratiquer' },
+  { id: 'setlists', name: 'Setlists', sub: 'Bar du Port · 9 titres', bg: '#efe6d2', fg: '#1a1816', a: 30, b: -120, wide: true, to: '/scene' },
+];
+
+/** Placeholder lyrics written for the mock-up. */
+export const SONG = `{c:Couplet 1}
+[A7]J'ai pris la route [D7]avant le jour
+[A7]Le moteur tousse, la radio [A7]grésille
+[D7]Trois cents bornes pour [A7]un seul retour
+[E7]Le vent me pousse, [D7]la nuit [A7]brille [E7]
+{c:Refrain}
+[A7]Minuit shuffle, [D7]minuit shuffle
+[A7]Les néons tremblent au [A7]bord du quai
+[D7]Minuit shuffle, je [A7]tape du pied
+[E7]Jusqu'à l'aube [D7]on va [A7]jouer [E7]
+{c:Couplet 2}
+[A7]La salle est pleine, [D7]la bière est tiède
+[A7]Le batteur compte, un, [A7]deux, trois
+[D7]Ma vieille caisse a [A7]le son qui m'aide
+[E7]Six cordes [D7]et rien que [A7]ça [E7]
+{c:Pont}
+[F#m]On ralentit, [D]on respire
+[F#m]La basse tourne, [E7]laisse venir
+{c:Refrain}
+[A7]Minuit shuffle, [D7]minuit shuffle
+[A7]Les néons tremblent au [A7]bord du quai
+[D7]Minuit shuffle, je [A7]tape du pied
+[E7]Jusqu'à l'aube [D7]on va [A7]jouer [E7]`;
+export const SONG_KEY = 9; // La
+
+export const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+
+export const GRID_SECTIONS = ['Couplet', 'Refrain', 'Pont'];
+export const GRID_INITIAL: Chord[][] = [
+  [{ pc: 9 }, { pc: 2 }, { pc: 9 }, { pc: 4 }],
+  [{ pc: 2 }, { pc: 9 }, { pc: 4 }, { pc: 9 }],
+  [{ pc: 6, m: true }, { pc: 2 }, { pc: 11, m: true }, { pc: 4 }],
+];
+/** One 4/4 bar at 92 BPM. */
+export const GRID_BAR_MS = 2609;
