@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
+import { usePedal } from '../lib/pedal';
 import { ROUTINE, ROUTINE_MIN, doneSeconds, mmss, routine, useRoutine } from '../lib/routine';
 import './Routine.css';
 
@@ -10,6 +11,13 @@ export default function Routine() {
   const len = step.min * 60;
   const left = Math.max(0, len - r.elapsed[r.step]);
   const frac = r.done ? 1 : r.elapsed[r.step] / len;
+
+  const goPause = () => (r.done ? routine.restart() : r.running ? routine.pause() : routine.start());
+  usePedal({
+    right: () => { if (!r.done && r.step < ROUTINE.length - 1) routine.goto(r.step + 1); },
+    left: goPause,
+    middle: goPause,
+  });
 
   return (
     <Phone label="07b Routine">

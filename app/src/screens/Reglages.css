@@ -48,3 +48,28 @@
 .backup-import { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding: 12px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
 .backup-import .data-list { padding: 0; }
 .settings-help.warn { color: var(--warn); }
+
+/* Pédalier */
+.pedal-learn { margin: 0; height: 38px; padding: 0 16px; border-radius: 19px; font-size: 14px; flex: none; }
+.pedal-learn[aria-pressed='true'] { border-color: var(--amber); color: var(--accent-text); }
+.pedal-row.learning { background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--amber) 8%, transparent), transparent); }
+.pedal-wait { font-size: 14px; font-weight: 600; color: var(--accent-text); animation: pedal-pulse 1.2s ease-in-out infinite; }
+@keyframes pedal-pulse { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .pedal-wait { animation: none; } }
+.pedal-keys { display: flex; flex-wrap: wrap; gap: 6px; }
+.pedal-key { display: inline-flex; align-items: center; gap: 2px; height: 32px; padding-left: 10px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line-2); font-size: 15px; font-weight: 700; color: var(--cream); }
+.pedal-key button { width: 30px; height: 30px; color: var(--muted-3); font-size: 16px; }
+.pedal-try { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--muted-2); text-align: right; }
+.pedal-try-led { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--muted-3); }
+.pedal-try.on { color: var(--cream); }
+.pedal-try.on .pedal-try-led { background: var(--led); animation: pedal-blink .5s ease-out; }
+@keyframes pedal-blink { from { box-shadow: 0 0 14px 4px var(--led); } to { box-shadow: 0 0 6px var(--led); } }
+.pedal-help { border-top: 1px solid var(--line); padding: 12px 0; display: flex; flex-direction: column; gap: 10px; }
+.pedal-help summary { cursor: pointer; font-weight: 700; font-size: 15px; color: var(--cream); min-height: 32px; display: flex; align-items: center; }
+.pedal-help p { margin: 10px 0 0; }
+.pedal-table { width: 100%; border-collapse: collapse; font-size: 12.5px; line-height: 1.3; margin-top: 8px; }
+.pedal-table th, .pedal-table td { padding: 7px 4px; text-align: left; vertical-align: top; border-top: 1px solid var(--line); }
+.pedal-table thead th { border-top: 0; color: var(--muted-2); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.pedal-table tbody th { color: var(--cream); font-weight: 700; width: 24%; }
+.pedal-table td { color: var(--muted-3); }
+.pedal-card .settings-action { border-top: 1px solid var(--line); padding-top: 4px; }

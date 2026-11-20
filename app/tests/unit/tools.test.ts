@@ -3,6 +3,7 @@ import { readBackup, summarize } from '../../src/lib/backup';
 import { TRACKS, buildBacking, chordLabel } from '../../src/lib/backing';
 import { bestCapo, capoOptions, signedShift } from '../../src/lib/capo';
 import { INITIAL_GRIDS, gridChordPro } from '../../src/lib/grids';
+import { DEFAULT_PEDAL_KEYS, actionFor, assignKey, canBePedal, keyLabel } from '../../src/lib/pedal';
 import { hasLyrics, keyChords, songById } from '../../src/lib/setlists';
 
 describe('capo', () => {
@@ -63,5 +64,30 @@ describe('backup files', () => {
   it('reads and summarises a valid backup', async () => {
     const b = await readBackup(file({ app: 'riffbox', version: 1, exportedAt: '2026-11-20T10:00:00Z', data: { ideas: [{ id: 'a' }], setlists: [], 'practice.log': { d1: 30, d2: 0 } }, audio: { a: 'data:audio/webm;base64,AA==' } }));
     expect(summarize(b)).toMatchObject({ ideas: 1, setlists: 0, recordings: 1, days: 1 });
+  });
+});
+
+describe('pedal keys', () => {
+  it('matches the default page-turner keys', () => {
+    expect(actionFor(DEFAULT_PEDAL_KEYS, 'PageDown')).toBe('right');
+    expect(actionFor(DEFAULT_PEDAL_KEYS, 'ArrowUp')).toBe('left');
+    expect(actionFor(DEFAULT_PEDAL_KEYS, ' ')).toBe('middle');
+    expect(actionFor(DEFAULT_PEDAL_KEYS, 'Enter')).toBeNull();
+  });
+  it('learning a key moves it from one pedal to another', () => {
+    const k = assignKey(DEFAULT_PEDAL_KEYS, 'left', 'ArrowRight');
+    expect(k.left).toContain('ArrowRight');
+    expect(k.right).not.toContain('ArrowRight');
+    expect(actionFor(k, 'ArrowRight')).toBe('left');
+    expect(assignKey(k, 'left', 'ArrowRight').left.filter(x => x === 'ArrowRight')).toHaveLength(1);
+  });
+  it('ignores the case of letters', () => {
+    const k = assignKey(DEFAULT_PEDAL_KEYS, 'middle', 'B');
+    expect(actionFor(k, 'b')).toBe('middle');
+    expect(keyLabel('b')).toBe('B');
+  });
+  it('never takes modifiers, Tab or Escape', () => {
+    for (const key of ['Shift', 'Tab', 'Escape']) expect(canBePedal(key)).toBe(false);
+    expect(canBePedal('Enter')).toBe(true);
   });
 });

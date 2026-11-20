@@ -3,6 +3,7 @@ import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import { BPM_RANGE, TRACKS, buildBacking, chordLabel, trackKey, type Track } from '../lib/backing';
 import { MetronomeEngine, type Pattern } from '../lib/metronome';
 import { mod12 } from '../lib/music';
+import { usePedal } from '../lib/pedal';
 import { useStoredState } from '../lib/store';
 import './Backing.css';
 
@@ -50,6 +51,14 @@ export default function Backing() {
   };
 
   const shown = TRACKS.filter(t => style === 'Tous' || t.style === style);
+
+  // Pedal: play / pause the open track (or the first one shown), or start again from bar 1.
+  const pedalPlay = () => { const t = sel ?? shown[0]; if (t) play(t); };
+  usePedal({
+    right: pedalPlay,
+    middle: pedalPlay,
+    left: () => { if (sel) { engine.current!.rewind(); setPos({ bar: 0, beat: -1 }); } },
+  });
   const cur = sel ? tw(sel) : null;
   const bars = sel?.bars ?? [];
 

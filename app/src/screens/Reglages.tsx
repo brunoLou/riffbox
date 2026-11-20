@@ -5,6 +5,10 @@ import {
 } from '../lib/backup';
 import { blobsBytes, clearBlobs } from '../lib/blobs';
 import { SETTINGS } from '../lib/data';
+import {
+  DEFAULT_PEDAL_KEYS, PEDAL_ACTIONS, PEDAL_NAMES, PEDAL_SCREENS, actionFor, assignKey, canBePedal, keyLabel, normKey,
+  usePedalKeys, type PedalAction,
+} from '../lib/pedal';
 import { THEME_KEY, applyTheme, type ThemePref } from '../lib/theme';
 import { INITIAL_GRIDS, type Grid } from '../lib/grids';
 import { INITIAL_IDEAS, type Idea } from '../lib/ideas';
@@ -125,6 +129,9 @@ export default function Reglages() {
           </div>
         </div>
 
+        <span className="kicker settings-section">Pédalier</span>
+        <PedalCard />
+
         <span className="kicker settings-section">Données sur cet appareil</span>
         <div className="settings-card">
           <dl className="data-list">
@@ -177,6 +184,102 @@ export default function Reglages() {
 }
 
 /* ---------- Sauvegarde : export et import ---------- */
+
+/** Pedal keys: learn a key per pedal, try them, see what they do on each screen. */
+function PedalCard() {
+  const [keys, setKeys] = usePedalKeys();
+  const [learning, setLearning] = useState<PedalAction | null>(null);
+  const [last, setLast] = useState<{ a: PedalAction | null; key: string; n: number } | null>(null);
+  const [msg, setMsg] = useState('');
+  const keysRef = useRef(keys);
+  keysRef.current = keys;
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target as HTMLElement;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName)) return;
+      if (learning) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.key === 'Escape') { setLearning(null); setMsg(''); return; }
+        if (!canBePedal(e.key) || e.repeat) return;
+        const before = actionFor(keysRef.current, e.key);
+        setKeys(assignKey(keysRef.current, learning, e.key));
+        setMsg(`${keyLabel(normKey(e.key))} → ${PEDAL_NAMES[learning]}` + (before && before !== learning ? ` (retirée de la ${PEDAL_NAMES[before].toLowerCase()})` : ''));
+        setLearning(null);
+        return;
+      }
+      if (!canBePedal(e.key) || e.repeat) return;
+      const a = actionFor(keysRef.current, e.key);
+      // Pedal keys would otherwise scroll the page or click the focused button.
+      if (a) e.preventDefault();
+      setLast(l => ({ a, key: normKey(e.key), n: (l?.n ?? 0) + 1 }));
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [learning, setKeys]);
+
+  const isDefault = JSON.stringify(keys) === JSON.stringify(DEFAULT_PEDAL_KEYS);
+
+  return (
+    <div className="settings-card pedal-card">
+      {PEDAL_ACTIONS.map(a => (
+        <div key={a} className={'settings-row col pedal-row' + (learning === a ? ' learning' : '')} data-pedal={a}>
+          <div className="settings-row-top">
+            <span className="settings-label">{PEDAL_NAMES[a]}</span>
+            <button className="btn-outline pedal-learn" onClick={() => { setMsg(''); setLearning(learning === a ? null : a); }} aria-pressed={learning === a}>
+              {learning === a ? 'Annuler' : 'Apprendre'}
+            </button>
+          </div>
+          {learning === a
+            ? <span className="pedal-wait" role="status">Appuyez sur la pédale… (Échap pour annuler)</span>
+            : (
+              <div className="pedal-keys">
+                {keys[a].length ? keys[a].map(k => (
+                  <span key={k} className="pedal-key">
+                    {keyLabel(k)}
+                    <button onClick={() => setKeys({ ...keys, [a]: keys[a].filter(x => x !== k) })} aria-label={`Retirer ${keyLabel(k)} de la ${PEDAL_NAMES[a].toLowerCase()}`}>×</button>
+                  </span>
+                )) : <span className="settings-help">Aucune touche</span>}
+              </div>
+            )}
+        </div>
+      ))}
+
+      <div className="settings-row col">
+        <div className="settings-row-top">
+          <span className="settings-label">Essai</span>
+          <span className={'pedal-try' + (last?.a ? ' on' : '')} key={last?.n} role="status">
+            <span className="pedal-try-led" />
+            {!last ? 'Appuyez sur une pédale' : last.a ? `${PEDAL_NAMES[last.a]} · ${keyLabel(last.key)}` : `${keyLabel(last.key)} : non attribuée`}
+          </span>
+        </div>
+        {msg && <span className="settings-help pedal-msg">{msg}</span>}
+      </div>
+
+      <details className="pedal-help">
+        <summary>Ce que font les pédales</summary>
+        <table className="pedal-table">
+          <thead><tr><th /><th>Droite</th><th>Gauche</th><th>Milieu</th></tr></thead>
+          <tbody>
+            {PEDAL_SCREENS.map(s => (
+              <tr key={s.screen}><th>{s.screen}</th><td>{s.does.right}</td><td>{s.does.left}</td><td>{s.does.middle}</td></tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="settings-help">
+          Appairez le pédalier dans les réglages Bluetooth du téléphone : il s’y présente comme un clavier.
+          Les pédaliers qui imitent les boutons de volume ne peuvent pas être lus par une app web : choisissez un mode flèches ou pages.
+        </p>
+      </details>
+
+      <div className="settings-action">
+        <button className="btn-outline" disabled={isDefault} onClick={() => { setKeys(DEFAULT_PEDAL_KEYS); setMsg('Touches par défaut rétablies.'); }}>Touches par défaut</button>
+      </div>
+    </div>
+  );
+}
 
 function BackupCard() {
   const [last, setLast] = useStoredState<string | null>('backup.last', null);

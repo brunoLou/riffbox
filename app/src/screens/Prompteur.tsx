@@ -5,18 +5,12 @@ import { SETTINGS, SPEEDS } from '../lib/data';
 import { parseChordPro } from '../lib/music';
 import { INITIAL_SETLISTS, songById, songKey, type Setlist, type Song } from '../lib/setlists';
 import { readStored, useStoredState } from '../lib/store';
+import { usePedal } from '../lib/pedal';
 import { useWakeLock } from '../lib/wakeLock';
 import './Prompteur.css';
 
 /** Auto-scroll rate at 1×, in px per ms (0.8 px every 30 ms in the prototype). */
 const BASE_RATE = 0.8 / 30;
-
-/**
- * A web page cannot see which Bluetooth devices are connected, only the keys they send.
- * So the pedal counts as detected after its first press, for the rest of the visit
- * (module scope: survives changing song, not a reload).
- */
-let pedalSeen = false;
 
 /** Route wrapper: /scene/:setId/play/:index. Remounts per song so per-song state resets. */
 export default function PrompteurRoute() {
@@ -34,8 +28,6 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
   const [speed, setSpeed] = useStoredState('stage.speed', 2);
   const [playing, setPlaying] = useState(false);
   const [edges, setEdges] = useState({ top: true, bottom: false });
-  const [pedal, setPedal] = useState(pedalSeen);
-  const [flash, setFlash] = useState(0);
   const wake = useWakeLock();
   const scrollRef = useRef<HTMLDivElement>(null);
   const pos = useRef(0);
@@ -81,27 +73,12 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
     el.scrollTo({ top, behavior: playing ? 'auto' : 'smooth' });
   }, [edges, hasNext, hasPrev, goSong, index, playing]);
 
-  // Bluetooth page turners send arrow / PageUp / PageDown keys.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (['ArrowRight', 'ArrowDown', 'PageDown'].includes(e.key)) { e.preventDefault(); page(1); }
-      else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); page(-1); }
-      else if (e.key === ' ') { e.preventDefault(); setPlaying(p => !p); }
-      else return;
-      pedalSeen = true;
-      setPedal(true);
-      setFlash(f => f + 1);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [page]);
-
-  // Blink the pedal light briefly on each press.
-  useEffect(() => {
-    if (!flash) return;
-    const t = setTimeout(() => setFlash(0), 220);
-    return () => clearTimeout(t);
-  }, [flash]);
+  // Bluetooth page turners (keys set in Réglages › Pédalier).
+  const { seen: pedal, flash } = usePedal({
+    right: () => page(1),
+    left: () => page(-1),
+    middle: () => { if (lines.length) setPlaying(p => !p); },
+  });
 
   const prevLabel = edges.top ? '‹ Titre préc.' : '‹ Précédent';
   const nextLabel = edges.bottom ? 'Titre suivant ›' : 'Suivant ›';

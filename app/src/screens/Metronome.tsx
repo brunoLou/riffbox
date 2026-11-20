@@ -5,6 +5,7 @@ import {
   GROOVES, MetronomeEngine, SIGNATURES, SUBDIVISIONS, buildPattern, defaultAccents,
   type GrooveId, type Signature,
 } from '../lib/metronome';
+import { usePedal } from '../lib/pedal';
 import { useStoredState } from '../lib/store';
 import './Metronome.css';
 
@@ -47,6 +48,8 @@ export default function Metronome() {
     setTapFlash(true);
     window.setTimeout(() => setTapFlash(false), 120);
   };
+
+  usePedal({ right: toggle, left: tap, middle: toggle });
 
   const subLocked = groove !== 'clic' || sig === '6/8';
   const grooveDef = GROOVES.find(g => g.id === groove)!;

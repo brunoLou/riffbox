@@ -11,6 +11,7 @@ import { INITIAL_IDEAS, type Idea } from '../lib/ideas';
 import { MetronomeEngine, type Pattern } from '../lib/metronome';
 import { IN_N, KFR, OUT_N, OUT_PC, chordName, degreeOf, mod12, type Chord } from '../lib/music';
 import { fmtDate, titlesLabel, type Setlist } from '../lib/setlists';
+import { usePedal } from '../lib/pedal';
 import { readStored } from '../lib/store';
 import { useGrids, useSetlists } from '../lib/hooks';
 import './Grille.css';
@@ -69,6 +70,21 @@ function Grille({ id }: { id: string }) {
   useEffect(() => {
     if (playing && !chords.length) { engine.current!.stop(); setPlaying(false); }
   }, [playing, chords.length]);
+
+  // Pedal: loop on / off; left pedal moves to the next section that has chords.
+  const loopPedal = () => { if (chords.length) toggleLoop(); };
+  usePedal({
+    right: loopPedal,
+    middle: loopPedal,
+    left: () => {
+      if (!g) return;
+      const n = GRID_SECTIONS.length;
+      for (let k = 1; k < n; k++) {
+        const i = (sec + k) % n;
+        if (g.prog[i]?.length) { pickSection(i); return; }
+      }
+    },
+  });
 
   if (!g) return <Navigate to="/composer/grilles" replace />;
 
