@@ -8,7 +8,8 @@ import Grille from './screens/Grille';
 import Gammes from './screens/Gammes';
 import Prompteur from './screens/Prompteur';
 import Metronome from './screens/Metronome';
-import { Backing, ComposerHome, Idee, PratiquerHome, SceneHome } from './screens/Stub';
+import Carnet from './screens/Carnet';
+import { Backing, PratiquerHome, SceneHome } from './screens/Stub';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -18,8 +19,8 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/" element={<Accueil />} />
           <Route path="/accordeur" element={<Accordeur />} />
           <Route path="/metronome" element={<Metronome />} />
-          <Route path="/idee" element={<Idee />} />
-          <Route path="/composer" element={<ComposerHome />} />
+          <Route path="/idee" element={<Navigate to="/composer" replace state={{ record: true }} />} />
+          <Route path="/composer" element={<Carnet />} />
           <Route path="/composer/grille" element={<Grille />} />
           <Route path="/pratiquer" element={<PratiquerHome />} />
           <Route path="/pratiquer/gammes" element={<Gammes />} />

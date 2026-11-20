@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Phone, StatusBar, TabBar } from '../components/Chrome';
 import { SETTINGS, TILES, type Tile } from '../lib/data';
+import { INITIAL_IDEAS } from '../lib/ideas';
 import { readStored, useStoredState } from '../lib/store';
 import './Accueil.css';
 
@@ -45,7 +46,9 @@ export default function Accueil() {
   const [edit, setEdit] = useState(false);
   const [removed, setRemoved] = useStoredState<string[]>('home.removed', []);
   const metroSub = `${readStored('metro.bpm', 92)} BPM · ${readStored('metro.sig', '4/4')}`;
-  const tiles = TILES.filter(t => !removed.includes(t.id)).map(t => (t.id === 'metro' ? { ...t, sub: metroSub } : t));
+  const carnetSub = `${readStored('ideas', INITIAL_IDEAS).length} idées`;
+  const tiles = TILES.filter(t => !removed.includes(t.id)).map(t =>
+    t.id === 'metro' ? { ...t, sub: metroSub } : t.id === 'carnet' ? { ...t, sub: carnetSub } : t);
 
   return (
     <Phone label="01 Accueil">
@@ -87,7 +90,7 @@ export default function Accueil() {
         </div>
       </div>
 
-      <button className="fab" onClick={() => nav('/idee')}><span>+</span>Idée</button>
+      <button className="fab" onClick={() => nav('/composer', { state: { record: true } })}><span>+</span>Idée</button>
       <TabBar active={0} />
     </Phone>
   );

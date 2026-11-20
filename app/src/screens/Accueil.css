@@ -2,6 +2,7 @@
   height: calc(100% - 50px); overflow-y: auto; scrollbar-width: none;
   padding: 6px 18px 190px; display: flex; flex-direction: column; gap: 16px;
 }
+.home-scroll > * { flex-shrink: 0; }
 .edit-btn {
   height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid var(--line-2);
   background: transparent; color: var(--cream); font-weight: 700; font-size: 15px;

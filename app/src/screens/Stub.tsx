@@ -36,12 +36,6 @@ export function Stub({ label, kicker, title, tab, back, links = [], note }: {
   );
 }
 
-export const ComposerHome = () => (
-  <Stub label="04 Carnet" kicker="Composer" title="CARNET D’IDÉES" tab={1}
-    links={[{ title: 'Minuit Shuffle', sub: 'Grille · La · 92 BPM · shuffle', to: '/composer/grille' }]}
-    note="Liste des fragments (riffs, grilles, paroles, mémos vocaux) avec filtres ton · tempo · style, et enregistrement en un tap." />
-);
-
 export const PratiquerHome = () => (
   <Stub label="07a Pratiquer" kicker="Pratiquer" title="PRATIQUER" tab={2}
     links={[
@@ -60,10 +54,4 @@ export const SceneHome = () => (
 export const Backing = () => (
   <Stub label="07 Backing tracks" kicker="Pratiquer" title="BACKING TRACKS" tab={2} back="/pratiquer"
     note="Pistes par style et tonalité (ex. « Blues en La, 90 BPM, shuffle ») avec filtres et lecture." />
-);
-
-export const Idee = () => (
-  <Stub label="FAB Capture" kicker="+ Idée" title="CAPTURE RAPIDE" tab={-1} back="/"
-    links={[{ title: 'Ranger dans le carnet', sub: 'Composer · Carnet d’idées', to: '/composer' }]}
-    note="Fiche qui monte du bas : « ● Enregistrer un riff », forme d’onde en direct et tags rapides." />
 );
