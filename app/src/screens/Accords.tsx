@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import { ChordDiagram } from '../components/ChordDiagram';
 import { strum, type Playback } from '../lib/audio';
 import {
-  CHORD_TYPES, LETTERS, OPEN_MIDI, SHAPE_FR, chordSymbol, chordType, intervalOf, voicingMidi, voicings, type Voicing,
+  CHORD_TYPES, LETTERS, OPEN_MIDI, SHAPE_FR, capPos, chordSymbol, chordType, intervalOf, voicingMidi, voicings,
 } from '../lib/chords';
 import { KEY_FR, KEY_ORDER, NOTE_L, mod12 } from '../lib/music';
 import { useStoredState } from '../lib/store';
@@ -24,18 +24,14 @@ const TYPE_LABEL: Record<string, string> = { maj: 'Majeur', m: 'Mineur' };
 const OPEN_W = 30, FRET_W = 40, LAST = 15;
 const fretX = (f: number) => (f === 0 ? 0 : OPEN_W + (f - 1) * FRET_W);
 const STRING_LABELS = ['E', 'A', 'D', 'G', 'B', 'e'];
-/** Position of a voicing: 0 when it uses open strings, else its lowest fret. */
-const capPos = (v: Voicing) => {
-  if (v.frets.includes(0)) return 0;
-  const fr = v.frets.filter((f): f is number => f !== null && f > 0);
-  return fr.length ? Math.min(...fr) : 0;
-};
 
 export default function Accords() {
   const [root, setRoot] = useStoredState('chords.root', 9);
   const [typeId, setTypeId] = useStoredState('chords.type', 'maj');
   const [labels, setLabels] = useStoredState<'notes' | 'intervals'>('chords.labels', 'notes');
-  const [idx, setIdx] = useState(0);
+  // Opened from a grid chord: start on the position chosen there.
+  const loc = useLocation();
+  const [idx, setIdx] = useState(() => (loc.state as { pos?: number } | null)?.pos ?? 0);
   const type = chordType(typeId);
   const list = useMemo(() => voicings(root, type), [root, type]);
   const v = list[Math.min(idx, list.length - 1)];
@@ -43,7 +39,8 @@ export default function Accords() {
   const neck = useRef<HTMLDivElement>(null);
   const first = useRef(true);
 
-  useEffect(() => { setIdx(0); }, [root, typeId]);
+  const firstChord = useRef(true);
+  useEffect(() => { if (firstChord.current) { firstChord.current = false; return; } setIdx(0); }, [root, typeId]);
   useEffect(() => () => player.current?.stop(), []);
   // Keep the selected position in view on the neck.
   useEffect(() => {

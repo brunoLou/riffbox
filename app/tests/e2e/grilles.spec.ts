@@ -76,3 +76,48 @@ test('the Grilles tile filters the notebook for this visit only', async ({ page 
   await page.getByRole('link', { name: 'Composer' }).click();
   await expect(page.locator('.kind-chip.on-cream')).toHaveText('Tout');
 });
+
+test('touching a chord of the grid shows its diagram, other positions, and the library', async ({ page }) => {
+  await page.goto('#/composer/grille/g-minuit');
+  await page.getByLabel('Accord D : diagramme').click();
+  const sheet = page.getByRole('dialog', { name: 'Accord D' });
+  await expect(sheet.locator('.sheet-kicker')).toHaveText('Couplet · accord 2/4');
+  await expect(sheet.locator('.cs-sub')).toHaveText('Ré majeur · degré IV en La');
+  await expect(sheet.locator('.cs-pos')).toHaveText('Forme de Ré · position ouverte · 1/5');
+  await expect(sheet.locator('.cd-label')).toHaveText(['A', 'D', 'F♯']); // notes on the dots
+
+  // Step through the section's chords.
+  await sheet.getByLabel('Accord suivant').click();
+  await expect(page.getByRole('dialog', { name: 'Accord A' }).locator('.sheet-kicker')).toHaveText('Couplet · accord 3/4');
+  await page.getByLabel('Accord précédent').click();
+
+  // Another position, remembered for this chord everywhere.
+  await sheet.getByLabel('Position suivante').click();
+  await expect(sheet.locator('.cs-pos')).toHaveText(/^Forme de .* · case \d+ · 2\/5$/);
+  const pos2 = await sheet.locator('.cs-pos').textContent();
+  await sheet.getByLabel('Fermer').click();
+  await page.reload();
+  await page.getByLabel('Accord D : diagramme').click();
+  await expect(sheet.locator('.cs-pos')).toHaveText(pos2!);
+
+  // The library opens on the same chord and position.
+  await button(page, 'Bibliothèque ›').click();
+  await expect(page).toHaveURL(/#\/pratiquer\/accords$/);
+  await expect(page.locator('.shape-label')).toHaveText(/· 2\/5$/);
+  await expect(page.locator('.chord-sym')).toHaveText('D');
+});
+
+test('a minor chord outside the key, and removing a chord from the sheet', async ({ page }) => {
+  await page.goto('#/composer/grille/g-minuit');
+  await page.locator('.seg button', { hasText: 'Pont' }).click();
+  await wheel(page, 'C#m').click();
+  await page.getByLabel('Accord C#m : diagramme').click();
+  await expect(page.locator('.cs-sub')).toHaveText('Do♯ mineur · degré iii en La');
+  await page.getByLabel('Accord précédent').click();
+  await button(page, /^Retirer .* de la grille$/).click();
+  // The sheet moves to the chord that took its place.
+  await expect(page.locator('.chord-sheet .cs-name')).toHaveText('C#m');
+  expect(await texts(page, '.slot-name')).toHaveLength(4);
+  await button(page, 'Retirer C#m de la grille').click();
+  await expect(page.locator('.slot-name')).toHaveCount(3);
+});

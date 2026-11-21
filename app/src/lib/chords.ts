@@ -101,6 +101,13 @@ export function voicings(root: number, type: ChordType): Voicing[] {
 }
 const minFret = (v: Voicing) => Math.min(...v.frets.filter((f): f is number => f !== null));
 
+/** Position of a voicing: 0 when it uses open strings, else its lowest fret. */
+export const capPos = (v: Voicing) => {
+  if (v.frets.includes(0)) return 0;
+  const fr = v.frets.filter((f): f is number => f !== null && f > 0);
+  return fr.length ? Math.min(...fr) : 0;
+};
+
 /** Sounding MIDI notes of a voicing, low to high. */
 export const voicingMidi = (v: Voicing) => v.frets.flatMap((f, s) => (f === null ? [] : [OPEN_MIDI[s] + f]));
 

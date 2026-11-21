@@ -11,6 +11,7 @@ import { INITIAL_IDEAS, type Idea } from '../lib/ideas';
 import { MetronomeEngine, type Pattern } from '../lib/metronome';
 import { IN_N, KFR, OUT_N, OUT_PC, chordName, degreeOf, mod12, type Chord } from '../lib/music';
 import { fmtDate, titlesLabel, type Setlist } from '../lib/setlists';
+import { GridChordSheet } from '../components/GridChordSheet';
 import { usePedal } from '../lib/pedal';
 import { readStored } from '../lib/store';
 import { useGrids, useSetlists } from '../lib/hooks';
@@ -45,6 +46,8 @@ function Grille({ id }: { id: string }) {
   const [pos, setPos] = useState({ bar: 0, beat: -1 });
   const [sheet, setSheet] = useState<null | 'settings' | 'setlist'>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  /** Chord of the section shown in the diagram sheet. */
+  const [chordAt, setChordAt] = useState<number | null>(null);
   const [sets, setSets] = useSetlists();
   const riffPlayer = useRef<Playback | null>(null);
   const [riffPlaying, setRiffPlaying] = useState(false);
@@ -100,7 +103,12 @@ function Grille({ id }: { id: string }) {
     if (playing) { e.stop(); setPlaying(false); setPos({ bar: 0, beat: -1 }); return; }
     e.rewind(); setPos({ bar: 0, beat: -1 }); e.start(); setPlaying(true);
   };
-  const pickSection = (i: number) => { setSec(i); setPos({ bar: 0, beat: -1 }); engine.current!.rewind(); };
+  const pickSection = (i: number) => { setSec(i); setChordAt(null); setPos({ bar: 0, beat: -1 }); engine.current!.rewind(); };
+  const removeChord = (i: number) => {
+    updateSection(p => p.filter((_, j) => j !== i));
+    const left = chords.length - 1;
+    setChordAt(left ? Math.min(i, left - 1) : null);
+  };
 
   const songId = gridSongId(g);
   const addToSet = (s: Setlist) => {
@@ -163,7 +171,7 @@ function Grille({ id }: { id: string }) {
           {chords.map((c, i) => {
             const on = playing && i === pos.bar;
             return (
-              <button key={i} className={'slot' + (on ? ' on' : '')} onClick={() => updateSection(p => p.filter((_, j) => j !== i))} aria-label={`Retirer ${chordName(c)}`}>
+              <button key={i} className={'slot' + (on ? ' on' : '')} onClick={() => setChordAt(i)} aria-label={`Accord ${chordName(c)} : diagramme`}>
                 <span className="slot-name">{chordName(c)}</span>
                 <span className="slot-deg">{degreeOf(g.key, c.pc, c.m) || '—'}</span>
               </button>
@@ -217,6 +225,11 @@ function Grille({ id }: { id: string }) {
         </button>
         <button className="grid-to-set" onClick={() => setSheet('setlist')}>Setlist +</button>
       </div>
+
+      {chordAt !== null && chords[chordAt] && (
+        <GridChordSheet chords={chords} index={chordAt} gridKey={g.key} section={GRID_SECTIONS[sec]}
+          onIndex={setChordAt} onRemove={removeChord} onClose={() => setChordAt(null)} />
+      )}
 
       {sheet === 'setlist' && (
         <div className="sheet-backdrop" onClick={closeSheet}>

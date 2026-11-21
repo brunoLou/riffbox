@@ -1,0 +1,15 @@
+.chord-sheet { max-height: 94%; overflow-y: auto; scrollbar-width: none; gap: 10px; }
+.chord-sheet > * { flex-shrink: 0; }
+.cs-title-row { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; gap: 8px; }
+.cs-title { display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0; }
+.cs-name { font-family: var(--f-display); font-weight: 900; font-size: 44px; line-height: 1; color: var(--cream); }
+.cs-sub { font-size: 14px; color: var(--muted-3); }
+.cs-step { width: 48px; height: 48px; border-radius: 24px; background: var(--surface-3); color: var(--cream); font-size: 26px; font-weight: 700; line-height: 1; }
+.cs-step.small { width: 40px; height: 40px; font-size: 22px; }
+.cs-step:disabled { opacity: .3; cursor: default; }
+.cs-diagram { display: flex; justify-content: center; padding: 14px 0 6px; border-radius: 18px; background: linear-gradient(#2c2622, #1c1916); }
+.cs-pos-row { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; gap: 8px; }
+.cs-pos { text-align: center; font-size: 14px; font-weight: 600; color: var(--muted-2); }
+.cs-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cs-actions > button { margin-top: 0; }
+.cs-remove { height: 44px; color: var(--warn); font-weight: 600; font-size: 14px; }
