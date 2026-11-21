@@ -3,14 +3,38 @@ import { readStored, writeStored } from './store';
 
 export interface RoutineStep { id: string; name: string; short: string; detail: string; min: number; link?: { label: string; to: string } }
 
-export const ROUTINE: RoutineStep[] = [
+/** The routine on first launch (and after « Rétablir »). */
+export const DEFAULT_ROUTINE: RoutineStep[] = [
   { id: 'warm', name: 'Échauffement', short: 'Chromatique 1-2-3-4', detail: 'Chromatique 1-2-3-4 sur les six cordes, au métronome.', min: 5, link: { label: 'Ouvrir le métronome', to: '/metronome' } },
   { id: 'tech', name: 'Technique', short: 'Bends et vibrato', detail: 'Bends d’un ton et vibrato sur la penta de La, cases 5 à 8.', min: 8 },
   { id: 'scales', name: 'Gammes', short: 'Penta mineure de La', detail: 'Penta mineure de La, positions 1 et 2, avec la note bleue.', min: 4, link: { label: 'Ouvrir le manche', to: '/pratiquer/gammes' } },
   { id: 'impro', name: 'Impro', short: 'Impro blues en La', detail: 'Improviser sur un blues en La, shuffle à 90 BPM.', min: 8, link: { label: 'Lancer le backing', to: '/pratiquer/backing' } },
 ];
-export const ROUTINE_MIN = ROUTINE.reduce((t, s) => t + s.min, 0);
-export const GOAL_MIN = ROUTINE_MIN;
+
+/** Tools a step can open. */
+export const STEP_TOOLS: { name: string; label: string; to: string }[] = [
+  { name: 'Métronome', label: 'Ouvrir le métronome', to: '/metronome' },
+  { name: 'Accordeur', label: 'Ouvrir l’accordeur', to: '/accordeur' },
+  { name: 'Gammes', label: 'Ouvrir le manche', to: '/pratiquer/gammes' },
+  { name: 'Accords', label: 'Ouvrir les accords', to: '/pratiquer/accords' },
+  { name: 'Backing tracks', label: 'Lancer le backing', to: '/pratiquer/backing' },
+  { name: 'Grilles', label: 'Ouvrir les grilles', to: '/composer/grilles' },
+  { name: 'Voix', label: 'Ouvrir la justesse vocale', to: '/voix' },
+  { name: 'Morceaux', label: 'Ouvrir les morceaux', to: '/scene/morceaux' },
+];
+export const STEP_LIMITS = { steps: 8, minMin: 1, maxMin: 60 };
+
+/** Short text for the home card: the first part of the instructions, else the name. */
+export const shortOf = (name: string, detail: string) => {
+  const first = detail.split(/[.;:\n]/)[0].trim();
+  return first.length > 34 ? first.slice(0, 33).trimEnd() + '…' : first || name;
+};
+
+const STEPS_KEY = 'routine.steps';
+let steps: RoutineStep[] = readStored<RoutineStep[]>(STEPS_KEY, DEFAULT_ROUTINE);
+/** The player's routine (editable in Pratiquer › Routine › Modifier). */
+export const routineSteps = () => steps;
+export const routineMin = () => steps.reduce((t, x) => t + x.min, 0);
 
 export interface RoutineState { date: string; step: number; elapsed: number[]; running: boolean; done: boolean }
 
@@ -19,7 +43,9 @@ export const dayKey = (d = new Date()) => `${d.getFullYear()}-${d.getMonth() + 1
 // Demo on first launch: today's routine is already under way (steps 1–2 done, on step 3).
 // Afterwards the saved state is restored (paused; the timer never runs in the background of a closed app).
 const DEMO_ELAPSED = [300, 480, 0, 0];
-let state: RoutineState = { ...readStored<RoutineState>('routine', { date: dayKey(), step: 2, elapsed: DEMO_ELAPSED, running: false, done: false }), running: false };
+const saved = readStored<RoutineState>('routine', { date: dayKey(), step: 2, elapsed: DEMO_ELAPSED, running: false, done: false });
+// Always one elapsed time per step, whatever was saved.
+let state: RoutineState = { ...saved, elapsed: steps.map((_, i) => saved.elapsed[i] ?? 0), step: Math.min(saved.step, steps.length - 1), running: false };
 const listeners = new Set<() => void>();
 let timer: number | null = null;
 
@@ -55,10 +81,10 @@ function tick() {
   const s = state;
   if (!s.running) return;
   const elapsed = s.elapsed.slice();
-  elapsed[s.step] = Math.min(ROUTINE[s.step].min * 60, elapsed[s.step] + 1);
-  if (elapsed[s.step] >= ROUTINE[s.step].min * 60) {
+  elapsed[s.step] = Math.min(steps[s.step].min * 60, elapsed[s.step] + 1);
+  if (elapsed[s.step] >= steps[s.step].min * 60) {
     chime();
-    const last = s.step === ROUTINE.length - 1;
+    const last = s.step === steps.length - 1;
     if (last) stopTimer();
     set({ ...s, elapsed, step: last ? s.step : s.step + 1, running: !last, done: last });
     return;
@@ -68,7 +94,7 @@ function tick() {
 function stopTimer() { if (timer !== null) clearInterval(timer); timer = null; }
 
 function ensureToday() {
-  if (state.date !== dayKey()) set({ date: dayKey(), step: 0, elapsed: ROUTINE.map(() => 0), running: false, done: false });
+  if (state.date !== dayKey()) set({ date: dayKey(), step: 0, elapsed: steps.map(() => 0), running: false, done: false });
 }
 
 export const routine = {
@@ -80,10 +106,27 @@ export const routine = {
   },
   pause() { stopTimer(); set({ ...state, running: false }); },
   goto(step: number) {
-    if (step < 0 || step >= ROUTINE.length) return;
+    if (step < 0 || step >= steps.length) return;
     set({ ...state, step, done: false });
   },
-  restart() { stopTimer(); set({ date: dayKey(), step: 0, elapsed: ROUTINE.map(() => 0), running: false, done: false }); },
+  restart() { stopTimer(); set({ date: dayKey(), step: 0, elapsed: steps.map(() => 0), running: false, done: false }); },
+  /**
+   * Replace the routine. Today's time is kept for the steps that remain (matched by id, capped to
+   * their new length); the timer pauses, and the current step stays the same when it still exists.
+   */
+  setSteps(next: RoutineStep[]) {
+    stopTimer();
+    const before = new Map(steps.map((x, i) => [x.id, state.elapsed[i] ?? 0]));
+    const curId = steps[state.step]?.id;
+    steps = next;
+    writeStored(STEPS_KEY, next);
+    const elapsed = next.map(x => Math.min(x.min * 60, before.get(x.id) ?? 0));
+    const done = elapsed.every((e, i) => e >= next[i].min * 60);
+    const firstLeft = elapsed.findIndex((e, i) => e < next[i].min * 60);
+    const kept = next.findIndex(x => x.id === curId);
+    const step = done ? next.length - 1 : kept >= 0 && elapsed[kept] < next[kept].min * 60 ? kept : Math.max(0, firstLeft);
+    set({ ...state, date: dayKey(), elapsed, step, running: false, done });
+  },
 };
 
 export function useRoutine(): RoutineState {

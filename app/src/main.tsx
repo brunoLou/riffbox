@@ -21,6 +21,7 @@ import Capo from './screens/Capo';
 import Accords from './screens/Accords';
 import Pratiquer from './screens/Pratiquer';
 import Routine from './screens/Routine';
+import RoutineEdit from './screens/RoutineEdit';
 import Backing from './screens/Backing';
 import Reglages from './screens/Reglages';
 
@@ -43,6 +44,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/composer/grille/:gridId" element={<Grille />} />
           <Route path="/pratiquer" element={<Pratiquer />} />
           <Route path="/pratiquer/routine" element={<Routine />} />
+          <Route path="/pratiquer/routine/modifier" element={<RoutineEdit />} />
           <Route path="/pratiquer/gammes" element={<Gammes />} />
           <Route path="/pratiquer/backing" element={<Backing />} />
           <Route path="/pratiquer/accords" element={<Accords />} />

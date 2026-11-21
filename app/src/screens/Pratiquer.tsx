@@ -4,7 +4,7 @@ import { Phone, StatusBar, TabBar } from '../components/Chrome';
 import { TRACKS } from '../lib/backing';
 import { scaleDef } from '../lib/scales';
 import { KEY_FR } from '../lib/music';
-import { GOAL_MIN, ROUTINE, ROUTINE_MIN, doneSeconds, fmtHM, routine, streak, useRoutine, week } from '../lib/routine';
+import { doneSeconds, fmtHM, routine, streak, useRoutine, week, routineMin, routineSteps } from '../lib/routine';
 import { readStored } from '../lib/store';
 import './Pratiquer.css';
 
@@ -12,7 +12,7 @@ const CHART_H = 112;
 
 function WeekChart({ days }: { days: ReturnType<typeof week> }) {
   const [sel, setSel] = useState(days.length - 1);
-  const max = Math.max(GOAL_MIN * 1.4, ...days.map(d => d.min));
+  const max = Math.max(routineMin() * 1.4, ...days.map(d => d.min));
   const y = (m: number) => (m / max) * CHART_H;
   const total = days.reduce((t, d) => t + d.min, 0);
   const s = days[sel];
@@ -23,7 +23,7 @@ function WeekChart({ days }: { days: ReturnType<typeof week> }) {
         <span className="week-total"><b>{fmtHM(total)}</b> de pratique</span>
       </div>
       <div className="week-plot" style={{ height: CHART_H }}>
-        <div className="week-goal" style={{ bottom: y(GOAL_MIN) }}><span>Objectif {GOAL_MIN} min</span></div>
+        <div className="week-goal" style={{ bottom: y(routineMin()) }}><span>Objectif {routineMin()} min</span></div>
         {days.map((d, i) => (
           <button
             key={i}
@@ -40,7 +40,7 @@ function WeekChart({ days }: { days: ReturnType<typeof week> }) {
       <div className="week-axis">
         {days.map((d, i) => <span key={i} className={(d.today ? 'today' : '') + (i === sel ? ' sel' : '')}>{d.today ? 'Auj.' : d.label}</span>)}
       </div>
-      <div className="week-foot">{s.long}{s.today ? ' (aujourd’hui)' : ''} · {s.min} min{s.min >= GOAL_MIN ? ' · objectif atteint' : ''}</div>
+      <div className="week-foot">{s.long}{s.today ? ' (aujourd’hui)' : ''} · {s.min} min{s.min >= routineMin() ? ' · objectif atteint' : ''}</div>
     </div>
   );
 }
@@ -54,7 +54,7 @@ export default function Pratiquer() {
   const scaleKey = readStored('scale.key', 9);
   const scale = scaleDef(readStored('scale.id', readStored('scale.maj', false) ? 'pmaj' : 'pmin'));
 
-  const action = r.done ? 'Recommencer la routine' : r.running ? 'Continuer · étape en cours' : started ? `▶  Reprendre · étape ${r.step + 1}/${ROUTINE.length}` : '▶  Démarrer la routine';
+  const action = r.done ? 'Recommencer la routine' : r.running ? 'Continuer · étape en cours' : started ? `▶  Reprendre · étape ${r.step + 1}/${routineSteps().length}` : '▶  Démarrer la routine';
   const go = () => { if (r.done) routine.restart(); nav('/pratiquer/routine'); };
 
   return (
@@ -72,10 +72,13 @@ export default function Pratiquer() {
         <div className="routine-card">
           <div className="routine-card-head">
             <span className="routine-kicker">Routine du jour</span>
-            <span className="mono routine-total">{doneMin}/{ROUTINE_MIN} min</span>
+            <span className="routine-head-r">
+              <span className="mono routine-total">{doneMin}/{routineMin()} min</span>
+              <button className="routine-edit" onClick={() => nav('/pratiquer/routine/modifier')}>Modifier</button>
+            </span>
           </div>
           <div className="routine-steps">
-            {ROUTINE.map((s, i) => {
+            {routineSteps().map((s, i) => {
               const state = r.elapsed[i] >= s.min * 60 ? 'done' : i === r.step && !r.done ? 'cur' : '';
               return (
                 <div key={s.id} className={'rstep ' + state}>
@@ -86,7 +89,7 @@ export default function Pratiquer() {
               );
             })}
           </div>
-          <div className="progress"><div style={{ width: `${(doneSeconds(r) / (ROUTINE_MIN * 60)) * 100}%` }} /></div>
+          <div className="progress"><div style={{ width: `${(doneSeconds(r) / (routineMin() * 60)) * 100}%` }} /></div>
           <button className="routine-go" onClick={go}>{action}</button>
         </div>
 

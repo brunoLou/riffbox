@@ -6,7 +6,7 @@ import { readGrids } from '../lib/grids';
 import { KEY_FR } from '../lib/music';
 import { scaleDef } from '../lib/scales';
 import { INITIAL_IDEAS } from '../lib/ideas';
-import { ROUTINE, ROUTINE_MIN, doneSeconds, streak, useRoutine, type RoutineState } from '../lib/routine';
+import { doneSeconds, streak, useRoutine, type RoutineState, routineMin, routineSteps } from '../lib/routine';
 import { INITIAL_SETLISTS, readSongs, titlesLabel } from '../lib/setlists';
 import { readStored, useStoredState } from '../lib/store';
 import { currentTuning } from '../lib/tunings';
@@ -27,7 +27,7 @@ function subFor(t: Tile, r: RoutineState): string {
     case 'carnet': return plural(readStored('ideas', INITIAL_IDEAS).length + readGrids().length, 'idée');
     case 'grilles': return plural(readGrids().length, 'grille');
     case 'manche': return `${scaleDef(readStored('scale.id', 'pmin')).chip} · ${KEY_FR[readStored('scale.key', 9)]}`;
-    case 'routine': return `${Math.floor(doneSeconds(r) / 60)}/${ROUTINE_MIN} min aujourd’hui`;
+    case 'routine': return `${Math.floor(doneSeconds(r) / 60)}/${routineMin()} min aujourd’hui`;
     case 'morceaux': return plural(readSongs().length, 'titre');
     case 'tonalite': { const v = readRange(); return v.measured ? `${noteFr(v.low)} – ${noteFr(v.high)}` : t.sub; }
     case 'setlists': {
@@ -95,7 +95,7 @@ export default function Accueil() {
   const r = useRoutine();
   const showStreak = readStored(SETTINGS.showStreak.key, SETTINGS.showStreak.def);
   const st = streak(r);
-  const step = ROUTINE[r.step];
+  const step = routineSteps()[r.step];
   const left = Math.ceil((step.min * 60 - r.elapsed[r.step]) / 60);
 
   const byId = new Map(TILES.map(t => [t.id, t]));
@@ -161,8 +161,8 @@ export default function Accueil() {
               onKeyDown={e => { if (e.key === 'Enter') nav('/pratiquer/routine'); }}>
               <div className="resume-kicker"><span className="resume-dot" /><span>{r.done ? 'Routine faite' : r.running ? 'En cours' : 'Reprendre'}</span></div>
               <div className="resume-title">{r.done ? 'Routine du jour terminée' : step.short}</div>
-              <div className="resume-sub">{r.done ? `${ROUTINE_MIN} min de pratique` : `Routine · étape ${r.step + 1}/${ROUTINE.length} · ${left} min`}</div>
-              <div className="progress"><div style={{ width: `${(doneSeconds(r) / (ROUTINE_MIN * 60)) * 100}%` }} /></div>
+              <div className="resume-sub">{r.done ? `${routineMin()} min de pratique` : `Routine · étape ${r.step + 1}/${routineSteps().length} · ${left} min`}</div>
+              <div className="progress"><div style={{ width: `${(doneSeconds(r) / (routineMin() * 60)) * 100}%` }} /></div>
             </div>
             {showStreak && (
               <div className="card streak" role="button" tabIndex={0} onClick={() => nav('/pratiquer')} aria-label={`${st.days} jours de pratique d’affilée`}>

@@ -61,6 +61,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/setlists.spec.ts` | setlists, réordonnancement, pédalier, transposition, défilement |
 | `tests/e2e/pedalier.spec.ts` | voyant du pédalier, écran maintenu allumé (Wake Lock simulé), apprentissage des touches, pédalier sur le métronome, la grille, les backing tracks et la routine |
 | `tests/e2e/pratiquer.spec.ts` | routine minutée, graphique, backing tracks |
+| `tests/e2e/routine.spec.ts` | routine modifiable : durées, noms, ajout, ordre, retrait, temps du jour gardé, rétablir |
 | `tests/e2e/voix.spec.ts` | accordeur vocal, tessiture, tonalité + capo, exercice et prise |
 | `tests/e2e/accords-gammes.spec.ts` | bibliothèques d’accords et de gammes |
 | `tests/e2e/reglages.spec.ts` | thèmes, effacement des exemples, réinitialisation, sauvegarde et fusion |

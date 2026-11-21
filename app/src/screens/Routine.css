@@ -24,3 +24,26 @@
 .rlist-time { font-size: 12px; color: var(--muted-2); }
 
 .rtransport { position: absolute; left: 18px; right: 18px; bottom: 100px; display: flex; align-items: center; justify-content: space-between; }
+
+/* Routine editor */
+.redit-scroll { height: calc(100% - 50px); overflow-y: auto; scrollbar-width: none; padding: 6px 18px 120px; display: flex; flex-direction: column; gap: 10px; }
+.redit-scroll > * { flex-shrink: 0; }
+.redit-cancel { padding: 0 4px; }
+.redit-total { margin: 0; padding: 0 4px; font-size: 14px; color: var(--muted-3); }
+.redit-total b { color: var(--accent-text); font-size: 15px; }
+.redit-card { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 18px; background: var(--surface-2); border: 1px solid var(--card-border); }
+.redit-top { display: flex; align-items: center; gap: 8px; }
+.redit-top .rstep-dot { flex: none; }
+.redit-name { flex: 1; min-width: 0; height: 44px; }
+.redit-order { display: flex; gap: 4px; }
+.redit-order button { width: 36px; height: 40px; border-radius: 10px; background: var(--surface-3); color: var(--cream); font-size: 17px; font-weight: 700; }
+.redit-order button:disabled { opacity: .3; cursor: default; }
+.redit-detail { height: auto; min-height: 64px; padding: 10px 14px; font-weight: 500; font-size: 15px; line-height: 1.4; resize: vertical; }
+.redit-row { display: flex; align-items: center; gap: 8px; }
+.redit-row .mini-stepper .mono { min-width: 64px; }
+.redit-tool { position: relative; flex: 1; min-width: 0; height: 46px; }
+.redit-remove { align-self: flex-end; height: 36px; color: var(--muted-3); font-size: 13px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.redit-add { height: 52px; border-radius: 18px; border: 1.5px dashed var(--dash); color: var(--muted-2); font-weight: 700; font-size: 15px; }
+.redit-warn { margin: 0; padding: 0 4px; font-size: 14px; color: var(--warn); }
+.redit-note { margin: 0; padding: 0 4px; text-align: center; font-size: 13px; color: var(--muted-2); }
+.edit-btn:disabled { opacity: .4; cursor: default; }
