@@ -1,12 +1,12 @@
 import { NOTE_L, mod12 } from '../lib/music';
-import { OPEN_MIDI, intervalOf, type ChordType, type Voicing } from '../lib/chords';
+import { OPEN_MIDI, fingering, intervalOf, type ChordType, type Voicing } from '../lib/chords';
 import './ChordDiagram.css';
 
 const FRETS = 5;
 
 /** Classic vertical chord box: strings low E (left) to high e, frets top to bottom. */
 export function ChordDiagram({ v, root, type, labels, size = 'big' }: {
-  v: Voicing; root: number; type: ChordType; labels?: 'notes' | 'intervals'; size?: 'big' | 'small';
+  v: Voicing; root: number; type: ChordType; labels?: 'notes' | 'intervals' | 'fingers'; size?: 'big' | 'small';
 }) {
   const big = size === 'big';
   const W = big ? 200 : 76, H = big ? 236 : 92;
@@ -16,14 +16,14 @@ export function ChordDiagram({ v, root, type, labels, size = 'big' }: {
   const fy = (f: number) => top + (f - v.base + 0.5) * fh;
   const r = big ? 13 : 5;
 
-  // Barre: the lowest fretted fret, held across three or more strings with nothing lower in between.
+  // Barre and fingers from the usual fingering (the index lies across when the hand needs it).
+  const fing = fingering(v);
   const fretted = v.frets.map((f, s) => ({ f, s })).filter((x): x is { f: number; s: number } => x.f !== null && x.f > 0);
-  const minF = fretted.length ? Math.min(...fretted.map(x => x.f)) : 0;
-  const atMin = fretted.filter(x => x.f === minF).map(x => x.s);
-  const barre = atMin.length >= 3 && v.frets.slice(atMin[0], atMin[atMin.length - 1] + 1).every(f => f !== null && f >= minF)
-    ? { from: atMin[0], to: atMin[atMin.length - 1] } : null;
+  const minF = fing.barre?.fret ?? 0;
+  const barre = fing.barre;
 
   const label = (s: number, f: number) => {
+    if (labels === 'fingers') return String(fing.fingers[s] ?? '');
     const pc = mod12(OPEN_MIDI[s] + f);
     return labels === 'intervals' ? intervalOf(root, type, pc) ?? '' : NOTE_L[pc];
   };

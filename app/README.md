@@ -46,6 +46,7 @@ dans le dossier temporaire du système.
 | --- | --- |
 | `tests/unit/music.test.ts` | transposition (bémols conservés), ChordPro, degrés |
 | `tests/unit/chords.test.ts` | les 720 positions d’accords : notes justes, basse, écart jouable, 5 formes CAGED |
+| `tests/unit/fingering.test.ts` | doigtés (accords ouverts, barrés, toutes les positions jouables à 4 doigts), renversements sur chaque groupe de cordes |
 | `tests/unit/scales.test.ts` | les 936 positions de gammes, noms et relatives |
 | `tests/unit/pitch.test.ts` | détection de hauteur YIN sur des sons synthétiques (< 3 cents) |
 | `tests/unit/voice.test.ts` | score vocal, octaves, placement dans la tessiture |
@@ -63,7 +64,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/pratiquer.spec.ts` | routine minutée, graphique, backing tracks |
 | `tests/e2e/routine.spec.ts` | routine modifiable : durées, noms, ajout, ordre, retrait, temps du jour gardé, rétablir |
 | `tests/e2e/voix.spec.ts` | accordeur vocal, tessiture, tonalité + capo, exercice et prise |
-| `tests/e2e/accords-gammes.spec.ts` | bibliothèques d’accords et de gammes |
+| `tests/e2e/accords-gammes.spec.ts` | bibliothèques d’accords (doigts, renversements) et de gammes |
 | `tests/e2e/rappel.spec.ts` | rappel de sauvegarde : seulement avec du contenu perso, « Plus tard », fréquence, désactivation |
 | `tests/e2e/reglages.spec.ts` | thèmes, effacement des exemples, réinitialisation, sauvegarde et fusion |
 | `tests/e2e/pwa.spec.ts` | installable, hors ligne, polices embarquées |

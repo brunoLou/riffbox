@@ -4,7 +4,8 @@ import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import { ChordDiagram } from '../components/ChordDiagram';
 import { strum, type Playback } from '../lib/audio';
 import {
-  CHORD_TYPES, LETTERS, OPEN_MIDI, SHAPE_FR, capPos, chordSymbol, chordType, intervalOf, voicingMidi, voicings,
+  CHORD_TYPES, INV_NAMES, LETTERS, OPEN_MIDI, SHAPE_FR, capPos, chordSymbol, chordType, fingering, hasInversions, intervalOf, inversions,
+  setsFor, slashName, voicingMidi, voicings, type Voicing,
 } from '../lib/chords';
 import { KEY_FR, KEY_ORDER, NOTE_L, mod12 } from '../lib/music';
 import { useStoredState } from '../lib/store';
@@ -28,19 +29,26 @@ const STRING_LABELS = ['E', 'A', 'D', 'G', 'B', 'e'];
 export default function Accords() {
   const [root, setRoot] = useStoredState('chords.root', 9);
   const [typeId, setTypeId] = useStoredState('chords.type', 'maj');
-  const [labels, setLabels] = useStoredState<'notes' | 'intervals'>('chords.labels', 'notes');
+  const [labels, setLabels] = useStoredState<'notes' | 'intervals' | 'fingers'>('chords.labels', 'notes');
+  const [mode, setMode] = useStoredState<'positions' | 'inversions'>('chords.mode', 'positions');
+  const [setPref, setSetPref] = useStoredState('chords.set', 0);
   // Opened from a grid chord: start on the position chosen there.
   const loc = useLocation();
   const [idx, setIdx] = useState(() => (loc.state as { pos?: number } | null)?.pos ?? 0);
   const type = chordType(typeId);
-  const list = useMemo(() => voicings(root, type), [root, type]);
+  const canInvert = hasInversions(type);
+  const sets = setsFor(type);
+  // The chosen string group if it fits this chord (3 or 4 strings), else the first that does.
+  const set = sets.find(x => x.i === setPref)?.i ?? sets[0]?.i ?? 0;
+  const showInv = mode === 'inversions' && canInvert;
+  const list: Voicing[] = useMemo(() => (showInv ? inversions(root, type, set) : voicings(root, type)), [root, type, showInv, set]);
   const v = list[Math.min(idx, list.length - 1)];
   const player = useRef<Playback | null>(null);
   const neck = useRef<HTMLDivElement>(null);
   const first = useRef(true);
 
   const firstChord = useRef(true);
-  useEffect(() => { if (firstChord.current) { firstChord.current = false; return; } setIdx(0); }, [root, typeId]);
+  useEffect(() => { if (firstChord.current) { firstChord.current = false; return; } setIdx(0); }, [root, typeId, showInv, set]);
   useEffect(() => () => player.current?.stop(), []);
   // Keep the selected position in view on the neck.
   useEffect(() => {
@@ -52,6 +60,12 @@ export default function Accords() {
 
   const listen = () => { player.current?.stop(); if (v) player.current = strum(voicingMidi(v)); };
   const lbl = (pc: number) => (labels === 'intervals' ? intervalOf(root, type, pc) ?? '' : NOTE_L[pc]);
+  const fingers = v ? fingering(v).fingers : [];
+  /** What a voicing is: its CAGED shape, or its inversion. */
+  const where = (x: Voicing) => (capPos(x) ? `case ${capPos(x)}` : 'position ouverte');
+  const describe = (x: Voicing) => (x.inv !== undefined
+    ? `${INV_NAMES[x.inv]} · ${slashName(root, type, x)}${x.inv ? ` · ${type.ivs[x.inv][1]} à la basse` : ''} · ${where(x)}`
+    : `Forme de ${SHAPE_FR[x.shape!]} (${x.shape}) · ${where(x)}`);
   const sym = chordSymbol(root, type);
 
   return (
@@ -65,10 +79,6 @@ export default function Accords() {
               <span className="kicker">Pratiquer</span>
               <span className="display" style={{ fontSize: 30 }}>ACCORDS</span>
             </div>
-          </div>
-          <div className="mini-seg">
-            <button className={labels === 'notes' ? 'on' : ''} onClick={() => setLabels('notes')}>Notes</button>
-            <button className={labels === 'intervals' ? 'on' : ''} onClick={() => setLabels('intervals')}>Intervalles</button>
           </div>
         </div>
         <LibTabs active={1} />
@@ -99,6 +109,26 @@ export default function Accords() {
           <button className="listen" onClick={listen} aria-label={`Écouter ${sym}`}>▶</button>
         </div>
 
+        <div className="seg" style={{ gridTemplateColumns: 'repeat(2,minmax(0,1fr))' }} role="group" aria-label="Affichage">
+          <button className={!showInv ? 'on' : ''} aria-pressed={!showInv} onClick={() => setMode('positions')}>Positions</button>
+          <button className={showInv ? 'on' : ''} aria-pressed={showInv} disabled={!canInvert} onClick={() => setMode('inversions')}>Renversements</button>
+        </div>
+        <div className="seg label-seg" style={{ gridTemplateColumns: 'repeat(3,minmax(0,1fr))' }} role="group" aria-label="Sur le diagramme">
+          <button className={labels === 'notes' ? 'on' : ''} aria-pressed={labels === 'notes'} onClick={() => setLabels('notes')}>Notes</button>
+          <button className={labels === 'intervals' ? 'on' : ''} aria-pressed={labels === 'intervals'} onClick={() => setLabels('intervals')}>Intervalles</button>
+          <button className={labels === 'fingers' ? 'on' : ''} aria-pressed={labels === 'fingers'} onClick={() => setLabels('fingers')}>Doigts</button>
+        </div>
+        {mode === 'inversions' && !canInvert && (
+          <p className="inv-help">Les renversements se jouent avec les accords de 3 ou 4 notes : pas pour les power chords ni les neuvièmes.</p>
+        )}
+        {showInv && (
+          <div className="hscroll" style={{ gap: 6 }} role="group" aria-label="Cordes">
+            {sets.map(x => (
+              <button key={x.i} className={'chip set-chip' + (x.i === set ? ' on-cream' : '')} aria-pressed={x.i === set} onClick={() => setSetPref(x.i)}>{x.label}</button>
+            ))}
+          </div>
+        )}
+
         {v && (
           <div className="diagram-card" data-theme="dark">
             <div className="diagram-row">
@@ -106,21 +136,23 @@ export default function Accords() {
               <div className="diagram-main">
                 <ChordDiagram v={v} root={root} type={type} labels={labels} />
                 <div className="string-notes" aria-label="Notes jouées, de la corde grave à l’aiguë">
-                  {v.frets.map((f, s) => <span key={s} className={f === null ? 'mute' : mod12(OPEN_MIDI[s] + f - root) === 0 ? 'root' : ''}>{f === null ? '×' : lbl(mod12(OPEN_MIDI[s] + f))}</span>)}
+                  {v.frets.map((f, s) => <span key={s} className={f === null ? 'mute' : mod12(OPEN_MIDI[s] + f - root) === 0 ? 'root' : ''}>{f === null ? '×' : labels === 'fingers' ? (f === 0 ? '○' : fingers[s]) : lbl(mod12(OPEN_MIDI[s] + f))}</span>)}
                 </div>
               </div>
               <button className="nav-pos" onClick={() => setIdx((idx + 1) % list.length)} aria-label="Position suivante">›</button>
             </div>
-            <span className="shape-label">Forme de {SHAPE_FR[v.shape]} ({v.shape}) · {capPos(v) ? `case ${capPos(v)}` : 'position ouverte'} · {idx + 1}/{list.length}</span>
+            <span className="shape-label">{describe(v)} · {idx + 1}/{list.length}</span>
           </div>
         )}
 
-        <span className="kicker" style={{ padding: '0 4px' }}>{list.length === 5 ? 'Les 5 formes CAGED' : 'Positions'}</span>
+        <span className="kicker" style={{ padding: '0 4px' }}>{showInv ? 'Renversements' : list.length === 5 ? 'Les 5 formes CAGED' : 'Positions'}</span>
         <div className="hscroll thumbs" data-theme="dark">
           {list.map((x, i) => (
-            <button key={i} className={'thumb' + (i === idx ? ' on' : '')} onClick={() => setIdx(i)} aria-label={`Forme de ${SHAPE_FR[x.shape]}, ${capPos(x) ? 'case ' + capPos(x) : 'position ouverte'}`}>
+            <button key={i} className={'thumb' + (i === idx ? ' on' : '')} onClick={() => setIdx(i)} aria-label={describe(x)}>
               <ChordDiagram v={x} root={root} type={type} size="small" />
-              <span className="thumb-label"><b>{x.shape}</b> {capPos(x) ? `c.${capPos(x)}` : 'ouv.'}</span>
+              <span className="thumb-label">
+                {x.inv !== undefined ? <b>{slashName(root, type, x)}</b> : <b>{x.shape}</b>} {capPos(x) ? `c.${capPos(x)}` : 'ouv.'}
+              </span>
             </button>
           ))}
         </div>

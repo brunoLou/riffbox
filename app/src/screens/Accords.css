@@ -35,3 +35,8 @@
 .thumb-label { font: 600 11px var(--f-mono); color: var(--muted-3); }
 .thumb-label b { color: var(--amber-hi); }
 .type-chip.word { font-family: var(--f-body); font-size: 15px; }
+
+/* Inversions */
+.set-chip { height: 40px; padding: 0 14px; border-radius: 20px; font-size: 13px; white-space: nowrap; }
+.inv-help { margin: 0; padding: 0 4px; font-size: 14px; line-height: 1.4; color: var(--muted-3); }
+.label-seg button { height: 38px; font-size: 14px; }
