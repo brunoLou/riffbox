@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
-import { PRESETS } from '../lib/data';
+import { strum } from '../lib/audio';
 import { FR, SHARP } from '../lib/music';
 import { hzToMidi, startPitch, type PitchTracker } from '../lib/pitch';
 import { useStoredState } from '../lib/store';
+import {
+  BUILTIN_TUNINGS, CUSTOM_KEY, MAX_CUSTOM, RANGE, STANDARD, TUNING_KEY, allTunings, clampString, defaultTuningId,
+  findSame, isTight, newTuningId, sameNotes, tuningNotes, type Tuning,
+} from '../lib/tunings';
 import './Accordeur.css';
 
 const TICKS: { c: number; h: string; col: string }[] = [];
@@ -20,16 +24,20 @@ const median = (a: number[]) => { const b = [...a].sort((x, y) => x - y); return
 
 export default function Accordeur() {
   const [auto, setAuto] = useStoredState('tuner.auto', true);
-  const [preset, setPreset] = useStoredState('tuner.preset', 0);
+  const [tuningId, setTuningId] = useStoredState(TUNING_KEY, defaultTuningId());
+  const [custom, setCustom] = useStoredState<Tuning[]>(CUSTOM_KEY, []);
   const [str, setStr] = useStoredState('tuner.string', 1);
   const [mic, setMic] = useState<Mic>('starting');
   const [reading, setReading] = useState<{ hz: number; cents: number } | null>(null);
   const [attempt, setAttempt] = useState(0);
+  /** Tuning being created (no id) or edited. */
+  const [editing, setEditing] = useState<Tuning | null>(null);
 
-  const pr = PRESETS[preset];
+  const tunings = allTunings(custom);
+  const pr = tunings.find(t => t.id === tuningId) ?? BUILTIN_TUNINGS[0];
   // Latest settings for the audio callback.
-  const cfg = useRef({ auto, str, pr });
-  cfg.current = { auto, str, pr };
+  const cfg = useRef({ auto, str, pr, editing: false });
+  cfg.current = { auto, str, pr, editing: !!editing };
   const recent = useRef<number[]>([]);
   const lastHeard = useRef(0);
   const smooth = useRef<number | null>(null);
@@ -40,6 +48,8 @@ export default function Accordeur() {
     let cancelled = false;
     const onPitch = (hz: number | null) => {
       const now = performance.now();
+      // While editing a tuning the reference notes play out loud: don't let the tuner chase them.
+      if (cfg.current.editing) return;
       if (hz === null) {
         if (now - lastHeard.current > HOLD_MS) { recent.current = []; smooth.current = null; setReading(null); }
         return;
@@ -166,16 +176,132 @@ export default function Accordeur() {
         <div className="presets">
           <span className="kicker" style={{ padding: '0 4px' }}>Accordage</span>
           <div className="hscroll" style={{ gap: 8 }}>
-            {PRESETS.map((x, i) => (
-              <button key={x.label} className={'chip preset' + (i === preset ? ' on-cream' : '')} onClick={() => { setPreset(i); smooth.current = null; }}>
-                {x.label}
+            {tunings.map(x => (
+              <button
+                key={x.id}
+                className={'chip preset' + (x.custom ? ' preset-custom' : '') + (x.id === pr.id ? ' on-cream' : '')}
+                aria-pressed={x.id === pr.id}
+                onClick={() => { if (x.id === pr.id && x.custom) setEditing(x); else { setTuningId(x.id); smooth.current = null; } }}
+              >
+                {x.label}{x.custom && x.id === pr.id && <span className="preset-edit" aria-label="Modifier"> ✎</span>}
               </button>
             ))}
-            <button className="chip preset preset-add">+ Perso</button>
+            {custom.length < MAX_CUSTOM && (
+              <button className="chip preset preset-add" onClick={() => setEditing({ id: '', label: '', m: [...pr.m] })}>+ Perso</button>
+            )}
           </div>
+          <span className="tuning-notes mono">{tuningNotes(pr.m)}{pr.custom ? ' · touchez l’accordage pour le modifier' : ''}</span>
         </div>
       </div>
+      {editing && (
+        <TuningEditor
+          initial={editing}
+          tunings={tunings}
+          onClose={() => setEditing(null)}
+          onPick={id => { setTuningId(id); setEditing(null); smooth.current = null; }}
+          onSave={t => {
+            setCustom(editing.id ? custom.map(c => (c.id === t.id ? t : c)) : [...custom, t]);
+            setTuningId(t.id);
+            setEditing(null);
+            smooth.current = null;
+          }}
+          onDelete={() => {
+            setCustom(custom.filter(c => c.id !== editing.id));
+            setTuningId('std');
+            setEditing(null);
+          }}
+        />
+      )}
       <TabBar active={0} />
     </Phone>
+  );
+}
+
+const noteName = (m: number) => `${sharpToGlyph(SHARP[m % 12])}${Math.floor(m / 12) - 1}`;
+
+/** Bottom sheet: name, six strings a semitone at a time, listen, save. */
+function TuningEditor({ initial, tunings, onClose, onSave, onPick, onDelete }: {
+  initial: Tuning; tunings: Tuning[];
+  onClose: () => void; onSave: (t: Tuning) => void; onPick: (id: string) => void; onDelete: () => void;
+}) {
+  const isNew = !initial.id;
+  const [label, setLabel] = useState(initial.label);
+  const [m, setM] = useState(initial.m);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const sound = useRef<{ stop(): void } | null>(null);
+  useEffect(() => () => sound.current?.stop(), []);
+
+  const play = (notes: number[]) => { sound.current?.stop(); sound.current = strum(notes); };
+  const setString = (i: number, d: number) => {
+    const v = clampString(i, m[i] + d);
+    if (v === m[i]) return;
+    const next = m.map((x, j) => (j === i ? v : x));
+    setM(next);
+    play([v]);
+  };
+  const canShift = (d: number) => m.every((x, i) => clampString(i, x + d) === x + d);
+  const shiftAll = (d: number) => { if (canShift(d)) setM(m.map(x => x + d)); };
+
+  // Only once a string has moved: a new tuning starts as a copy of the current one.
+  const touched = !sameNotes(m, initial.m);
+  const same = touched ? findSame(tunings, m, initial.id || undefined) : undefined;
+  const name = label.trim() || tuningNotes(m);
+  const unchanged = isNew ? !touched : !touched && name === initial.label;
+  const tight = m.some((x, i) => isTight(i, x));
+
+  return (
+    <div className="sheet-backdrop" onClick={onClose}>
+      <div className="tuning-sheet" role="dialog" aria-label={isNew ? 'Nouvel accordage' : 'Modifier l’accordage'} onClick={e => e.stopPropagation()}>
+        <div className="tuning-sheet-head">
+          <span className="kicker" style={{ color: 'var(--accent-text)' }}>{isNew ? 'Nouvel accordage' : 'Modifier l’accordage'}</span>
+          <button className="tuning-close" onClick={onClose} aria-label="Fermer">✕</button>
+        </div>
+
+        <label className="tuning-field">
+          <span>Nom</span>
+          <input className="tuning-input" value={label} maxLength={18} placeholder={tuningNotes(m)} onChange={e => setLabel(e.target.value)} />
+        </label>
+
+        <div className="tuning-strings">
+          {m.map((x, i) => {
+            const d = x - STANDARD[i];
+            return (
+              <div key={i} className={'tuning-string' + (isTight(i, x) ? ' tight' : '')} data-string={6 - i}>
+                <span className="tuning-num mono">{6 - i}</span>
+                <button className="tuning-step" onClick={() => setString(i, -1)} disabled={d <= -RANGE.down} aria-label={`Corde ${6 - i} : baisser d’un demi-ton`}>−</button>
+                <button className="tuning-note" onClick={() => play([x])} aria-label={`Écouter la corde ${6 - i}`}>
+                  <b>{noteName(x)}</b><span>{FR[x % 12]}</span>
+                </button>
+                <button className="tuning-step" onClick={() => setString(i, 1)} disabled={d >= RANGE.up} aria-label={`Corde ${6 - i} : monter d’un demi-ton`}>+</button>
+                <span className="tuning-diff mono">{d === 0 ? 'std' : `${d > 0 ? '+' : '−'}${Math.abs(d)}`}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="tuning-tools">
+          <button className="tuning-tool" onClick={() => shiftAll(-1)} disabled={!canShift(-1)}>Tout −½ ton</button>
+          <button className="tuning-tool" onClick={() => play(m)}>▶ Écouter</button>
+          <button className="tuning-tool" onClick={() => shiftAll(1)} disabled={!canShift(1)}>Tout +½ ton</button>
+        </div>
+
+        {tight && <p className="tuning-warn">Corde plus aiguë que d’habitude : plus de tension, montez-la doucement.</p>}
+        {same && <p className="tuning-same">Mêmes notes que « {same.label} ».</p>}
+        {isNew && !touched && <p className="tuning-same">Changez au moins une corde : l’accordage part de « {tunings.find(t => sameNotes(t.m, initial.m))?.label ?? tuningNotes(initial.m)} ».</p>}
+
+        {same && !same.custom
+          ? <button className="tuning-save" onClick={() => onPick(same.id)}>Utiliser « {same.label} »</button>
+          : <button className="tuning-save" disabled={unchanged} onClick={() => onSave({ id: initial.id || newTuningId(), label: name, m })}>
+              {isNew ? 'Enregistrer' : 'Enregistrer les modifications'}
+            </button>}
+
+        {!isNew && (confirmDelete
+          ? <div className="tuning-confirm">
+              <button className="tuning-tool" onClick={() => setConfirmDelete(false)}>Garder</button>
+              <button className="tuning-delete on" onClick={onDelete}>Supprimer « {initial.label} »</button>
+            </div>
+          : <button className="tuning-delete" onClick={() => setConfirmDelete(true)}>Supprimer cet accordage</button>)}
+      </div>
+    </div>
   );
 }

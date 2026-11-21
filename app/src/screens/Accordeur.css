@@ -46,3 +46,45 @@
 .needle.idle { opacity: .35; }
 .mic-msg { font-size: 16px; font-weight: 700; color: var(--amber); }
 .mic-retry { height: 36px; padding: 0 14px; border-radius: 18px; border: 1.5px solid var(--amber); color: var(--amber-hi); font-weight: 700; font-size: 14px; }
+
+/* Custom tunings */
+.preset-custom { border-style: solid; }
+.preset-edit { font-size: 14px; opacity: .7; }
+.tuning-notes { padding: 0 4px; font-size: 12px; color: var(--muted-2); letter-spacing: .04em; }
+.sheet-backdrop { position: absolute; inset: 0; background: rgba(10, 9, 8, .55); z-index: 5; display: flex; align-items: flex-end; }
+.tuning-sheet {
+  width: 100%; max-height: 92%; overflow-y: auto; scrollbar-width: none; padding: 16px 18px 26px;
+  background: var(--panel); border-top: 1px solid var(--panel-border); border-radius: 24px 24px 0 0;
+  display: flex; flex-direction: column; gap: 12px; box-shadow: 0 -16px 32px rgba(0, 0, 0, .45);
+}
+.tuning-sheet > * { flex-shrink: 0; }
+.tuning-sheet-head { display: flex; align-items: center; justify-content: space-between; }
+.tuning-close { width: 40px; height: 40px; border-radius: 20px; color: var(--muted-3); font-size: 18px; }
+.tuning-field { display: flex; flex-direction: column; gap: 6px; }
+.tuning-field > span { font-size: 13px; font-weight: 600; color: var(--muted-2); }
+.tuning-input {
+  height: 48px; padding: 0 14px; border-radius: 12px; border: 1.5px solid var(--line-2); background: var(--surface-2);
+  color: var(--cream); font: 600 17px var(--f-body);
+}
+.tuning-input::placeholder { color: var(--muted); }
+.tuning-strings { display: flex; flex-direction: column; gap: 6px; }
+.tuning-string { display: grid; grid-template-columns: 22px 48px 1fr 48px 40px; align-items: center; gap: 8px; }
+.tuning-num { font-size: 13px; color: var(--muted-2); text-align: center; }
+.tuning-step { height: 44px; border-radius: 12px; background: var(--surface-3); font-size: 22px; font-weight: 700; color: var(--cream); }
+.tuning-step:disabled { opacity: .3; cursor: default; }
+.tuning-note { height: 44px; border-radius: 12px; background: var(--well); display: flex; align-items: baseline; justify-content: center; gap: 8px; color: var(--cream); }
+.tuning-note b { font-family: var(--f-display); font-weight: 900; font-size: 22px; }
+.tuning-note span { font-size: 13px; color: var(--muted-3); }
+.tuning-diff { font-size: 12px; color: var(--muted-2); text-align: right; }
+.tuning-string.tight .tuning-diff, .tuning-string.tight .tuning-note b { color: var(--warn); }
+.tuning-tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tuning-tool { height: 42px; border-radius: 21px; border: 1.5px solid var(--line-2); color: var(--cream); font-weight: 600; font-size: 14px; }
+.tuning-tool:disabled { opacity: .35; cursor: default; }
+.tuning-warn, .tuning-same { margin: 0; font-size: 14px; line-height: 1.4; }
+.tuning-warn { color: var(--warn); }
+.tuning-same { color: var(--muted-3); }
+.tuning-save { height: 50px; border-radius: 25px; background: var(--amber); color: var(--ink); font-weight: 700; font-size: 16px; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .18); }
+.tuning-save:disabled { opacity: .45; cursor: default; }
+.tuning-delete { height: 44px; color: var(--warn); font-weight: 600; font-size: 14px; }
+.tuning-delete.on { border-radius: 22px; background: #c2451c; color: #fff4ec; font-weight: 700; }
+.tuning-confirm { display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; align-items: center; }

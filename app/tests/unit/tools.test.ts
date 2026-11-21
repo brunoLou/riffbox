@@ -4,6 +4,7 @@ import { TRACKS, buildBacking, chordLabel } from '../../src/lib/backing';
 import { bestCapo, capoOptions, signedShift } from '../../src/lib/capo';
 import { INITIAL_GRIDS, gridChordPro } from '../../src/lib/grids';
 import { DEFAULT_PEDAL_KEYS, actionFor, assignKey, canBePedal, keyLabel } from '../../src/lib/pedal';
+import { BUILTIN_TUNINGS, STANDARD, allTunings, clampString, findSame, isTight, tuningNotes } from '../../src/lib/tunings';
 import { hasLyrics, keyChords, songById } from '../../src/lib/setlists';
 
 describe('capo', () => {
@@ -89,5 +90,30 @@ describe('pedal keys', () => {
   it('never takes modifiers, Tab or Escape', () => {
     for (const key of ['Shift', 'Tab', 'Escape']) expect(canBePedal(key)).toBe(false);
     expect(canBePedal('Enter')).toBe(true);
+  });
+});
+
+describe('tunings', () => {
+  it('writes a tuning as its notes', () => {
+    expect(tuningNotes(STANDARD)).toBe('EADGBE');
+    expect(tuningNotes(BUILTIN_TUNINGS.find(t => t.id === 'dadgad')!.m)).toBe('DADGAD');
+  });
+  it('keeps every string between a fifth below and a minor third above standard', () => {
+    expect(clampString(0, 30)).toBe(33);
+    expect(clampString(5, 70)).toBe(67);
+    expect(clampString(2, 48)).toBe(48);
+  });
+  it('every built-in tuning is within range', () => {
+    for (const t of BUILTIN_TUNINGS) t.m.forEach((m, i) => expect(clampString(i, m)).toBe(m));
+  });
+  it('flags strings tuned two semitones or more above standard', () => {
+    expect(isTight(5, 65)).toBe(false);
+    expect(isTight(5, 66)).toBe(true);
+  });
+  it('finds a tuning with the same notes, except itself', () => {
+    const custom = allTunings([{ id: 'c1', label: 'Mien', m: [38, 45, 50, 55, 59, 64] }]);
+    expect(findSame(custom, [38, 45, 50, 55, 59, 64])?.label).toBe('Drop D');
+    expect(findSame(custom, [38, 45, 50, 55, 59, 62])).toBeUndefined();
+    expect(findSame(custom.filter(t => t.id !== 'dropd'), [38, 45, 50, 55, 59, 64], 'c1')).toBeUndefined();
   });
 });

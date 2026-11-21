@@ -7,13 +7,6 @@ export const SETTINGS = {
   stageFontSize: { key: 'settings.stageFontSize', def: 26, min: 20, max: 40 },
 };
 
-export const PRESETS = [
-  { label: 'Standard', m: [40, 45, 50, 55, 59, 64] },
-  { label: 'Drop D', m: [38, 45, 50, 55, 59, 64] },
-  { label: 'Open G', m: [38, 43, 50, 55, 59, 62] },
-  { label: 'Open E', m: [40, 47, 52, 56, 59, 64] },
-  { label: '½ ton ↓', m: [39, 44, 49, 54, 58, 63] },
-];
 
 export interface Tile {
   id: string; name: string; sub: string; bg: string; fg: string;

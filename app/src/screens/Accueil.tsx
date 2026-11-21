@@ -9,6 +9,7 @@ import { INITIAL_IDEAS } from '../lib/ideas';
 import { ROUTINE, ROUTINE_MIN, doneSeconds, streak, useRoutine, type RoutineState } from '../lib/routine';
 import { INITIAL_SETLISTS, readSongs, titlesLabel } from '../lib/setlists';
 import { readStored, useStoredState } from '../lib/store';
+import { currentTuning } from '../lib/tunings';
 import { readRange, noteFr } from '../lib/voice';
 import './Accueil.css';
 
@@ -21,6 +22,7 @@ function todayLabel() {
 function subFor(t: Tile, r: RoutineState): string {
   const plural = (n: number, w: string) => `${n} ${w}${n > 1 ? 's' : ''}`;
   switch (t.id) {
+    case 'tuner': return `Chromatique · ${currentTuning().label}`;
     case 'metro': return `${readStored('metro.bpm', 92)} BPM · ${readStored('metro.sig', '4/4')}`;
     case 'carnet': return plural(readStored('ideas', INITIAL_IDEAS).length + readGrids().length, 'idée');
     case 'grilles': return plural(readGrids().length, 'grille');
