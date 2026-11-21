@@ -22,6 +22,7 @@ import Accords from './screens/Accords';
 import Pratiquer from './screens/Pratiquer';
 import Routine from './screens/Routine';
 import RoutineEdit from './screens/RoutineEdit';
+import DesignSystem from './screens/DesignSystem';
 import Backing from './screens/Backing';
 import Reglages from './screens/Reglages';
 
@@ -37,6 +38,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/accordeur" element={<Accordeur />} />
           <Route path="/metronome" element={<Metronome />} />
           <Route path="/reglages" element={<Reglages />} />
+          <Route path="/reglages/design" element={<DesignSystem />} />
           <Route path="/idee" element={<Navigate to="/composer" replace state={{ record: true }} />} />
           <Route path="/composer" element={<Carnet />} />
           <Route path="/composer/grilles" element={<Carnet initialKind="grille" />} />

@@ -15,7 +15,7 @@ const KIND_FILTERS: { id: IdeaKind | 'all'; label: string }[] = [
   { id: 'all', label: 'Tout' }, { id: 'riff', label: 'Riffs' }, { id: 'grille', label: 'Grilles' },
   { id: 'paroles', label: 'Paroles' }, { id: 'memo', label: 'Mémos' },
 ];
-const BADGE: Record<IdeaKind, string> = { riff: '♪', grille: 'I·V', paroles: '¶', memo: '●' };
+export const BADGE: Record<IdeaKind, string> = { riff: '♪', grille: 'I·V', paroles: '¶', memo: '●' };
 const LIVE_BARS = 44;
 
 /** Tempo ranges for the filter. */
@@ -25,7 +25,7 @@ const TEMPOS = [
   { label: 'Rapide', sub: '120 et plus', test: (b: number) => b >= 120 },
 ];
 
-function Wave({ bars, progress, live }: { bars: number[]; progress?: number; live?: boolean }) {
+export function Wave({ bars, progress, live }: { bars: number[]; progress?: number; live?: boolean }) {
   return (
     <div className={'wave' + (live ? ' live' : '')} aria-hidden>
       {bars.map((h, i) => (

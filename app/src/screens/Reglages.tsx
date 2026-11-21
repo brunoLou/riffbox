@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import {
   buildBackup, readBackup, restoreMerge, restoreReplace, saveBackup, summarize, type BackupFile,
@@ -175,6 +176,14 @@ export default function Reglages() {
               <button className="btn-outline danger" onClick={() => setConfirming(true)}>Tout réinitialiser…</button>
             )}
           </div>
+        </div>
+
+        <span className="kicker settings-section">À propos</span>
+        <div className="settings-card">
+          <Link to="/reglages/design" className="settings-row settings-link">
+            <span className="settings-label">Design system</span>
+            <span className="settings-chev">Couleurs, typos, composants ›</span>
+          </Link>
         </div>
 
         <p className="settings-foot mono">RIFFBOX 0.1 · fonctionne hors ligne</p>
