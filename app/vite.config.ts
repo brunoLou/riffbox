@@ -9,7 +9,6 @@ export default defineConfig({
     VitePWA({
       // New versions install in the background and take over on next launch.
       registerType: 'autoUpdate',
-      includeAssets: ['icons/favicon-48.png', 'icons/apple-touch-icon.png'],
       manifest: {
         id: './',
         name: 'RIFFBOX',
@@ -36,9 +35,11 @@ export default defineConfig({
           { name: 'Nouvelle idée', url: './#/idee', icons: [{ src: 'icons/icon-192.png', sizes: '192x192' }] },
         ],
       },
+      // The icons are already in globPatterns: listing them again from the manifest duplicated entries.
+      includeManifestIcons: false,
       workbox: {
-        // Everything the app needs is precached, so it works fully offline.
-        globPatterns: ['**/*.{js,css,html,png,svg,woff2,webmanifest}'],
+        // Everything the app needs is precached, so it works fully offline (fonts: woff2 only).
+        globPatterns: ['**/*.{js,css,html,png,svg,woff2}'], // the manifest is added by the plugin,
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
       },
