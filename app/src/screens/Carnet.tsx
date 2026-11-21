@@ -8,6 +8,7 @@ import { firstChords, gridSongId, grooveDef, type Grid, type GridGroove } from '
 import { KEY_FR, mod12 } from '../lib/music';
 import { useStoredState } from '../lib/store';
 import { useGrids, useSetlists } from '../lib/hooks';
+import { IdeaEditor } from './IdeaEditor';
 import './Carnet.css';
 
 const KIND_FILTERS: { id: IdeaKind | 'all'; label: string }[] = [
@@ -16,6 +17,13 @@ const KIND_FILTERS: { id: IdeaKind | 'all'; label: string }[] = [
 ];
 const BADGE: Record<IdeaKind, string> = { riff: '♪', grille: 'I·V', paroles: '¶', memo: '●' };
 const LIVE_BARS = 44;
+
+/** Tempo ranges for the filter. */
+const TEMPOS = [
+  { label: 'Lent', sub: 'moins de 90', test: (b: number) => b < 90 },
+  { label: 'Modéré', sub: '90 à 119', test: (b: number) => b >= 90 && b < 120 },
+  { label: 'Rapide', sub: '120 et plus', test: (b: number) => b >= 120 },
+];
 
 function Wave({ bars, progress, live }: { bars: number[]; progress?: number; live?: boolean }) {
   return (
@@ -27,14 +35,14 @@ function Wave({ bars, progress, live }: { bars: number[]; progress?: number; liv
   );
 }
 
-function FilterSelect({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
+function FilterSelect({ label, value, options, hints, onChange }: { label: string; value: string; options: string[]; hints?: string[]; onChange: (v: string) => void }) {
   return (
     <label className={'fsel' + (value ? ' on' : '')}>
       <span className="fsel-text">{value || label}</span>
       <span className="fsel-caret">▾</span>
       <select value={value} onChange={e => onChange(e.target.value)} aria-label={label}>
         <option value="">{label} : tous</option>
-        {options.map(o => <option key={o} value={o}>{o}</option>)}
+        {options.map((o, i) => <option key={o} value={o}>{hints ? `${o} (${hints[i]})` : o}</option>)}
       </select>
     </label>
   );
@@ -62,6 +70,9 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
   const [fKey, setFKey] = useStoredState('carnet.key', '');
   const [fStyle, setFStyle] = useStoredState('carnet.style', '');
   const [fMood, setFMood] = useStoredState('carnet.mood', '');
+  const [fTempo, setFTempo] = useStoredState('carnet.tempo', '');
+  /** Idea being named / tagged (`isNew`: just recorded or written, offer « Plus tard »). */
+  const [editing, setEditing] = useState<{ idea: Idea; isNew: boolean } | null>(null);
   const [open, setOpen] = useState<string | null>(null);
 
   // Playback
@@ -135,8 +146,23 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
     const saved = await putBlob(id, blob);
     const idea: Idea = { id, kind: 'memo', title: `Mémo du ${when}`, created: Date.now(), duration, wave, audioUrl: url, hasAudio: saved };
     setIdeas(list => [idea, ...list]);
-    setKind('all'); setFKey(''); setFStyle(''); setFMood('');
+    clearFilters();
     setOpen(idea.id);
+    setEditing({ idea, isNew: true });
+  };
+
+  const clearFilters = () => { setOverride(undefined); setKind('all'); setFKey(''); setFStyle(''); setFMood(''); setFTempo(''); };
+
+  /** Save from the editor: replaces the idea, or adds it (a new text is only kept once saved). */
+  const saveIdea = (i: Idea) => {
+    setIdeas(list => (list.some(x => x.id === i.id) ? list.map(x => (x.id === i.id ? i : x)) : [i, ...list]));
+    setEditing(null);
+    setOpen(i.id);
+  };
+  const newText = () => {
+    stopPlayback();
+    clearFilters();
+    setEditing({ idea: { id: 'txt' + Date.now(), kind: 'paroles', title: 'Nouveau texte', created: Date.now(), text: '' }, isNew: true });
   };
 
   const cancelRec = () => { recording.current?.cancel(); recording.current = null; setRecState('idle'); };
@@ -203,7 +229,9 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
   const cards: Card[] = [...ideas, ...grids.map(gridCard)].sort((a, b) => b.created - a.created);
   const keyOptions = useMemo(() => [...new Set(cards.filter(i => i.key != null).map(keyLabel))].sort(), [ideas, grids]);
   const shown = cards.filter(i =>
-    (kind === 'all' || i.kind === kind) && (!fKey || keyLabel(i) === fKey) && (!fStyle || i.style === fStyle) && (!fMood || i.mood === fMood));
+    (kind === 'all' || i.kind === kind) && (!fKey || keyLabel(i) === fKey) && (!fStyle || i.style === fStyle) && (!fMood || i.mood === fMood)
+    && (!fTempo || (i.bpm != null && TEMPOS.find(t => t.label === fTempo)!.test(i.bpm))));
+  const filtered = kind !== 'all' || !!(fKey || fStyle || fMood || fTempo);
 
   return (
     <Phone label="04 Carnet">
@@ -227,6 +255,7 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
           <FilterSelect label="Ton" value={fKey} options={keyOptions} onChange={setFKey} />
           <FilterSelect label="Style" value={fStyle} options={STYLES} onChange={setFStyle} />
           <FilterSelect label="Humeur" value={fMood} options={MOODS} onChange={setFMood} />
+          <FilterSelect label="Tempo" value={fTempo} options={TEMPOS.map(t => t.label)} hints={TEMPOS.map(t => t.sub)} onChange={setFTempo} />
         </div>
 
         {shown.map(i => {
@@ -277,6 +306,7 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
                   {i.grid
                     ? <button className="idea-action primary" onClick={() => nav(`/composer/grille/${i.grid!.id}`)}>Ouvrir la grille ›</button>
                     : (i.kind === 'riff' || i.kind === 'memo') && <button className="idea-action primary" onClick={() => setLinking(i)}>Ajouter à une grille ›</button>}
+                  {!i.grid && <button className="idea-action" onClick={() => setEditing({ idea: i, isNew: false })}>Modifier</button>}
                   <button className="idea-action danger" onClick={() => remove(i)}>Supprimer</button>
                 </div>
               )}
@@ -284,15 +314,23 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
           );
         })}
 
-        {!shown.length && <div className="carnet-empty">Aucune idée ne correspond à ces filtres.</div>}
+        {!shown.length && (
+          <div className="carnet-empty">
+            Aucune idée ne correspond à ces filtres.
+            {filtered && <button className="btn-link" onClick={clearFilters}>Effacer les filtres</button>}
+          </div>
+        )}
       </div>
 
       {recState === 'idle' && (
         <div className="carnet-actions">
           <button className="cta rec-cta" onClick={startRec}><span className="rec-dot" />Enregistrer</button>
+          <button className="grid-to-set" onClick={newText}>+ Texte</button>
           <button className="grid-to-set" onClick={() => newGrid()}>+ Grille</button>
         </div>
       )}
+
+      {editing && <IdeaEditor idea={editing.idea} isNew={editing.isNew} onSave={saveIdea} onClose={() => setEditing(null)} />}
 
       {linking && (
         <div className="sheet-backdrop" onClick={() => setLinking(null)}>
