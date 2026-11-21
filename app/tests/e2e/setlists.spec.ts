@@ -27,7 +27,8 @@ test('plays the set: the pedal turns pages, then moves to the next song', async 
   await page.locator('.song-row', { hasText: 'Minuit Shuffle' }).click();
   await expect(page.locator('.stage-back')).toHaveText('‹ Bar du Port · 3/9');
   await expect(page.locator('.stage-title')).toHaveText('MINUIT SHUFFLE');
-  for (let i = 0; i < 6 && (await page.locator('.stage-title').textContent()) === 'MINUIT SHUFFLE'; i++) {
+  // As many pages as the lyrics take (the layout decides), then the next song.
+  for (let i = 0; i < 12 && (await page.locator('.stage-title').textContent()) === 'MINUIT SHUFFLE'; i++) {
     await page.keyboard.press('PageDown');
     await page.waitForTimeout(600);
   }

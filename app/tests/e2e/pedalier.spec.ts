@@ -18,7 +18,7 @@ test('the pedal light reacts to pedal keys only, and stays detected from song to
   await expect(pedal).not.toHaveClass(/flash/); // the blink is brief
 
   // Next song (the prompteur remounts): still detected.
-  for (let i = 0; i < 8 && (await page.locator('.stage-title').textContent()) === 'MINUIT SHUFFLE'; i++) {
+  for (let i = 0; i < 12 && (await page.locator('.stage-title').textContent()) === 'MINUIT SHUFFLE'; i++) {
     await page.keyboard.press('ArrowDown');
     await page.waitForTimeout(600);
   }
