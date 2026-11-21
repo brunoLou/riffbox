@@ -1,0 +1,21 @@
+/* « + Idée » in the middle of the tab bar */
+.tab-idea { gap: 3px; color: var(--accent-text); font-weight: 700; }
+.tab-idea::before { display: none; }
+.tab-idea-plus {
+  width: 44px; height: 44px; border-radius: 50%; background: var(--amber); color: var(--ink);
+  display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 600; line-height: 1;
+  box-shadow: 0 6px 16px rgba(233, 162, 59, .35), inset 0 -3px 0 rgba(0, 0, 0, .18);
+}
+.tab-idea:hover { color: var(--accent-text); }
+.tab-idea:disabled { opacity: .5; cursor: default; }
+.qc-sheet { z-index: 6; }
+.qc-switch { align-self: center; height: 40px; color: var(--muted-3); font-weight: 600; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+.qc-text { height: auto; min-height: 96px; padding: 10px 14px; font-weight: 500; font-size: 16px; line-height: 1.45; resize: none; }
+.rec-save:disabled { opacity: .5; }
+.qc-toast {
+  position: absolute; left: 18px; right: 18px; top: 58px; z-index: 7; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  min-height: 52px; padding: 8px 16px; border-radius: 16px; background: var(--panel); border: 1px solid var(--led);
+  font-size: 14px; color: var(--cream); box-shadow: 0 10px 24px rgba(0, 0, 0, .35);
+}
+.qc-toast b { font-weight: 700; }
+.qc-toast a { flex: none; color: var(--led-text); font-weight: 700; text-decoration: none; }

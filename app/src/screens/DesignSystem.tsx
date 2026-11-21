@@ -6,7 +6,8 @@ import { TempoKnob } from '../components/TempoKnob';
 import { chordType, voicings } from '../lib/chords';
 import { TILES } from '../lib/data';
 import { fakeWave } from '../lib/ideas';
-import { BADGE, Wave } from './Carnet';
+import { Wave } from '../components/Wave';
+import { BADGE } from './Carnet';
 import './DesignSystem.css';
 
 /** Colour tokens by role (styles.css holds the values for each theme). */

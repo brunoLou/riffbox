@@ -159,7 +159,6 @@ export default function Accueil() {
         <button className="settings-link" onClick={() => nav('/reglages')}><span>Réglages et données</span><span>›</span></button>
       </div>
 
-      {!edit && <button className="fab" onClick={() => nav('/composer', { state: { record: true } })}><span>+</span>Idée</button>}
 
       {catalog && (
         <div className="sheet-backdrop" onClick={() => { setCatalog(false); setConfirmReset(false); }}>

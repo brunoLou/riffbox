@@ -69,12 +69,6 @@
 }
 .add-pedal:disabled { opacity: .5; cursor: default; }
 
-.fab {
-  position: absolute; right: 18px; bottom: 104px; height: 56px; padding: 0 22px; border-radius: 28px;
-  background: var(--amber); color: var(--ink); display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 17px;
-  box-shadow: 0 8px 20px rgba(233, 162, 59, .3), inset 0 -3px 0 rgba(0, 0, 0, .18);
-}
-.fab span { font-size: 24px; line-height: 1; }
 
 /* Customising the board */
 .pedal-grid { grid-auto-flow: dense; }

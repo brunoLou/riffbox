@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 /**
  * Small persistent store: values live in memory and are mirrored to
@@ -6,6 +6,8 @@ import { useCallback, useState } from 'react';
  */
 const PREFIX = 'riffbox:v1:';
 const mem = new Map<string, unknown>();
+/** Screens showing a key, told when another part of the app writes it. */
+const subs = new Map<string, Set<(v: unknown) => void>>();
 
 function load<T>(key: string): { found: boolean; value?: T } {
   if (mem.has(key)) return { found: true, value: mem.get(key) as T };
@@ -27,6 +29,7 @@ export function writeStored<T>(key: string, value: T) {
     const ser = SERIALIZERS[key];
     localStorage.setItem(PREFIX + key, JSON.stringify(ser ? ser(value) : value));
   } catch { /* quota or private mode: keep in memory */ }
+  subs.get(key)?.forEach(fn => fn(value));
 }
 
 const SERIALIZERS: Record<string, (v: unknown) => unknown> = {};
@@ -56,6 +59,14 @@ export function useStoredState<T>(key: string, init: T) {
     const next = typeof u === 'function' ? (u as (p: T) => T)(prev) : u;
     writeStored(key, next);
     setV(next);
+  }, [key]);
+  // Another screen (e.g. the quick capture over the notebook) may write the same key.
+  useEffect(() => {
+    const fn = (val: unknown) => setV(val as T);
+    let set = subs.get(key);
+    if (!set) subs.set(key, (set = new Set()));
+    set.add(fn);
+    return () => { set!.delete(fn); };
   }, [key]);
   return [v, set] as const;
 }

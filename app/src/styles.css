@@ -120,7 +120,7 @@ button:focus-visible, a:focus-visible, [role='button']:focus-visible { outline: 
 /* ---------- Tab bar ---------- */
 .tabbar {
   position: absolute; left: 0; right: 0; bottom: 0; height: 88px; background: var(--panel);
-  border-top: 1px solid var(--panel-border); display: grid; grid-template-columns: repeat(4, 1fr); padding: 0 8px 24px;
+  border-top: 1px solid var(--panel-border); display: grid; grid-template-columns: 1fr 1fr 64px 1fr 1fr; padding: 0 8px 24px;
   z-index: 4; /* above scrolling content that sets its own z-index (chart labels, lifted tiles) */
 }
 .tab {

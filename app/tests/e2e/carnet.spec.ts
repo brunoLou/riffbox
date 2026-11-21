@@ -27,12 +27,12 @@ test('plays an example and opens a grid', async ({ page }) => {
   await expect(page).toHaveURL(/#\/composer\/grille\/g-minuit$/);
 });
 
-test('records from “+ Idée”, keeps the recording after a reload, and deletes it', async ({ page }) => {
-  await page.goto('#/');
-  await page.locator('.fab').click();
-  await expect(page).toHaveURL(/#\/composer$/);
+test('records, keeps the recording after a reload, and deletes it', async ({ page }) => {
+  await page.goto('#/composer');
+  await page.locator('.rec-cta').click();
   await expect(page.locator('.rec-time')).toHaveText(/0:0[1-9]/, { timeout: 5000 });
   await page.getByText('■ Arrêter et ranger').click();
+  await page.getByRole('button', { name: 'Plus tard' }).click();
   const title = page.locator('.idea-title').first();
   await expect(title).toHaveText(/^Mémo du /);
   await expect(page.locator('.idea-meta').first()).toHaveText(/Mémo vocal · aujourd’hui · 0:0\d/);

@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { QuickCapture } from './QuickCapture';
 
 /** The 390×844 device. Full-bleed on real phones, framed on desktop. */
 export function Phone({ children, bg, column, label, theme }: { children: ReactNode; bg?: string; column?: boolean; label: string; theme?: 'dark' | 'light' }) {
@@ -28,15 +29,17 @@ const TABS = [
   { label: 'Scène', to: '/scene' },
 ];
 
+/** Bottom tabs, with « + Idée » in the middle (the quick capture, on every screen with tabs). */
 export function TabBar({ active }: { active: number }) {
+  const tab = (t: (typeof TABS)[number], i: number) => (
+    <Link key={t.to} to={t.to} className={'tab' + (i === active ? ' on' : '')} aria-current={i === active ? 'page' : undefined}>
+      {t.label}
+    </Link>
+  );
   return (
-    <nav className="tabbar">
-      {TABS.map((t, i) => (
-        <Link key={t.to} to={t.to} className={'tab' + (i === active ? ' on' : '')} aria-current={i === active ? 'page' : undefined}>
-          {t.label}
-        </Link>
-      ))}
-    </nav>
+    <QuickCapture>
+      {idea => <nav className="tabbar">{TABS.slice(0, 2).map(tab)}{idea}{TABS.slice(2).map((t, i) => tab(t, i + 2))}</nav>}
+    </QuickCapture>
   );
 }
 

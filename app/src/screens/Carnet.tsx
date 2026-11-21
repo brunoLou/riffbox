@@ -8,6 +8,7 @@ import { firstChords, gridSongId, grooveDef, type Grid, type GridGroove } from '
 import { KEY_FR, mod12 } from '../lib/music';
 import { useStoredState } from '../lib/store';
 import { useGrids, useSetlists } from '../lib/hooks';
+import { Wave } from '../components/Wave';
 import { IdeaEditor } from './IdeaEditor';
 import './Carnet.css';
 
@@ -25,15 +26,6 @@ const TEMPOS = [
   { label: 'Rapide', sub: '120 et plus', test: (b: number) => b >= 120 },
 ];
 
-export function Wave({ bars, progress, live }: { bars: number[]; progress?: number; live?: boolean }) {
-  return (
-    <div className={'wave' + (live ? ' live' : '')} aria-hidden>
-      {bars.map((h, i) => (
-        <span key={i} style={{ height: `${Math.round(h * 100)}%` }} className={progress != null && i / bars.length < progress ? 'played' : ''} />
-      ))}
-    </div>
-  );
-}
 
 function FilterSelect({ label, value, options, hints, onChange }: { label: string; value: string; options: string[]; hints?: string[]; onChange: (v: string) => void }) {
   return (

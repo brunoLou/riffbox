@@ -56,6 +56,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/accueil.spec.ts` | tuiles, glisser-déposer, clavier, taille, catalogue, rétablir |
 | `tests/e2e/accordeur-*.spec.ts` | accordeur au micro : La +10 cents, Mi grave −20 cents, mode manuel |
 | `tests/e2e/metronome.spec.ts` | bouton rotatif, tap tempo, signatures, grooves, accents |
+| `tests/e2e/idee.spec.ts` | « + Idée » partout : enregistrement sur place par-dessus l’écran, note écrite, tempo et ton repris de l’écran |
 | `tests/e2e/carnet.spec.ts` | filtres (dont le tempo), écoute, enregistrement conservé, nommage et étiquettes, idée texte, suppression |
 | `tests/e2e/grilles.spec.ts` | boucle sonore, édition, diagramme d’un accord de la grille, riff → grille → setlist → scène |
 | `tests/e2e/morceaux.spec.ts` | bibliothèque, saisie des paroles, aperçu, scène, import et export ChordPro |
