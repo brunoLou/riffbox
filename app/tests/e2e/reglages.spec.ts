@@ -85,8 +85,9 @@ test('backup: export, restore after a reset, and merge on another device', async
   await page.locator('input[type=file]').setInputFiles(file);
   await expect(page.locator('.backup-import .data-list')).toContainText('Enregistrements audio1');
   await button(page, 'Tout remplacer…').click();
-  await button(page, 'Tout remplacer').click();
-  await page.waitForURL(/#\/reglages$/);
+  // The app reloads itself on the same address once the data is written: wait for that reload.
+  await Promise.all([page.waitForEvent('load'), button(page, 'Tout remplacer').click()]);
+  await expect(page).toHaveURL(/#\/reglages$/);
   await page.goto('#/composer');
   await page.locator('.kind-chip', { hasText: 'Tout' }).click();
   const restored = page.locator('.idea', { has: page.locator('.idea-title', { hasText: memo }) });
