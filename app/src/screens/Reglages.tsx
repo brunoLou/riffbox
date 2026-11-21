@@ -5,6 +5,7 @@ import {
 } from '../lib/backup';
 import { blobsBytes, clearBlobs } from '../lib/blobs';
 import { SETTINGS } from '../lib/data';
+import { LAST_BACKUP_KEY, REMIND_CHOICES, REMIND_DEFAULT, REMIND_KEY, daysAgo } from '../lib/reminder';
 import {
   DEFAULT_PEDAL_KEYS, PEDAL_ACTIONS, PEDAL_NAMES, PEDAL_SCREENS, actionFor, assignKey, canBePedal, keyLabel, normKey,
   usePedalKeys, type PedalAction,
@@ -282,7 +283,8 @@ function PedalCard() {
 }
 
 function BackupCard() {
-  const [last, setLast] = useStoredState<string | null>('backup.last', null);
+  const [last, setLast] = useStoredState<string | null>(LAST_BACKUP_KEY, null);
+  const [remind, setRemind] = useStoredState<number>(REMIND_KEY, REMIND_DEFAULT);
   const [busy, setBusy] = useState<null | 'export' | 'import'>(null);
   const [msg, setMsg] = useState<{ text: string; error?: boolean } | null>(null);
   const [pending, setPending] = useState<BackupFile | null>(null);
@@ -335,7 +337,7 @@ function BackupCard() {
         <span className="settings-label">Sauvegarde</span>
         <span className="settings-help">
           Un fichier avec toutes vos données et vos enregistrements, pour changer de téléphone ou ne rien perdre.
-          {' '}{lastLabel ? `Dernière sauvegarde : ${lastLabel}.` : 'Aucune sauvegarde pour l’instant.'}
+          {' '}{lastLabel ? `Dernière sauvegarde : ${lastLabel} (${daysAgo(Math.floor((Date.now() - new Date(last!).getTime()) / 86400000))}).` : 'Aucune sauvegarde pour l’instant.'}
         </span>
         <div className="confirm-row">
           <button className="btn-primary" onClick={() => void doExport()} disabled={busy !== null}>{busy === 'export' ? 'Préparation…' : 'Exporter'}</button>
@@ -343,6 +345,15 @@ function BackupCard() {
         </div>
         <input ref={input} type="file" accept=".json,application/json" hidden onChange={e => void onFile(e.target.files?.[0])} aria-label="Fichier de sauvegarde" />
         {msg && <p className={'backup-msg' + (msg.error ? ' error' : '')} role="status">{msg.text}</p>}
+        <span className="settings-label backup-remind-label">Me rappeler de sauvegarder</span>
+        <div className="seg" style={{ gridTemplateColumns: 'repeat(4,minmax(0,1fr))' }} role="group" aria-label="Rappel de sauvegarde">
+          {REMIND_CHOICES.map(c => (
+            <button key={c.days} className={remind === c.days ? 'on' : ''} aria-pressed={remind === c.days} onClick={() => setRemind(c.days)}>{c.label}</button>
+          ))}
+        </div>
+        <span className="settings-help">
+          {remind ? `Un rappel apparaît sur l’accueil quand vos propres idées, morceaux ou setlists n’ont pas été sauvegardés depuis ${REMIND_CHOICES.find(c => c.days === remind)?.label ?? `${remind} jours`}.` : 'Aucun rappel.'}
+        </span>
 
         {pending && sum && busy !== 'import' && (
           <div className="backup-import">

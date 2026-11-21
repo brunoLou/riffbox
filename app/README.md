@@ -64,5 +64,6 @@ dans le dossier temporaire du système.
 | `tests/e2e/routine.spec.ts` | routine modifiable : durées, noms, ajout, ordre, retrait, temps du jour gardé, rétablir |
 | `tests/e2e/voix.spec.ts` | accordeur vocal, tessiture, tonalité + capo, exercice et prise |
 | `tests/e2e/accords-gammes.spec.ts` | bibliothèques d’accords et de gammes |
+| `tests/e2e/rappel.spec.ts` | rappel de sauvegarde : seulement avec du contenu perso, « Plus tard », fréquence, désactivation |
 | `tests/e2e/reglages.spec.ts` | thèmes, effacement des exemples, réinitialisation, sauvegarde et fusion |
 | `tests/e2e/pwa.spec.ts` | installable, hors ligne, polices embarquées |

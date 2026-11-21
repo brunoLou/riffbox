@@ -11,6 +11,8 @@ import { INITIAL_SETLISTS, readSongs, titlesLabel } from '../lib/setlists';
 import { readStored, useStoredState } from '../lib/store';
 import { currentTuning } from '../lib/tunings';
 import { readRange, noteFr } from '../lib/voice';
+import { buildBackup, saveBackup } from '../lib/backup';
+import { backupReminder, daysAgo, markBackedUp, snoozeReminder } from '../lib/reminder';
 import './Accueil.css';
 
 function todayLabel() {
@@ -153,6 +155,8 @@ export default function Accueil() {
           <button className={'edit-btn' + (edit ? ' on' : '')} onClick={() => { setEdit(!edit); setDragId(null); }}>{edit ? 'Terminé' : 'Modifier'}</button>
         </div>
 
+        {!edit && <BackupReminder />}
+
         {edit ? (
           <p className="edit-hint">Glissez une pédale par sa poignée ⠿ pour la déplacer. ↔ change sa taille, − la retire.</p>
         ) : (
@@ -229,5 +233,42 @@ export default function Accueil() {
       )}
       <TabBar active={0} />
     </Phone>
+  );
+}
+
+/** Suggests a backup when the player's own content has not been exported for a while. */
+function BackupReminder() {
+  const [due, setDue] = useState(() => backupReminder());
+  const [state, setState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle');
+  if (!due && state !== 'done') return null;
+
+  const save = async () => {
+    setState('busy');
+    try {
+      const b = await buildBackup();
+      const how = await saveBackup(b);
+      if (how === 'cancelled') { setState('idle'); return; }
+      markBackedUp(b.exportedAt);
+      setState('done');
+      setDue(null);
+      window.setTimeout(() => setState('idle'), 4000);
+    } catch { setState('error'); }
+  };
+
+  if (state === 'done') return <p className="backup-nudge-done" role="status">Sauvegarde faite. Gardez le fichier hors du téléphone.</p>;
+  return (
+    <div className="backup-nudge" role="region" aria-label="Rappel de sauvegarde">
+      <div className="backup-nudge-text">
+        <span className="backup-nudge-title">Pensez à sauvegarder</span>
+        <span className="backup-nudge-sub">
+          {due!.never ? 'Aucune sauvegarde pour l’instant' : `Dernière sauvegarde ${daysAgo(due!.days)}`} : vos idées et vos morceaux ne sont que sur ce téléphone.
+        </span>
+        {state === 'error' && <span className="backup-nudge-sub error">L’export a échoué. Réessayez depuis Réglages.</span>}
+      </div>
+      <div className="backup-nudge-btns">
+        <button className="backup-nudge-save" disabled={state === 'busy'} onClick={() => void save()}>{state === 'busy' ? 'Préparation…' : 'Sauvegarder'}</button>
+        <button className="backup-nudge-later" onClick={() => { snoozeReminder(); setDue(null); }}>Plus tard</button>
+      </div>
+    </div>
   );
 }
