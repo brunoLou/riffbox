@@ -71,7 +71,7 @@ export default function DesignSystem() {
             <BackButton fallback="/reglages" />
             <div className="head-titles">
               <span className="kicker">Réglages</span>
-              <span className="display" style={{ fontSize: 28 }}>DESIGN SYSTEM</span>
+              <h1 className="display" style={{ fontSize: 28 }}>DESIGN SYSTEM</h1>
             </div>
           </div>
         </div>

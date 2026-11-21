@@ -6,16 +6,16 @@ import { QuickCapture } from './QuickCapture';
 export function Phone({ children, bg, column, label, theme }: { children: ReactNode; bg?: string; column?: boolean; label: string; theme?: 'dark' | 'light' }) {
   const style: CSSProperties = { background: bg };
   return (
-    <div className={'phone' + (column ? ' phone-col' : '')} style={style} data-screen-label={label} data-theme={theme}>
+    <main className={'phone' + (column ? ' phone-col' : '')} style={style} data-screen-label={label} data-theme={theme}>
       {children}
-    </div>
+    </main>
   );
 }
 
 /** Mock status bar. Shown only in the desktop frame; on a phone it is an empty spacer. */
 export function StatusBar({ stage }: { stage?: boolean }) {
   return (
-    <div className={'statusbar' + (stage ? ' statusbar-stage' : '')}>
+    <div className={'statusbar' + (stage ? ' statusbar-stage' : '')} aria-hidden>
       <span>9:41</span>
       <span className="statusbar-right">{stage ? '87%' : '5G · 87%'}</span>
     </div>
@@ -38,7 +38,7 @@ export function TabBar({ active }: { active: number }) {
   );
   return (
     <QuickCapture>
-      {idea => <nav className="tabbar">{TABS.slice(0, 2).map(tab)}{idea}{TABS.slice(2).map((t, i) => tab(t, i + 2))}</nav>}
+      {idea => <nav className="tabbar" aria-label="Onglets">{TABS.slice(0, 2).map(tab)}{idea}{TABS.slice(2).map((t, i) => tab(t, i + 2))}</nav>}
     </QuickCapture>
   );
 }

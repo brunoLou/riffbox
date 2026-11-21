@@ -61,7 +61,7 @@ export default function Metronome() {
         <div className="head">
           <div className="head-l">
             <BackButton fallback="/" />
-            <span className="display" style={{ fontSize: 32 }}>MÉTRONOME</span>
+            <h1 className="display" style={{ fontSize: 32 }}>MÉTRONOME</h1>
           </div>
           <span className="metro-sig mono">{sig}</span>
         </div>

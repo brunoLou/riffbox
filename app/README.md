@@ -69,4 +69,5 @@ dans le dossier temporaire du système.
 | `tests/e2e/rappel.spec.ts` | rappel de sauvegarde : seulement avec du contenu perso, « Plus tard », fréquence, désactivation |
 | `tests/e2e/reglages.spec.ts` | thèmes, effacement des exemples, réinitialisation, sauvegarde et fusion |
 | `tests/e2e/design.spec.ts` | design system : couleurs et leurs valeurs dans les deux thèmes, composants vivants |
+| `tests/e2e/accessibilite.spec.ts` | axe-core (WCAG 2.2 AA) sur les 27 écrans dans les deux thèmes et sur les feuilles ouvertes ; feuilles au clavier ; focus visible |
 | `tests/e2e/pwa.spec.ts` | installable, hors ligne, polices embarquées |

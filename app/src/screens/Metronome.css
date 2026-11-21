@@ -2,7 +2,7 @@
 
 .beats { display: flex; gap: 6px; background: var(--surface-2); border-radius: 18px; padding: 8px; }
 .beat-lamp {
-  flex: 1; min-width: 0; height: 32px; border-radius: 16px; background: #2a2623; border: 1.5px solid var(--line);
+  flex: 1; min-width: 0; height: 40px; border-radius: 20px; background: #2a2623; border: 1.5px solid var(--line);
   font-family: var(--f-mono); font-size: 12px; font-weight: 700; color: var(--muted);
   display: flex; align-items: center; justify-content: center; transition: background .06s, box-shadow .06s;
 }

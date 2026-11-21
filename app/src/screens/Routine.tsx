@@ -28,7 +28,7 @@ export default function Routine() {
             <BackButton fallback="/pratiquer" />
             <div className="head-titles">
               <span className="kicker">Routine du jour · {routineMin()} min</span>
-              <span className="display" style={{ fontSize: 28 }}>{r.done ? 'TERMINÉE' : `ÉTAPE ${r.step + 1}/${routineSteps().length}`}</span>
+              <h1 className="display" style={{ fontSize: 28 }}>{r.done ? 'TERMINÉE' : `ÉTAPE ${r.step + 1}/${routineSteps().length}`}</h1>
             </div>
           </div>
           <button className="edit-btn" onClick={() => nav('/pratiquer/routine/modifier')}>Modifier</button>

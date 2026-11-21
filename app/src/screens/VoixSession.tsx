@@ -196,7 +196,7 @@ function Session({ piece }: { piece: Piece }) {
             <BackButton fallback={piece.kind === 'warmup' ? '/voix/exercices' : '/voix/melodies'} />
             <div className="head-titles">
               <span className="kicker">{piece.kind === 'warmup' ? 'Échauffement' : 'Chanter sur la mélodie'}</span>
-              <span className="display" style={{ fontSize: 26, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{piece.title.toUpperCase()}</span>
+              <h1 className="display" style={{ fontSize: 26, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{piece.title.toUpperCase()}</h1>
             </div>
           </div>
         </div>
@@ -275,7 +275,7 @@ export function VoixPrise() {
             <BackButton fallback="/voix/prises" />
             <div className="head-titles">
               <span className="kicker">Prise · {new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(take.date)}</span>
-              <span className="display" style={{ fontSize: 26, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{take.title.toUpperCase()}</span>
+              <h1 className="display" style={{ fontSize: 26, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{take.title.toUpperCase()}</h1>
             </div>
           </div>
         </div>

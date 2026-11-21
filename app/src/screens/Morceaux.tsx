@@ -11,6 +11,7 @@ import {
 import { useGrids, useSetlists, useSongs } from '../lib/hooks';
 import { noteFr, noteSci } from '../lib/voice';
 import './Morceaux.css';
+import { useDialog } from '../lib/useDialog';
 
 
 /** "Setlists | Morceaux" switch at the top of the Scène tab. */
@@ -39,6 +40,7 @@ export function MorceauxScreen() {
   const [found, setFound] = useState<{ song: ImportedSong; dup: boolean; on: boolean }[] | null>(null);
   const [msg, setMsg] = useState<{ text: string; error?: boolean } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const dlgImport = useDialog(() => setFound(null));
   const list = allSongs()
     .filter(s => !q.trim() || s.title.toLowerCase().includes(q.trim().toLowerCase()))
     .sort((a, b) => a.title.localeCompare(b.title, 'fr'));
@@ -87,7 +89,7 @@ export function MorceauxScreen() {
         <div className="head">
           <div className="head-titles">
             <span className="kicker">Scène</span>
-            <span className="display" style={{ fontSize: 30 }}>MORCEAUX</span>
+            <h1 className="display" style={{ fontSize: 30 }}>MORCEAUX</h1>
           </div>
           <span className="sets-count mono">{allSongs().length} titres</span>
         </div>
@@ -118,7 +120,7 @@ export function MorceauxScreen() {
       <button className="cta" onClick={create}>+ Nouveau morceau</button>
       {found && (
         <div className="sheet-backdrop" onClick={() => setFound(null)}>
-          <div className="set-sheet cp-sheet" role="dialog" aria-label="Importer des morceaux" onClick={e => e.stopPropagation()}>
+          <div className="set-sheet cp-sheet" ref={dlgImport} role="dialog" aria-label="Importer des morceaux" onClick={e => e.stopPropagation()}>
             <div className="set-sheet-head">
               <span className="kicker sheet-kicker">{found.length === 1 ? '1 morceau trouvé' : `${found.length} morceaux trouvés`}</span>
               <button className="player-close" onClick={() => setFound(null)} aria-label="Fermer">✕</button>
@@ -223,6 +225,7 @@ function MorceauEditor({ id }: { id: string }) {
     <Phone label="08d Morceau">
       <StatusBar />
       <div className="songs-scroll editor">
+        <h1 className="sr-only">Morceau : {song.title}</h1>
         <div className="head">
           <div className="head-l">
             <BackButton fallback="/scene/morceaux" />

@@ -1,6 +1,8 @@
 /*
  * Theme tokens. Dark is the default; [data-theme] on <html> picks the theme, and an element can
  * force one for its subtree (the stage prompter always stays dark).
+ * Text colours (--muted, --faint, --accent-text, --amber-hi, --led-text) keep at least 4.5:1 on every
+ * surface of their theme (WCAG AA), checked by tests/e2e/accessibilite.spec.ts.
  * --cream is the foreground (text, selected fills) and --on-cream the text on it; --ink stays
  * dark for text on amber/green fills; --paper stays cream for physical parts (neck, knobs, dials).
  */
@@ -22,11 +24,11 @@
   --led: #62d98a;
   --led-text: #62d98a;
   --led-off: #3d3833;
-  --muted: #8f8573;
+  --muted: #999080;
   --muted-2: #a89e8a;
   --muted-3: #b8ad98;
   --tan: #c9a878;
-  --faint: #6f665a;
+  --faint: #979087;
   --card-border: #34302b;
   --panel: #1f1c1a;
   --panel-border: #322e2a;
@@ -53,15 +55,15 @@
   --dash: #b9ab95;
   --cream: #241f1a;
   --on-cream: #fbf8f2;
-  --amber-hi: #9a5a08;
-  --accent-text: #a5600a;
-  --led-text: #1d8a4b;
+  --amber-hi: #905407;
+  --accent-text: #915409;
+  --led-text: #18713e;
   --led-off: #d3c9b8;
-  --muted: #8b7f6c;
+  --muted: #6a6153;
   --muted-2: #6e6352;
   --muted-3: #5a4f40;
   --tan: #8a6a3e;
-  --faint: #a59884;
+  --faint: #6a6154;
   --card-border: #e4dbcc;
   --panel: #fbf7f0;
   --panel-border: #e0d6c6;
@@ -168,3 +170,14 @@ button:focus-visible, a:focus-visible, [role='button']:focus-visible { outline: 
   gap: 10px; font-weight: 700; font-size: 17px; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .18);
 }
 .cta.on { background: var(--led); }
+
+/* ---------- Accessibility ---------- */
+h1 { margin: 0; font-weight: inherit; }
+/* Visible keyboard focus everywhere (not on mouse or touch clicks). */
+:focus-visible { outline: 2.5px solid var(--amber); outline-offset: 2px; }
+/* For screen readers only. */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* « Reduce motion » in the phone's settings: no sliding sheets, blinking or long transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}

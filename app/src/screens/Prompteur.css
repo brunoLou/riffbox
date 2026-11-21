@@ -1,6 +1,6 @@
 .stage-head { flex: none; padding: 6px 18px 12px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid var(--surface-3); }
 .stage-top { display: flex; align-items: center; justify-content: space-between; }
-.stage-back, .stage-back:hover { font-size: 14px; font-weight: 600; color: var(--muted-2); text-decoration: none; }
+.stage-back, .stage-back:hover { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: var(--muted-2); text-decoration: none; }
 .stage-pedal { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted-2); }
 .stage-pedal span { width: 9px; height: 9px; border-radius: 50%; background: var(--muted-3); transition: transform .12s, box-shadow .12s; }
 .stage-pedal.seen span { background: var(--led); box-shadow: 0 0 8px var(--led); }
@@ -41,5 +41,5 @@
 .page-btn:disabled, .play-btn:disabled { opacity: .35; cursor: default; }
 .lyric-line.chords-only .lyric-text { display: none; }
 .lyric-line.chords-only .lyric-chord { padding-right: .6em; }
-.stage-edit, .stage-edit:hover { color: var(--muted-3); text-decoration: none; min-width: 44px; justify-content: center; }
+.stage-edit, .stage-edit:hover { color: var(--muted-3); text-decoration: none; min-width: 44px; height: 40px; justify-content: center; }
 .write-lyrics, .write-lyrics:hover { align-self: flex-start; margin-top: 4px; height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid var(--amber); color: var(--amber-hi); font-weight: 700; font-size: 15px; display: flex; align-items: center; text-decoration: none; }

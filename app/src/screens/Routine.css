@@ -42,7 +42,7 @@
 .redit-row { display: flex; align-items: center; gap: 8px; }
 .redit-row .mini-stepper .mono { min-width: 64px; }
 .redit-tool { position: relative; flex: 1; min-width: 0; height: 46px; }
-.redit-remove { align-self: flex-end; height: 36px; color: var(--muted-3); font-size: 13px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.redit-remove { align-self: flex-end; height: 40px; color: var(--muted-3); font-size: 13px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .redit-add { height: 52px; border-radius: 18px; border: 1.5px dashed var(--dash); color: var(--muted-2); font-weight: 700; font-size: 15px; }
 .redit-warn { margin: 0; padding: 0 4px; font-size: 14px; color: var(--warn); }
 .redit-note { margin: 0; padding: 0 4px; text-align: center; font-size: 13px; color: var(--muted-2); }

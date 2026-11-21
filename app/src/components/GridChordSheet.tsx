@@ -6,6 +6,7 @@ import { KEY_FR, chordName, degreeOf, type Chord } from '../lib/music';
 import { useStoredState, writeStored } from '../lib/store';
 import { ChordDiagram } from './ChordDiagram';
 import './GridChordSheet.css';
+import { useDialog } from '../lib/useDialog';
 
 /** Remembered position per chord name ("Bm" → 2), shared by every grid. */
 export const VOICING_PREF_KEY = 'grid.voicings';
@@ -24,6 +25,7 @@ export function GridChordSheet({ chords, index, gridKey, section, onIndex, onRem
   const nav = useNavigate();
   const [prefs, setPrefs] = useStoredState<Record<string, number>>(VOICING_PREF_KEY, {});
   const player = useRef<Playback | null>(null);
+  const dlg = useDialog(onClose);
   useEffect(() => () => player.current?.stop(), []);
 
   const c = chords[index];
@@ -49,7 +51,7 @@ export function GridChordSheet({ chords, index, gridKey, section, onIndex, onRem
 
   return (
     <div className="sheet-backdrop" onClick={onClose}>
-      <div className="set-sheet chord-sheet" role="dialog" aria-label={`Accord ${name}`} onClick={e => e.stopPropagation()}>
+      <div className="set-sheet chord-sheet" ref={dlg} role="dialog" aria-label={`Accord ${name}`} onClick={e => e.stopPropagation()}>
         <div className="set-sheet-head">
           <span className="kicker sheet-kicker">{section} · accord {index + 1}/{chords.length}</span>
           <button className="player-close" onClick={onClose} aria-label="Fermer">✕</button>

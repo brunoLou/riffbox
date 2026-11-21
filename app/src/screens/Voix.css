@@ -21,7 +21,7 @@
 .cents-lbl.l { left: 12px; } .cents-lbl.r { right: 12px; }
 .vtuner-foot { display: flex; align-items: center; justify-content: space-between; }
 .vcents { font-size: 22px; font-weight: 700; }
-.vjuste { display: flex; align-items: center; gap: 8px; font: 700 12px var(--f-mono); color: #7a6a55; }
+.vjuste { display: flex; align-items: center; gap: 8px; font: 700 12px var(--f-mono); color: var(--muted); }
 .vjuste span { width: 12px; height: 12px; border-radius: 50%; background: var(--led-off); }
 .vjuste.on { color: var(--led-text); }
 .vjuste.on span { background: var(--led); box-shadow: 0 0 12px var(--led); }

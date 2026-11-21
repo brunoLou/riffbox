@@ -102,7 +102,7 @@ export function Tessiture() {
             <BackButton fallback="/voix" />
             <div className="head-titles">
               <span className="kicker">Justesse vocale</span>
-              <span className="display" style={{ fontSize: 28 }}>MA TESSITURE</span>
+              <h1 className="display" style={{ fontSize: 28 }}>MA TESSITURE</h1>
             </div>
           </div>
         </div>
@@ -182,7 +182,7 @@ export function Tonalite() {
             <BackButton fallback="/voix/tessiture" />
             <div className="head-titles">
               <span className="kicker">Tessiture {noteFr(range.low)} – {noteFr(range.high)}</span>
-              <span className="display" style={{ fontSize: 26, whiteSpace: 'nowrap' }}>TROUVER MA TONALITÉ</span>
+              <h1 className="display" style={{ fontSize: 26, whiteSpace: 'nowrap' }}>TROUVER MA TONALITÉ</h1>
             </div>
           </div>
         </div>

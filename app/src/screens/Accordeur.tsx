@@ -9,6 +9,7 @@ import {
   findSame, isTight, newTuningId, sameNotes, tuningNotes, type Tuning,
 } from '../lib/tunings';
 import './Accordeur.css';
+import { useDialog } from '../lib/useDialog';
 
 const TICKS: { c: number; h: string; col: string }[] = [];
 for (let c = -50; c <= 50; c += 5) {
@@ -103,7 +104,7 @@ export default function Accordeur() {
         <div className="head">
           <div className="head-l">
             <BackButton fallback="/" />
-            <span className="display" style={{ fontSize: 32 }}>ACCORDEUR</span>
+            <h1 className="display" style={{ fontSize: 32 }}>ACCORDEUR</h1>
           </div>
           <button className="auto-toggle" onClick={() => setAuto(!auto)} aria-pressed={auto}>
             <span>Auto</span>
@@ -128,7 +129,7 @@ export default function Accordeur() {
           <div className="tuner-foot">
             <span className="tuner-brand">RIFFBOX · TUNER</span>
             <div className="tuner-ok">
-              <span style={{ color: inTune ? 'var(--led)' : '#7a6a55' }}>JUSTE</span>
+              <span style={{ color: inTune ? 'var(--led)' : '#9b8f7f' }}>JUSTE</span>
               <span className={'led' + (inTune ? ' on' : '')} style={{ width: 12, height: 12, boxShadow: inTune ? '0 0 12px var(--led)' : undefined }} />
             </div>
           </div>
@@ -228,6 +229,7 @@ function TuningEditor({ initial, tunings, onClose, onSave, onPick, onDelete }: {
   const [label, setLabel] = useState(initial.label);
   const [m, setM] = useState(initial.m);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const dlg = useDialog(onClose);
   const sound = useRef<{ stop(): void } | null>(null);
   useEffect(() => () => sound.current?.stop(), []);
 
@@ -251,7 +253,7 @@ function TuningEditor({ initial, tunings, onClose, onSave, onPick, onDelete }: {
 
   return (
     <div className="sheet-backdrop" onClick={onClose}>
-      <div className="tuning-sheet" role="dialog" aria-label={isNew ? 'Nouvel accordage' : 'Modifier l’accordage'} onClick={e => e.stopPropagation()}>
+      <div className="tuning-sheet" ref={dlg} role="dialog" aria-label={isNew ? 'Nouvel accordage' : 'Modifier l’accordage'} onClick={e => e.stopPropagation()}>
         <div className="tuning-sheet-head">
           <span className="kicker" style={{ color: 'var(--accent-text)' }}>{isNew ? 'Nouvel accordage' : 'Modifier l’accordage'}</span>
           <button className="tuning-close" onClick={onClose} aria-label="Fermer">✕</button>

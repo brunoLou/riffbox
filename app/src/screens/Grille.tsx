@@ -16,6 +16,7 @@ import { usePedal } from '../lib/pedal';
 import { readStored } from '../lib/store';
 import { useGrids, useSetlists } from '../lib/hooks';
 import './Grille.css';
+import { useDialog } from '../lib/useDialog';
 
 const R = 159; // wheel radius (318 / 2)
 
@@ -48,6 +49,8 @@ function Grille({ id }: { id: string }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   /** Chord of the section shown in the diagram sheet. */
   const [chordAt, setChordAt] = useState<number | null>(null);
+  const dlgSet = useDialog(() => closeSheet());
+  const dlgSettings = useDialog(() => closeSheet());
   const [sets, setSets] = useSetlists();
   const riffPlayer = useRef<Playback | null>(null);
   const [riffPlaying, setRiffPlaying] = useState(false);
@@ -144,6 +147,7 @@ function Grille({ id }: { id: string }) {
     <Phone label="05 Grille">
       <StatusBar />
       <div className="screen-body" style={{ gap: 14 }}>
+        <h1 className="sr-only">Grille : {g.title}</h1>
         <div className="head">
           <div className="head-l">
             <BackButton fallback="/composer/grilles" />
@@ -233,7 +237,7 @@ function Grille({ id }: { id: string }) {
 
       {sheet === 'setlist' && (
         <div className="sheet-backdrop" onClick={closeSheet}>
-          <div className="set-sheet" role="dialog" aria-label="Ajouter à une setlist" onClick={e => e.stopPropagation()}>
+          <div className="set-sheet" ref={dlgSet} role="dialog" aria-label="Ajouter à une setlist" onClick={e => e.stopPropagation()}>
             <div className="set-sheet-head">
               <span className="kicker sheet-kicker">Ajouter « {g.title} » à…</span>
               <button className="player-close" onClick={closeSheet} aria-label="Fermer">✕</button>
@@ -257,7 +261,7 @@ function Grille({ id }: { id: string }) {
 
       {sheet === 'settings' && (
         <div className="sheet-backdrop" onClick={closeSheet}>
-          <div className="set-sheet" role="dialog" aria-label="Réglages de la grille" onClick={e => e.stopPropagation()}>
+          <div className="set-sheet" ref={dlgSettings} role="dialog" aria-label="Réglages de la grille" onClick={e => e.stopPropagation()}>
             <div className="set-sheet-head">
               <span className="kicker sheet-kicker">Réglages de la grille</span>
               <button className="player-close" onClick={closeSheet} aria-label="Fermer">✕</button>

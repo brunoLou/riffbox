@@ -98,7 +98,7 @@ export default function Voix() {
             <BackButton fallback="/pratiquer" />
             <div className="head-titles">
               <span className="kicker">Pratiquer</span>
-              <span className="display" style={{ fontSize: 28, whiteSpace: 'nowrap' }}>JUSTESSE VOCALE</span>
+              <h1 className="display" style={{ fontSize: 28, whiteSpace: 'nowrap' }}>JUSTESSE VOCALE</h1>
             </div>
           </div>
         </div>
@@ -138,7 +138,7 @@ export default function Voix() {
 
         <ToleranceStepper tol={tol} setTol={setTol} />
 
-        <nav className="voice-menu">
+        <nav className="voice-menu" aria-label="Exercices de voix">
           <button onClick={() => nav('/voix/exercices')}><b>Échauffements</b><span>{WARMUPS.length} exercices · sirènes, gammes, intervalles</span><i>›</i></button>
           <button onClick={() => nav('/voix/melodies')}><b>Chanter sur la mélodie</b><span>Score par phrase</span><i>›</i></button>
           <button onClick={() => nav('/voix/prises')}><b>Mes prises</b><span>{takes.length ? `${takes.length} enregistrement${takes.length > 1 ? 's' : ''} avec courbe` : 'Aucune pour l’instant'}</span><i>›</i></button>
@@ -172,7 +172,7 @@ export function VoixListe({ kind }: { kind: 'warmup' | 'melody' }) {
             <BackButton fallback="/voix" />
             <div className="head-titles">
               <span className="kicker">Justesse vocale</span>
-              <span className="display" style={{ fontSize: 28, whiteSpace: 'nowrap' }}>{kind === 'warmup' ? 'ÉCHAUFFEMENTS' : 'MÉLODIES'}</span>
+              <h1 className="display" style={{ fontSize: 28, whiteSpace: 'nowrap' }}>{kind === 'warmup' ? 'ÉCHAUFFEMENTS' : 'MÉLODIES'}</h1>
             </div>
           </div>
         </div>
@@ -208,7 +208,7 @@ export function VoixPrises() {
             <BackButton fallback="/voix" />
             <div className="head-titles">
               <span className="kicker">Justesse vocale</span>
-              <span className="display" style={{ fontSize: 28 }}>MES PRISES</span>
+              <h1 className="display" style={{ fontSize: 28 }}>MES PRISES</h1>
             </div>
           </div>
         </div>

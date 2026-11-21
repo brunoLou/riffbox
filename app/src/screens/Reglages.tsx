@@ -95,7 +95,7 @@ export default function Reglages() {
             <BackButton fallback="/" />
             <div className="head-titles">
               <span className="kicker">Accueil</span>
-              <span className="display" style={{ fontSize: 30 }}>RÉGLAGES</span>
+              <h1 className="display" style={{ fontSize: 30 }}>RÉGLAGES</h1>
             </div>
           </div>
         </div>

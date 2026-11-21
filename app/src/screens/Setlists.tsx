@@ -32,7 +32,7 @@ export function SetlistsScreen() {
         <div className="head">
           <div className="head-titles">
             <span className="kicker">Scène</span>
-            <span className="display" style={{ fontSize: 30 }}>SETLISTS</span>
+            <h1 className="display" style={{ fontSize: 30 }}>SETLISTS</h1>
           </div>
           <span className="sets-count mono">{sets.length} sets</span>
         </div>
@@ -97,6 +97,7 @@ export function SetlistDetail() {
     <Phone label="08b Setlist">
       <StatusBar />
       <div className="sets-scroll">
+        <h1 className="sr-only">Setlist : {set.name}</h1>
         <div className="head">
           <div className="head-l">
             <BackButton fallback="/scene" />

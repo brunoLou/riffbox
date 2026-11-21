@@ -58,7 +58,7 @@
 @media (prefers-reduced-motion: reduce) { .pedal-wait { animation: none; } }
 .pedal-keys { display: flex; flex-wrap: wrap; gap: 6px; }
 .pedal-key { display: inline-flex; align-items: center; gap: 2px; height: 32px; padding-left: 10px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line-2); font-size: 15px; font-weight: 700; color: var(--cream); }
-.pedal-key button { width: 30px; height: 30px; color: var(--muted-3); font-size: 16px; }
+.pedal-key button { width: 36px; height: 36px; color: var(--muted-3); font-size: 16px; }
 .pedal-try { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--muted-2); text-align: right; }
 .pedal-try-led { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--muted-3); }
 .pedal-try.on { color: var(--cream); }

@@ -4,6 +4,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { readStored, useStoredState } from './store';
+import { modalOpen } from './useDialog';
 
 /** Named after the pedal, not a meaning: each screen decides what a pedal does. */
 export type PedalAction = 'right' | 'left' | 'middle';
@@ -87,7 +88,7 @@ export function usePedal(handlers: Partial<Record<PedalAction, () => void>>) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target)) return;
+      if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target) || modalOpen()) return;
       const a = actionFor(readPedalKeys(), e.key);
       const fn = a && ref.current[a];
       if (!fn) return;

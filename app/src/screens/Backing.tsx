@@ -71,7 +71,7 @@ export default function Backing() {
             <BackButton fallback="/pratiquer" />
             <div className="head-titles">
               <span className="kicker">Pratiquer</span>
-              <span className="display" style={{ fontSize: 28, whiteSpace: 'nowrap' }}>BACKING TRACKS</span>
+              <h1 className="display" style={{ fontSize: 28, whiteSpace: 'nowrap' }}>BACKING TRACKS</h1>
             </div>
           </div>
         </div>

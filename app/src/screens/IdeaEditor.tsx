@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { KIND_LABEL, MOODS, STYLES, type Idea, type IdeaKind } from '../lib/ideas';
 import { KEY_FR } from '../lib/music';
+import { useDialog } from '../lib/useDialog';
 
 export const IDEA_BPM = { min: 40, max: 240 };
 
@@ -22,6 +23,7 @@ export function IdeaEditor({ idea, isNew, onSave, onClose }: {
   const [tapFlash, setTapFlash] = useState(false);
   const taps = useRef<number[]>([]);
   const titleRef = useRef<HTMLInputElement>(null);
+  const dlg = useDialog(onClose);
 
   // A fresh recording gets a dated title: select it so typing replaces it.
   useEffect(() => { if (isNew) titleRef.current?.select(); }, [isNew]);
@@ -48,7 +50,7 @@ export function IdeaEditor({ idea, isNew, onSave, onClose }: {
 
   return (
     <div className="sheet-backdrop" onClick={onClose}>
-      <div className="set-sheet idea-sheet" role="dialog" aria-label={isNew ? 'Nommer l’idée' : 'Modifier l’idée'} onClick={e => e.stopPropagation()}>
+      <div className="set-sheet idea-sheet" ref={dlg} role="dialog" aria-label={isNew ? 'Nommer l’idée' : 'Modifier l’idée'} onClick={e => e.stopPropagation()}>
         <div className="set-sheet-head">
           <span className="kicker sheet-kicker">{isNew ? 'Nouvelle idée' : 'Modifier l’idée'}</span>
           <button className="player-close" onClick={onClose} aria-label="Fermer">✕</button>

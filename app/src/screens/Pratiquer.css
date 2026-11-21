@@ -61,4 +61,4 @@
 .week-foot { font-size: 13px; color: var(--muted-2); }
 .prat-tool.cream { background: var(--paper); color: var(--ink); }
 .routine-head-r { display: flex; align-items: center; gap: 10px; }
-.routine-edit { height: 32px; padding: 0 12px; border-radius: 16px; border: 1.5px solid var(--line-2); color: var(--cream); font-size: 13px; font-weight: 700; }
+.routine-edit { height: 40px; padding: 0 12px; border-radius: 16px; border: 1.5px solid var(--line-2); color: var(--cream); font-size: 13px; font-weight: 700; }

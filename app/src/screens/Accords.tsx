@@ -77,7 +77,7 @@ export default function Accords() {
             <BackButton fallback="/pratiquer" />
             <div className="head-titles">
               <span className="kicker">Pratiquer</span>
-              <span className="display" style={{ fontSize: 30 }}>ACCORDS</span>
+              <h1 className="display" style={{ fontSize: 30 }}>ACCORDS</h1>
             </div>
           </div>
         </div>
@@ -162,7 +162,7 @@ export default function Accords() {
           <div className="neck-strings">
             {[5, 4, 3, 2, 1, 0].map(s => <span key={s}>{STRING_LABELS[s]}</span>)}
           </div>
-          <div className="neck-scroll" ref={neck}>
+          <div className="neck-scroll" ref={neck} tabIndex={0} role="region" aria-label="Manche : notes de l’accord, faire défiler avec les flèches">
             <div className="neck" style={{ width: OPEN_W + LAST * FRET_W }}>
               {[5, 4, 3, 2, 1, 0].map(s => (
                 <div key={s} className="neck-row">
@@ -186,7 +186,7 @@ export default function Accords() {
               <div className="fret-nums">
                 {Array.from({ length: LAST + 1 }, (_, f) => {
                   const mk = [3, 5, 7, 9, 15].includes(f), dbl = f === 12;
-                  return <span key={f} style={{ width: f === 0 ? OPEN_W : FRET_W, color: dbl ? 'var(--amber)' : mk ? 'var(--tan)' : '#6f665a' }}>{f === 0 ? '' : dbl ? '●● 12' : mk ? `● ${f}` : f}</span>;
+                  return <span key={f} style={{ width: f === 0 ? OPEN_W : FRET_W, color: dbl ? 'var(--amber)' : mk ? 'var(--tan)' : 'var(--faint)' }}>{f === 0 ? '' : dbl ? '●● 12' : mk ? `● ${f}` : f}</span>;
                 })}
               </div>
             </div>

@@ -64,7 +64,7 @@ export default function Pratiquer() {
         <div className="head">
           <div className="head-titles">
             <span className="kicker">Pratiquer</span>
-            <span className="display" style={{ fontSize: 30 }}>PRATIQUER</span>
+            <h1 className="display" style={{ fontSize: 30 }}>PRATIQUER</h1>
           </div>
           <span className="prat-streak mono"><span />{streakDays} {streakDays > 1 ? 'jours' : 'jour'}</span>
         </div>

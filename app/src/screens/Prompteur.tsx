@@ -98,7 +98,7 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
             <span />{pedal ? 'Pédalier détecté' : 'Pédalier : appuyez'}
           </div>
         </div>
-        <div className="display stage-title">{song.title.toUpperCase()}</div>
+        <h1 className="display stage-title">{song.title.toUpperCase()}</h1>
         <div className="stage-tags">
           <span className="stage-tag key"><span>Ton :</span><span>{songKey(song, trans)}</span></span>
           <span className="stage-tag">{song.bpm} BPM · {song.feel}</span>
@@ -114,7 +114,7 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
         </div>
       </div>
 
-      <div className="lyrics" ref={scrollRef} onScroll={measure}>
+      <div className="lyrics" ref={scrollRef} onScroll={measure} tabIndex={0} role="region" aria-label="Paroles">
         {lines.length ? lines.map((l, i) =>
           l.kind === 'section' ? (
             <div key={i} className="lyric-section">{l.label}</div>

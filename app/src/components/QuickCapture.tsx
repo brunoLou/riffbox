@@ -9,6 +9,7 @@ import { readStored, useStoredState } from '../lib/store';
 import { Wave } from './Wave';
 import { IdeaEditor } from '../screens/IdeaEditor';
 import './QuickCapture.css';
+import { useDialog } from '../lib/useDialog';
 
 const LIVE_BARS = 44;
 
@@ -45,6 +46,8 @@ export function QuickCapture({ children }: { children: (button: ReactNode) => Re
   const [naming, setNaming] = useState<Idea | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
   const recording = useRef<Recording | null>(null);
+  const dlgRec = useDialog(() => cancel());
+  const dlgNote = useDialog(() => setMode('closed'));
   const start = async () => {
     setLive(Array(LIVE_BARS).fill(0.08));
     setElapsed(0);
@@ -124,7 +127,7 @@ export function QuickCapture({ children }: { children: (button: ReactNode) => Re
       )}
 
       {(mode === 'rec' || mode === 'error') && (
-        <div className="rec-sheet qc-sheet" role="dialog" aria-label="Capture rapide">
+        <div className="rec-sheet qc-sheet" ref={dlgRec} role="dialog" aria-label="Capture rapide">
           {mode === 'rec' ? (
             <>
               <div className="rec-head">
@@ -152,7 +155,7 @@ export function QuickCapture({ children }: { children: (button: ReactNode) => Re
       )}
 
       {mode === 'text' && (
-        <div className="rec-sheet qc-sheet" role="dialog" aria-label="Note rapide">
+        <div className="rec-sheet qc-sheet" ref={dlgNote} role="dialog" aria-label="Note rapide">
           <div className="rec-head"><span className="rec-kicker">Note rapide</span></div>
           <input className="text-input" placeholder="Titre (facultatif)" value={note.title} maxLength={60}
             onChange={e => setNote({ ...note, title: e.target.value })} aria-label="Titre" />

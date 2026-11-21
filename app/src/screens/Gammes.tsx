@@ -72,7 +72,7 @@ export default function Gammes() {
         <div className="head">
           <div className="head-titles">
             <span className="kicker">Pratiquer</span>
-            <span className="display" style={{ fontSize: 30 }}>GAMMES</span>
+            <h1 className="display" style={{ fontSize: 30 }}>GAMMES</h1>
           </div>
           <div className="mini-seg">
             <button className={!showInt ? 'on' : ''} onClick={() => setShowInt(false)}>Notes</button>
@@ -112,7 +112,7 @@ export default function Gammes() {
           <div className="neck-strings">
             {rows.map(r => <span key={r.si}>{r.label}</span>)}
           </div>
-          <div className="neck-scroll" ref={neckRef}>
+          <div className="neck-scroll" ref={neckRef} tabIndex={0} role="region" aria-label="Manche : notes de la gamme, faire défiler avec les flèches">
             <div className="neck" style={{ width: OPEN_W + LAST * FRET_W }}>
               {rows.map(r => (
                 <div key={r.si} className="neck-row">
@@ -133,7 +133,7 @@ export default function Gammes() {
                 {Array.from({ length: LAST + 1 }, (_, f) => {
                   const mk = [3, 5, 7, 9, 15, 17].includes(f), dbl = f === 12;
                   return (
-                    <span key={f} style={{ width: f === 0 ? OPEN_W : FRET_W, color: dbl ? 'var(--amber)' : mk ? 'var(--tan)' : '#6f665a' }}>
+                    <span key={f} style={{ width: f === 0 ? OPEN_W : FRET_W, color: dbl ? 'var(--amber)' : mk ? 'var(--tan)' : 'var(--faint)' }}>
                       {f === 0 ? '' : dbl ? '●● 12' : mk ? `● ${f}` : f}
                     </span>
                   );

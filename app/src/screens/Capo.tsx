@@ -26,7 +26,7 @@ export default function Capo() {
             <BackButton fallback="/voix" />
             <div className="head-titles">
               <span className="kicker">Outils</span>
-              <span className="display" style={{ fontSize: 28 }}>CAPODASTRE</span>
+              <h1 className="display" style={{ fontSize: 28 }}>CAPODASTRE</h1>
             </div>
           </div>
         </div>

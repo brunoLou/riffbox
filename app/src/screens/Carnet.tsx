@@ -11,6 +11,7 @@ import { useGrids, useSetlists } from '../lib/hooks';
 import { Wave } from '../components/Wave';
 import { IdeaEditor } from './IdeaEditor';
 import './Carnet.css';
+import { useDialog } from '../lib/useDialog';
 
 const KIND_FILTERS: { id: IdeaKind | 'all'; label: string }[] = [
   { id: 'all', label: 'Tout' }, { id: 'riff', label: 'Riffs' }, { id: 'grille', label: 'Grilles' },
@@ -77,6 +78,9 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
   const [live, setLive] = useState<number[]>(() => Array(LIVE_BARS).fill(0.08));
   const [elapsed, setElapsed] = useState(0);
   const recording = useRef<Recording | null>(null);
+  const dlgLink = useDialog(() => setLinking(null));
+  // Escape cancels a recording in progress (the sheet's « Annuler »).
+  const dlgRec = useDialog(() => cancelRec());
 
   const stopPlayback = () => { player.current?.stop(); player.current = null; setPlaying(null); setProgress(0); };
 
@@ -232,7 +236,7 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
         <div className="head">
           <div className="head-titles">
             <span className="kicker">Composer</span>
-            <span className="display" style={{ fontSize: 30 }}>CARNET D’IDÉES</span>
+            <h1 className="display" style={{ fontSize: 30 }}>CARNET D’IDÉES</h1>
           </div>
           <span className="carnet-count mono">{cards.length} idée{cards.length > 1 ? 's' : ''}</span>
         </div>
@@ -257,16 +261,16 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
           const meta = [KIND_LABEL[i.kind], relativeDay(i.created), i.duration != null ? mmss(i.duration) : null].filter(Boolean).join(' · ');
           return (
             <div key={i.id} className={'idea' + (isOpen ? ' open' : '')}>
-              <div className="idea-top" role="button" tabIndex={0} aria-expanded={isOpen}
-                onClick={() => setOpen(isOpen ? null : i.id)}
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(isOpen ? null : i.id); } }}>
-                <span className={'idea-badge ' + i.kind}>{BADGE[i.kind]}</span>
-                <div className="idea-titles">
-                  <span className="idea-title">{i.title}</span>
-                  <span className="idea-meta">{meta}</span>
-                </div>
+              <div className="idea-top">
+                <button className="idea-open" aria-expanded={isOpen} onClick={() => setOpen(isOpen ? null : i.id)}>
+                  <span className={'idea-badge ' + i.kind} aria-hidden>{BADGE[i.kind]}</span>
+                  <span className="idea-titles">
+                    <span className="idea-title">{i.title}</span>
+                    <span className="idea-meta">{meta}</span>
+                  </span>
+                </button>
                 {audio && (
-                  <button className={'idea-play' + (isPlaying ? ' on' : '')} onClick={e => { e.stopPropagation(); togglePlay(i); }} aria-label={isPlaying ? 'Arrêter' : 'Écouter'}>
+                  <button className={'idea-play' + (isPlaying ? ' on' : '')} onClick={e => { e.stopPropagation(); togglePlay(i); }} aria-label={isPlaying ? `Arrêter ${i.title}` : `Écouter ${i.title}`}>
                     {isPlaying ? '❚❚' : '▶'}
                   </button>
                 )}
@@ -326,7 +330,7 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
 
       {linking && (
         <div className="sheet-backdrop" onClick={() => setLinking(null)}>
-          <div className="set-sheet" role="dialog" aria-label="Ajouter à une grille" onClick={e => e.stopPropagation()}>
+          <div className="set-sheet" ref={dlgLink} role="dialog" aria-label="Ajouter à une grille" onClick={e => e.stopPropagation()}>
             <div className="set-sheet-head">
               <span className="kicker sheet-kicker">« {linking.title} » dans une grille</span>
               <button className="player-close" onClick={() => setLinking(null)} aria-label="Fermer">✕</button>
@@ -354,7 +358,7 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
       )}
 
       {recState !== 'idle' && (
-        <div className="rec-sheet" role="dialog" aria-label="Enregistrement">
+        <div className="rec-sheet" ref={dlgRec} role="dialog" aria-label="Enregistrement">
           {recState === 'rec' ? (
             <>
               <div className="rec-head">

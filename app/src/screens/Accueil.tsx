@@ -15,6 +15,7 @@ import { readRange, noteFr } from '../lib/voice';
 import { buildBackup, saveBackup } from '../lib/backup';
 import { backupReminder, daysAgo, markBackedUp, snoozeReminder } from '../lib/reminder';
 import './Accueil.css';
+import { useDialog } from '../lib/useDialog';
 
 function todayLabel() {
   const s = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'short' }).format(new Date());
@@ -54,6 +55,7 @@ export default function Accueil() {
   const [dragId, setDragId] = useState<string | null>(null);
   const [catalog, setCatalog] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const dlgCatalog = useDialog(() => { setCatalog(false); setConfirmReset(false); });
   const lastTarget = useRef<string | null>(null);
   const r = useRoutine();
   const showStreak = readStored(SETTINGS.showStreak.key, SETTINGS.showStreak.def);
@@ -111,7 +113,7 @@ export default function Accueil() {
         <div className="head">
           <div className="head-titles">
             <span className="kicker">{todayLabel()}</span>
-            <span className="display" style={{ fontSize: 32 }}>MON PEDALBOARD</span>
+            <h1 className="display" style={{ fontSize: 32 }}>MON PEDALBOARD</h1>
           </div>
           <button className={'edit-btn' + (edit ? ' on' : '')} onClick={() => { setEdit(!edit); setDragId(null); }}>{edit ? 'Terminé' : 'Modifier'}</button>
         </div>
@@ -162,7 +164,7 @@ export default function Accueil() {
 
       {catalog && (
         <div className="sheet-backdrop" onClick={() => { setCatalog(false); setConfirmReset(false); }}>
-          <div className="set-sheet catalog" role="dialog" aria-label="Ajouter une pédale" onClick={e => e.stopPropagation()}>
+          <div className="set-sheet catalog" ref={dlgCatalog} role="dialog" aria-label="Ajouter une pédale" onClick={e => e.stopPropagation()}>
             <div className="set-sheet-head">
               <span className="kicker sheet-kicker">Ajouter une pédale</span>
               <button className="player-close" onClick={() => setCatalog(false)} aria-label="Fermer">✕</button>

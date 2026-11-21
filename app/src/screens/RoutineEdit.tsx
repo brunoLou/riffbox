@@ -46,7 +46,7 @@ export default function RoutineEdit() {
           <button className="btn-link redit-cancel" onClick={back}>Annuler</button>
           <div className="head-titles" style={{ alignItems: 'center' }}>
             <span className="kicker">Routine du jour</span>
-            <span className="display" style={{ fontSize: 26 }}>MODIFIER</span>
+            <h1 className="display" style={{ fontSize: 26 }}>MODIFIER</h1>
           </div>
           <button className="edit-btn on" disabled={!changed || !valid} onClick={save}>Enregistrer</button>
         </div>
