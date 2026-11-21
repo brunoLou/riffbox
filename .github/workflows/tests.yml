@@ -1,0 +1,52 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Dépendances
+        run: npm ci
+
+      - name: Types et compilation
+        run: npm run build
+
+      - name: Tests unitaires
+        run: npm test
+
+      - name: Navigateur de test
+        run: npx playwright install --with-deps chromium
+
+      - name: Tests de bout en bout
+        run: npx playwright test --trace retain-on-failure
+
+      - name: Rapport en cas d’échec
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            app/playwright-report
+            app/test-results
+          retention-days: 7

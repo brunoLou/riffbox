@@ -10,7 +10,9 @@ export default defineConfig({
   expect: { timeout: 8_000 },
   fullyParallel: true,
   workers: process.env.CI ? 2 : 4,
-  reporter: [['list']],
+  // On CI: one retry (reported as « flaky »), and an HTML report kept when something fails.
+  retries: process.env.CI ? 1 : 0,
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list']],
   use: {
     baseURL: 'http://localhost:4173/',
     viewport: { width: 520, height: 960 },

@@ -15,6 +15,19 @@ npm run preview    # sert dist/ sur http://localhost:4173
 
 Le micro (accordeur, voix, enregistrement) demande `localhost` ou une adresse en https.
 
+## Essayer sur un téléphone (sans déployer)
+
+```sh
+npm run phone      # compile, puis sert l’app en https sur le réseau local (port 5443)
+```
+
+La commande affiche l’adresse à ouvrir sur le téléphone, et un QR code à scanner. Le téléphone et
+l’ordinateur doivent être sur le même Wi-Fi. Le certificat est local (auto-signé) : le téléphone
+affiche un avertissement à accepter une fois. Micro, son, maintien de l’écran et pédalier sont alors
+utilisables ; l’installation sur l’écran d’accueil et le mode hors ligne demandent un vrai
+certificat, donc un déploiement. Si le téléphone n’arrive pas à se connecter, autorisez Node.js
+dans le pare-feu de l’ordinateur. Autre port : `PORT=6000 npm run phone`.
+
 ## Tester
 
 ```sh
