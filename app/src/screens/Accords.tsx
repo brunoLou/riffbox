@@ -10,6 +10,7 @@ import {
 import { KEY_FR, KEY_ORDER, NOTE_L, mod12 } from '../lib/music';
 import { useStoredState } from '../lib/store';
 import './Accords.css';
+import { useFretWidth } from '../lib/useFretWidth';
 
 /** "Gammes | Accords" switch shared by the two libraries. */
 export function LibTabs({ active }: { active: 0 | 1 }) {
@@ -22,8 +23,7 @@ export function LibTabs({ active }: { active: 0 | 1 }) {
 }
 
 const TYPE_LABEL: Record<string, string> = { maj: 'Majeur', m: 'Mineur' };
-const OPEN_W = 30, FRET_W = 40, LAST = 15;
-const fretX = (f: number) => (f === 0 ? 0 : OPEN_W + (f - 1) * FRET_W);
+const OPEN_W = 30, MIN_FRET_W = 40, LAST = 15;
 const STRING_LABELS = ['E', 'A', 'D', 'G', 'B', 'e'];
 
 export default function Accords() {
@@ -45,6 +45,9 @@ export default function Accords() {
   const v = list[Math.min(idx, list.length - 1)];
   const player = useRef<Playback | null>(null);
   const neck = useRef<HTMLDivElement>(null);
+  // On a phone the neck scrolls; on a tablet the frets widen to show it whole.
+  const FRET_W = useFretWidth(neck, OPEN_W, LAST, MIN_FRET_W);
+  const fretX = (f: number) => (f === 0 ? 0 : OPEN_W + (f - 1) * FRET_W);
   const first = useRef(true);
 
   const firstChord = useRef(true);
@@ -69,9 +72,9 @@ export default function Accords() {
   const sym = chordSymbol(root, type);
 
   return (
-    <Phone label="06b Accords">
+    <Phone label="06b Accords" wide>
       <StatusBar />
-      <div className="chords-scroll">
+      <div className="chords-scroll neck-screen">
         <div className="head">
           <div className="head-l">
             <BackButton fallback="/pratiquer" />

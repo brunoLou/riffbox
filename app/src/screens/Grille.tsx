@@ -144,9 +144,9 @@ function Grille({ id }: { id: string }) {
   const closeSheet = () => { setSheet(null); setConfirmDelete(false); riffPlayer.current?.stop(); setRiffPlaying(false); };
 
   return (
-    <Phone label="05 Grille">
+    <Phone label="05 Grille" wide>
       <StatusBar />
-      <div className="screen-body" style={{ gap: 14 }}>
+      <div className="screen-body grid-body" style={{ gap: 14 }}>
         <h1 className="sr-only">Grille : {g.title}</h1>
         <div className="head">
           <div className="head-l">

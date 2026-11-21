@@ -2,11 +2,12 @@ import type { CSSProperties, ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { QuickCapture } from './QuickCapture';
 
-/** The 390×844 device. Full-bleed on real phones, framed on desktop. */
-export function Phone({ children, bg, column, label, theme }: { children: ReactNode; bg?: string; column?: boolean; label: string; theme?: 'dark' | 'light' }) {
+/** The 390×844 device: full screen on phones and tablets, framed on a computer (presentation). */
+/** On a tablet the screen is a centred column, or the whole width with `wide` (stage, grid). */
+export function Phone({ children, bg, column, label, theme, wide }: { children: ReactNode; bg?: string; column?: boolean; label: string; theme?: 'dark' | 'light'; wide?: boolean }) {
   const style: CSSProperties = { background: bg };
   return (
-    <main className={'phone' + (column ? ' phone-col' : '')} style={style} data-screen-label={label} data-theme={theme}>
+    <main className={'phone' + (column ? ' phone-col' : '') + (wide ? ' phone-wide' : '')} style={style} data-screen-label={label} data-theme={theme}>
       {children}
     </main>
   );

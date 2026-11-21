@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Phone, StatusBar } from '../components/Chrome';
 import { SETTINGS, SPEEDS } from '../lib/data';
@@ -85,7 +85,7 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
   const prevOff = edges.top && !hasPrev, nextOff = edges.bottom && !hasNext;
 
   return (
-    <Phone label="08 Scène" bg="#0f0e0d" column theme="dark">
+    <Phone label="08 Scène" bg="#0f0e0d" column theme="dark" wide>
       <StatusBar stage />
       <div className="stage-head" data-wakelock={wake}>
         <div className="stage-top">
@@ -114,7 +114,7 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
         </div>
       </div>
 
-      <div className="lyrics" ref={scrollRef} onScroll={measure} tabIndex={0} role="region" aria-label="Paroles">
+      <div className="lyrics" ref={scrollRef} onScroll={measure} style={{ '--fs': `${fs}px` } as CSSProperties} tabIndex={0} role="region" aria-label="Paroles">
         {lines.length ? lines.map((l, i) =>
           l.kind === 'section' ? (
             <div key={i} className="lyric-section">{l.label}</div>
@@ -122,8 +122,8 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
             <div key={i} className={'lyric-line' + (l.segs.every(g => !g.text.trim()) ? ' chords-only' : '')}>
               {l.segs.map((g, j) => (
                 <div key={j} className="lyric-seg">
-                  <span className="lyric-chord" style={{ fontSize: Math.round(fs * 0.82) }}>{g.chord}</span>
-                  <span className="lyric-text" style={{ fontSize: fs }}>{g.text}</span>
+                  <span className="lyric-chord">{g.chord}</span>
+                  <span className="lyric-text">{g.text}</span>
                 </div>
               ))}
             </div>

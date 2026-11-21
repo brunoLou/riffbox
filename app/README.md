@@ -15,6 +15,14 @@ npm run preview    # sert dist/ sur http://localhost:4173
 
 Le micro (accordeur, voix, enregistrement) demande `localhost` ou une adresse en https.
 
+## Tablette
+
+Sur un écran tactile plus large qu’un téléphone (ou une fois l’app installée), l’app passe en plein
+écran, sans cadre : la plupart des écrans forment une colonne centrée de 720 px ; le prompteur prend
+toute la largeur avec des paroles 1,45 fois plus grandes, les gammes et les accords montrent le manche
+entier, et la grille, en paysage, place la roue des quintes à côté des accords. Sur un ordinateur,
+l’app reste présentée dans son cadre de téléphone.
+
 ## Essayer sur un téléphone (sans déployer)
 
 ```sh
@@ -70,4 +78,5 @@ dans le dossier temporaire du système.
 | `tests/e2e/reglages.spec.ts` | thèmes, effacement des exemples, réinitialisation, sauvegarde et fusion |
 | `tests/e2e/design.spec.ts` | design system : couleurs et leurs valeurs dans les deux thèmes, composants vivants |
 | `tests/e2e/accessibilite.spec.ts` | axe-core (WCAG 2.2 AA) sur les 27 écrans dans les deux thèmes et sur les feuilles ouvertes ; feuilles au clavier ; focus visible |
+| `tests/e2e/tablette.spec.ts` | tablette (iPad) : plein écran, colonne, prompteur large, manche entier, grille en deux colonnes |
 | `tests/e2e/pwa.spec.ts` | installable, hors ligne, polices embarquées |

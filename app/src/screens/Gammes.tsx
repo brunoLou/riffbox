@@ -6,9 +6,9 @@ import { SCALE_DEFS, ivLabel, listenNotes, positions, relatedLine, scaleDef, typ
 import { readStored, useStoredState } from '../lib/store';
 import { LibTabs } from './Accords';
 import './Gammes.css';
+import { useFretWidth } from '../lib/useFretWidth';
 
-const OPEN_W = 34, FRET_W = 46, LAST = 17;
-const fretX = (f: number) => (f === 0 ? 0 : OPEN_W + (f - 1) * FRET_W);
+const OPEN_W = 34, MIN_FRET_W = 46, LAST = 17;
 const STRING_LABELS = ['E', 'A', 'D', 'G', 'B', 'e'];
 
 interface Cell { dot: boolean; label: string; root: boolean; blue: boolean; inBox: boolean }
@@ -41,6 +41,9 @@ export default function Gammes() {
   const [showInt, setShowInt] = useStoredState('scale.int', false);
   const [boxN, setBoxN] = useStoredState('scale.box', 1);
   const neckRef = useRef<HTMLDivElement>(null);
+  // On a phone the neck scrolls; on a tablet the frets widen to show it whole.
+  const FRET_W = useFretWidth(neckRef, OPEN_W, LAST, MIN_FRET_W);
+  const fretX = (f: number) => (f === 0 ? 0 : OPEN_W + (f - 1) * FRET_W);
   const firstScroll = useRef(true);
   const player = useRef<Playback | null>(null);
 
@@ -66,9 +69,9 @@ export default function Gammes() {
   };
 
   return (
-    <Phone label="06 Gammes">
+    <Phone label="06 Gammes" wide>
       <StatusBar />
-      <div className="screen-body" style={{ gap: 10 }}>
+      <div className="screen-body neck-screen" style={{ gap: 10 }}>
         <div className="head">
           <div className="head-titles">
             <span className="kicker">Pratiquer</span>

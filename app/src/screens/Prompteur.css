@@ -15,8 +15,8 @@
 .lyric-section { margin-top: 10px; font-family: var(--f-mono); font-size: 13px; font-weight: 700; letter-spacing: .16em; color: var(--muted); text-transform: uppercase; }
 .lyric-line { display: flex; flex-wrap: wrap; align-items: flex-end; }
 .lyric-seg { display: flex; flex-direction: column; }
-.lyric-chord { font-family: var(--f-mono); font-weight: 700; color: var(--accent-text); line-height: 1.15; white-space: pre; }
-.lyric-text { font-weight: 600; color: var(--cream); line-height: 1.2; white-space: pre; }
+.lyric-chord { font-size: calc(var(--fs, 26px) * .82 * var(--stage-scale, 1)); font-family: var(--f-mono); font-weight: 700; color: var(--accent-text); line-height: 1.15; white-space: pre; }
+.lyric-text { font-size: calc(var(--fs, 26px) * var(--stage-scale, 1)); font-weight: 600; color: var(--cream); line-height: 1.2; white-space: pre; }
 
 .stage-controls { flex: none; background: #1c1917; border-top: 1px solid var(--line); padding: 14px 18px 30px; display: flex; flex-direction: column; gap: 14px; }
 .stepper-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
