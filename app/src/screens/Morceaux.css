@@ -42,3 +42,15 @@
 
 .song-edit { color: var(--accent-text); font-weight: 400; }
 .pick-row.new-song { background: var(--surface-3); box-shadow: inset 0 0 0 1.5px var(--amber); }
+
+/* ChordPro import / export */
+.cp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cp-btn { margin-top: 0; height: 44px; font-size: 14px; }
+.cp-msg { margin: 0; padding: 0 4px; font-size: 14px; line-height: 1.4; color: var(--led-text); }
+.cp-msg.error { color: var(--warn); }
+.cp-sheet { max-height: 88%; overflow-y: auto; scrollbar-width: none; }
+.cp-sheet > * { flex-shrink: 0; }
+.cp-pick { gap: 12px; }
+.cp-check { flex: none; width: 26px; height: 26px; border-radius: 8px; border: 1.5px solid var(--line-2); display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--ink); }
+.cp-pick.on .cp-check { background: var(--amber); border-color: var(--amber); }
+.cp-dup { font-size: 12px; font-weight: 600; color: var(--warn); }

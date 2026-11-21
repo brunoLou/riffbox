@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { button, expect, test } from './helpers';
 
 test('the library shows what each song has, and searches', async ({ page }) => {
@@ -68,4 +69,57 @@ test('a grid song gets its own record once, chords inserted once, deletion unlin
   await page.locator('.btn-danger').click();
   await page.goto('#/scene/repet-jeudi');
   await expect(page.locator('.song-row', { hasText: 'Nouvelle grille' })).toHaveCount(0);
+});
+
+test('ChordPro: export one song, then the whole library', async ({ page }) => {
+  await page.goto('#/scene/morceau/s3');
+  const [one] = await Promise.all([page.waitForEvent('download'), button(page, 'Exporter en ChordPro').click()]);
+  expect(one.suggestedFilename()).toBe('minuit-shuffle.cho');
+  const text = readFileSync((await one.path())!, 'utf8');
+  expect(text).toMatch(/^\{title: Minuit Shuffle\}\n\{key: A\}\n\{tempo: 92\}\n/);
+  expect(text).toContain('[A7]');
+
+  await page.goto('#/scene/morceaux');
+  const count = Number((await page.locator('.sets-count').textContent())!.match(/\d+/)![0]);
+  const [all] = await Promise.all([page.waitForEvent('download'), button(page, 'Tout exporter').click()]);
+  expect(all.suggestedFilename()).toMatch(/^riffbox-morceaux-\d{4}-\d{2}-\d{2}\.cho$/);
+  const book = readFileSync((await all.path())!, 'utf8');
+  expect(book.match(/^\{title: /gm)).toHaveLength(count);
+  expect(book.match(/^\{new_song\}$/gm)).toHaveLength(count - 1);
+  await expect(page.locator('.cp-msg')).toHaveText(`${count} morceaux exportés en ChordPro, dans un seul fichier.`);
+});
+
+test('ChordPro: import files from another app, skipping a title already there', async ({ page }) => {
+  await page.goto('#/scene/morceaux');
+  const before = await page.locator('.lib-row').count();
+  await page.locator('input[type=file]').setInputFiles([
+    { name: 'le-quai.chopro', mimeType: 'text/plain', buffer: Buffer.from(
+      '{title: Le Quai}\n{artist: Les Néons}\n{key: Em}\n{tempo: 84}\n{capo: 2}\n\n{start_of_verse}\n[Em]Les néons tremblent [C]au bord du quai\n{end_of_verse}\n{soc}\n[G]La nuit s’é[D]tire\n{eoc}\n') },
+    { name: 'recueil.cho', mimeType: 'text/plain', buffer: Buffer.from(
+      '{t: Café noir}\n[Dm]Déjà là\n{new_song}\n{t: Route 12}\n{key: G}\n[G]On roule [C]encore') },
+  ]);
+  const sheet = page.getByRole('dialog', { name: 'Importer des morceaux' });
+  await expect(sheet.locator('.sheet-kicker')).toHaveText('3 morceaux trouvés');
+  await expect(sheet.locator('.cp-pick .song-title')).toHaveText(['Le Quai', 'Café noir', 'Route 12']);
+  await expect(sheet.locator('.cp-pick').nth(0).locator('.song-meta')).toHaveText('Les Néons · Mi m · 84 BPM · shuffle · paroles et accords');
+  // The title already in the library is not ticked.
+  await expect(sheet.locator('.cp-pick').nth(1)).toHaveAttribute('aria-pressed', 'false');
+  await expect(sheet.locator('.cp-dup')).toHaveText(['Un titre du même nom existe déjà']);
+  await button(page, 'Importer 2 morceaux').click();
+  await expect(page.locator('.cp-msg')).toHaveText('2 morceaux importés.');
+  await expect(page.locator('.lib-row')).toHaveCount(before + 2);
+  await expect(page.locator('.lib-row', { hasText: 'Le Quai' }).locator('.song-meta')).toHaveText(/^Les Néons · Mi m · 84 BPM/);
+
+  // The sections became labels, and the song plays on stage with its capo.
+  await page.locator('.lib-row', { hasText: 'Le Quai' }).click();
+  await expect(page.locator('textarea')).toHaveValue('{c:Couplet}\n[Em]Les néons tremblent [C]au bord du quai\n\n{c:Refrain}\n[G]La nuit s’é[D]tire');
+  await page.reload();
+  await expect(page.locator('textarea')).toHaveValue(/^\{c:Couplet\}/);
+});
+
+test('ChordPro: a file that is not ChordPro is refused', async ({ page }) => {
+  await page.goto('#/scene/morceaux');
+  await page.locator('input[type=file]').setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('juste une liste de courses') });
+  await expect(page.locator('.cp-msg.error')).toHaveText('Aucun morceau ChordPro trouvé dans ce fichier.');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 });

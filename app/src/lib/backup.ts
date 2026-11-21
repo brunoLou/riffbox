@@ -1,4 +1,5 @@
 /** Backup file: every saved value plus the audio recordings, in one JSON file. */
+import { dateStamp, shareOrDownload } from './files';
 import { allBlobs, clearBlobs, getBlob, putBlob } from './blobs';
 import { INITIAL_GRIDS } from './grids';
 import { INITIAL_IDEAS, type Idea } from './ideas';
@@ -40,26 +41,11 @@ export async function buildBackup(): Promise<BackupFile> {
   return { app: BACKUP_APP, version: BACKUP_VERSION, exportedAt: new Date().toISOString(), data, audio };
 }
 
-export const backupFileName = (d = new Date()) =>
-  `riffbox-sauvegarde-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.json`;
+export const backupFileName = (d = new Date()) => `riffbox-sauvegarde-${dateStamp(d)}.json`;
 
 /** Share the file (phone share sheet) when possible, else download it. Returns how it was handed over. */
-export async function saveBackup(b: BackupFile): Promise<'shared' | 'downloaded' | 'cancelled'> {
-  const name = backupFileName();
-  const blob = new Blob([JSON.stringify(b)], { type: 'application/json' });
-  const file = new File([blob], name, { type: 'application/json' });
-  const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
-  if (nav.canShare?.({ files: [file] }) && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
-    try { await navigator.share({ files: [file], title: 'Sauvegarde RIFFBOX' }); return 'shared'; }
-    catch (e) { if ((e as Error).name === 'AbortError') return 'cancelled'; }
-  }
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = name;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
-  return 'downloaded';
-}
+export const saveBackup = (b: BackupFile) =>
+  shareOrDownload(backupFileName(), new Blob([JSON.stringify(b)], { type: 'application/json' }), 'Sauvegarde RIFFBOX');
 
 /** Parse and check a backup file; throws a French message when it is not a RIFFBOX backup. */
 export async function readBackup(file: File): Promise<BackupFile> {

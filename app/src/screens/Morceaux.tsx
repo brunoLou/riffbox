@@ -1,6 +1,8 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
+import { CHORDPRO_EXT, chordProFileName, exportChordPro, exportSongbook, importChordPro, type ImportedSong } from '../lib/chordpro';
+import { dateStamp, shareOrDownload } from '../lib/files';
 import { gridChordPro } from '../lib/grids';
 import { KEY_FR, parseChordPro } from '../lib/music';
 import {
@@ -33,6 +35,10 @@ export function MorceauxScreen() {
   const nav = useNavigate();
   const [songs, setSongs] = useSongs();
   const [q, setQ] = useState('');
+  /** Songs found in the chosen files, waiting for confirmation. */
+  const [found, setFound] = useState<{ song: ImportedSong; dup: boolean; on: boolean }[] | null>(null);
+  const [msg, setMsg] = useState<{ text: string; error?: boolean } | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
   const list = allSongs()
     .filter(s => !q.trim() || s.title.toLowerCase().includes(q.trim().toLowerCase()))
     .sort((a, b) => a.title.localeCompare(b.title, 'fr'));
@@ -41,6 +47,37 @@ export function MorceauxScreen() {
     const id = 'song' + Date.now();
     setSongs([...songs, { id, title: 'Nouveau morceau', key: 9, bpm: 90, feel: 'shuffle', capo: 0, duration: 210, chordpro: '' }]);
     nav(`/scene/morceau/${id}`, { state: { fresh: true } });
+  };
+
+  const pickFiles = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setMsg(null);
+    const titles = new Set(allSongs().map(s => s.title.trim().toLowerCase()));
+    const out: { song: ImportedSong; dup: boolean; on: boolean }[] = [];
+    for (const f of Array.from(files)) {
+      const text = await f.text();
+      // Not ChordPro: no {directive} and no [chord] anywhere.
+      if (!/\{\s*[a-z_]+|\[[A-H][^\]\n]{0,10}\]/i.test(text)) continue;
+      for (const song of importChordPro(text, f.name)) {
+        const dup = titles.has(song.title.trim().toLowerCase());
+        out.push({ song, dup, on: !dup });
+      }
+    }
+    if (fileInput.current) fileInput.current.value = '';
+    if (!out.length) { setMsg({ text: 'Aucun morceau ChordPro trouvé dans ce fichier.', error: true }); return; }
+    setFound(out);
+  };
+  const confirmImport = () => {
+    const chosen = (found ?? []).filter(x => x.on);
+    const stamp = Date.now();
+    setSongs([...songs, ...chosen.map((x, i) => ({ ...x.song, id: `song${stamp}${i}` }))]);
+    setFound(null);
+    setMsg({ text: chosen.length === 1 ? '1 morceau importé.' : `${chosen.length} morceaux importés.` });
+  };
+  const exportAll = async () => {
+    const all = allSongs().map(s => songById(s.id) ?? s).sort((a, b) => a.title.localeCompare(b.title, 'fr'));
+    const how = await shareOrDownload(`riffbox-morceaux-${dateStamp()}.cho`, new Blob([exportSongbook(all)], { type: 'text/plain' }), 'Morceaux RIFFBOX');
+    if (how !== 'cancelled') setMsg({ text: `${all.length} morceaux exportés en ChordPro, dans un seul fichier.` });
   };
 
   return (
@@ -56,6 +93,12 @@ export function MorceauxScreen() {
         </div>
         <SceneTabs active={1} />
         <input className="text-input search" type="search" placeholder="Rechercher un titre" value={q} onChange={e => setQ(e.target.value)} aria-label="Rechercher un titre" />
+        <div className="cp-row">
+          <button className="btn-outline cp-btn" onClick={() => fileInput.current?.click()}>Importer ChordPro…</button>
+          <button className="btn-outline cp-btn" onClick={exportAll}>Tout exporter</button>
+          <input ref={fileInput} type="file" multiple hidden accept={CHORDPRO_EXT.join(',')} aria-label="Fichiers ChordPro" onChange={e => void pickFiles(e.target.files)} />
+        </div>
+        {msg && <p className={'cp-msg' + (msg.error ? ' error' : '')} role="status">{msg.text}</p>}
 
         {list.map(s => {
           // What the stage will show, including a linked grid's chords.
@@ -64,7 +107,7 @@ export function MorceauxScreen() {
             <button key={s.id} className="lib-row" onClick={() => nav(`/scene/morceau/${s.id}`)}>
               <div className="song-text">
                 <span className="song-title">{s.title}</span>
-                <span className="song-meta">{songMeta(s)} · {fmtDur(s.duration)}</span>
+                <span className="song-meta">{s.artist ? `${s.artist} · ` : ''}{songMeta(s)} · {fmtDur(s.duration)}</span>
               </div>
               <span className={'lib-status ' + st.cls}>{st.label}</span>
             </button>
@@ -73,6 +116,32 @@ export function MorceauxScreen() {
         {!list.length && <div className="songs-empty">Aucun titre ne correspond.</div>}
       </div>
       <button className="cta" onClick={create}>+ Nouveau morceau</button>
+      {found && (
+        <div className="sheet-backdrop" onClick={() => setFound(null)}>
+          <div className="set-sheet cp-sheet" role="dialog" aria-label="Importer des morceaux" onClick={e => e.stopPropagation()}>
+            <div className="set-sheet-head">
+              <span className="kicker sheet-kicker">{found.length === 1 ? '1 morceau trouvé' : `${found.length} morceaux trouvés`}</span>
+              <button className="player-close" onClick={() => setFound(null)} aria-label="Fermer">✕</button>
+            </div>
+            {found.map((x, i) => (
+              <button key={i} className={'pick-row cp-pick' + (x.on ? ' on' : '')} aria-pressed={x.on}
+                onClick={() => setFound(found.map((y, j) => (j === i ? { ...y, on: !y.on } : y)))}>
+                <span className="cp-check" aria-hidden>{x.on ? '✓' : ''}</span>
+                <div className="song-text">
+                  <span className="song-title">{x.song.title}</span>
+                  <span className="song-meta">
+                    {x.song.artist ? `${x.song.artist} · ` : ''}{songMeta({ ...x.song, id: '' })} · {hasLyrics(x.song.chordpro) ? 'paroles et accords' : x.song.chordpro ? 'accords' : 'sans texte'}
+                  </span>
+                  {x.dup && <span className="cp-dup">Un titre du même nom existe déjà</span>}
+                </div>
+              </button>
+            ))}
+            <button className="btn-primary" disabled={!found.some(x => x.on)} onClick={confirmImport}>
+              {(() => { const n = found.filter(x => x.on).length; return n > 1 ? `Importer ${n} morceaux` : n === 1 ? 'Importer 1 morceau' : 'Rien à importer'; })()}
+            </button>
+          </div>
+        </div>
+      )}
       <TabBar active={3} />
     </Phone>
   );
@@ -286,6 +355,11 @@ function MorceauEditor({ id }: { id: string }) {
             </div>
           </div>
         )}
+
+        <button className="btn-outline" onClick={() => {
+          const s = songById(id) ?? song;
+          void shareOrDownload(chordProFileName(s.title), new Blob([exportChordPro(s)], { type: 'text/plain' }), s.title);
+        }}>Exporter en ChordPro</button>
 
         {confirmDelete ? (
           <div className="confirm-row">

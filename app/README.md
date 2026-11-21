@@ -49,6 +49,7 @@ dans le dossier temporaire du système.
 | `tests/unit/scales.test.ts` | les 936 positions de gammes, noms et relatives |
 | `tests/unit/pitch.test.ts` | détection de hauteur YIN sur des sons synthétiques (< 3 cents) |
 | `tests/unit/voice.test.ts` | score vocal, octaves, placement dans la tessiture |
+| `tests/unit/chordpro.test.ts` | ChordPro : tonalités, directives d’autres apps, recueils, aller-retour des exemples |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
 | `tests/e2e/smoke.spec.ts` | chaque écran s’ouvre, navigation, anciennes adresses, micro refusé |
 | `tests/e2e/accueil.spec.ts` | tuiles, glisser-déposer, clavier, taille, catalogue, rétablir |
@@ -56,7 +57,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/metronome.spec.ts` | bouton rotatif, tap tempo, signatures, grooves, accents |
 | `tests/e2e/carnet.spec.ts` | filtres (dont le tempo), écoute, enregistrement conservé, nommage et étiquettes, idée texte, suppression |
 | `tests/e2e/grilles.spec.ts` | boucle sonore, édition, diagramme d’un accord de la grille, riff → grille → setlist → scène |
-| `tests/e2e/morceaux.spec.ts` | bibliothèque, saisie des paroles, aperçu, scène |
+| `tests/e2e/morceaux.spec.ts` | bibliothèque, saisie des paroles, aperçu, scène, import et export ChordPro |
 | `tests/e2e/setlists.spec.ts` | setlists, réordonnancement, pédalier, transposition, défilement |
 | `tests/e2e/pedalier.spec.ts` | voyant du pédalier, écran maintenu allumé (Wake Lock simulé), apprentissage des touches, pédalier sur le métronome, la grille, les backing tracks et la routine |
 | `tests/e2e/pratiquer.spec.ts` | routine minutée, graphique, backing tracks |

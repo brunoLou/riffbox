@@ -5,6 +5,8 @@ import { readStored, writeStored } from './store';
 
 export interface Song {
   id: string; title: string; key: number; minor?: boolean; bpm: number; feel: string; capo: number;
+  /** Artist or subtitle, from an imported ChordPro file. */
+  artist?: string;
   /** Seconds. */
   duration: number;
   /** ChordPro source, when lyrics and chords exist. */
