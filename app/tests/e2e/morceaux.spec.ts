@@ -124,3 +124,34 @@ test('ChordPro: a file that is not ChordPro is refused', async ({ page }) => {
   await expect(page.locator('.cp-msg.error')).toHaveText('Aucun morceau ChordPro trouvé dans ce fichier.');
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
+
+test('lyrics help: syllables and rhyme letters per line, a rhyme finder on the last word', async ({ page }) => {
+  await page.goto('#/scene/morceau/s3'); // Minuit Shuffle
+  await page.locator('.mini-seg button', { hasText: 'Rimes' }).click();
+  const first = page.locator('.lyr-sec').first();
+  await expect(first.locator('.kicker')).toHaveText('Couplet 1');
+  await expect(first.locator('.lyr-line').first()).toContainText('J\'ai pris la route avant le jour');
+  await expect(first.locator('.lyr-count').first()).toHaveText('8');
+  // jour / retour rhyme (A), grésille / brille (B).
+  await expect(first.locator('.lyr-letter')).toHaveText(['A', 'B', 'A', 'B']);
+
+  await first.locator('.lyr-line').first().click();
+  const sheet = page.getByRole('dialog', { name: 'Chercher des rimes' });
+  await expect(sheet.getByLabel('Rimes avec')).toHaveValue('jour');
+  await expect(sheet.locator('.rhyme-word', { hasText: /^amour/ })).toBeVisible();
+  await expect(sheet.locator('.rhyme-word', { hasText: /^amour/ }).locator('.rhyme-syl')).toHaveText('2');
+  // Any word can be looked up.
+  await sheet.getByLabel('Rimes avec').fill('chanson');
+  await expect(sheet.locator('.rhyme-group').first().locator('.rhyme-group-title')).toHaveText('Rimes riches');
+  await expect(sheet.locator('.rhyme-word', { hasText: /^garçon/ })).toBeVisible();
+  await sheet.locator('.rhyme-word', { hasText: /^garçon/ }).click();
+  await expect(sheet).toContainText('« garçon » copié.');
+  await page.keyboard.press('Escape');
+  await expect(sheet).toHaveCount(0);
+
+  // Lyrics typed in « Écrire » are counted right away.
+  await page.locator('.mini-seg button', { hasText: 'Écrire' }).click();
+  await page.locator('.chordpro').fill('{c:Couplet}\nUne porte\nUne amie');
+  await page.locator('.mini-seg button', { hasText: 'Rimes' }).click();
+  await expect(page.locator('.lyr-count')).toHaveText(['3', '3']);
+});

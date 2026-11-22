@@ -56,6 +56,17 @@ test('the sheets pass axe once open', async ({ page }) => {
   await page.getByRole('button', { name: 'Nouvelle idée' }).click();
   await page.getByRole('button', { name: 'Écrire plutôt ›' }).click();
   await audit(page, 'note rapide');
+
+  await page.goto('#/composer');
+  await page.getByText('+ Grille').click();
+  await audit(page, 'nouvelle grille');
+
+  await page.goto('#/scene/morceau/s3');
+  await page.locator('.mini-seg button', { hasText: 'Rimes' }).click();
+  await audit(page, 'onglet rimes');
+  await page.locator('.lyr-line').first().click();
+  await expect(page.locator('.rhyme-word').first()).toBeVisible();
+  await audit(page, 'feuille de rimes');
 });
 
 test('sheets with the keyboard: focus goes in, Tab stays in, Escape closes and gives focus back; the pedal waits', async ({ page }) => {

@@ -62,6 +62,9 @@ dans le dossier temporaire du système.
 | `tests/unit/chordDetect.test.ts` | reconnaissance d’accords sur des grattages synthétisés (positions, harmoniques, désaccord, bruit) |
 | `tests/unit/chordFollow.test.ts` | suivi de la position dans le morceau à partir des accords entendus |
 | `tests/unit/keyDetect.test.ts` | tonalité à l’écoute : 5 progressions dans les 24 tonalités, majeur et relatif mineur départagés par la basse, degré de certitude |
+| `tests/unit/suggest.test.ts` | idées d’accords pour la suite : naturels, couleurs, cadences, dans les 12 tons |
+| `tests/unit/generate.test.ts` | générateur de grilles : styles, contraste couplet / refrain, accords gardés |
+| `tests/unit/lyrics.test.ts` | paroles : syllabes chantées (vers célèbres), rimes, schéma de rimes, dictionnaire de rimes |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
 | `tests/e2e/smoke.spec.ts` | chaque écran s’ouvre, navigation, anciennes adresses, micro refusé |
@@ -70,8 +73,8 @@ dans le dossier temporaire du système.
 | `tests/e2e/metronome.spec.ts` | bouton rotatif, tap tempo, signatures, grooves, accents |
 | `tests/e2e/idee.spec.ts` | « + Idée » partout : enregistrement sur place par-dessus l’écran, note écrite, tempo et ton repris de l’écran |
 | `tests/e2e/carnet.spec.ts` | filtres (dont le tempo), écoute, enregistrement conservé, nommage et étiquettes, idée texte, suppression |
-| `tests/e2e/grilles.spec.ts` | boucle sonore, édition, diagramme d’un accord de la grille, riff → grille → setlist → scène |
-| `tests/e2e/morceaux.spec.ts` | bibliothèque, saisie des paroles, aperçu, scène, import et export ChordPro |
+| `tests/e2e/grilles.spec.ts` | boucle sonore, édition, diagramme d’un accord, idées pour la suite, grille générée et « Une autre », riff → grille → setlist → scène |
+| `tests/e2e/morceaux.spec.ts` | bibliothèque, saisie des paroles, aperçu, rimes et syllabes, scène, import et export ChordPro |
 | `tests/e2e/setlists.spec.ts` | setlists, réordonnancement, pédalier, transposition, défilement |
 | `tests/e2e/pedalier.spec.ts` | voyant du pédalier, écran maintenu allumé (Wake Lock simulé), apprentissage des touches, pédalier sur le métronome, la grille, les backing tracks et la routine |
 | `tests/e2e/pratiquer.spec.ts` | routine minutée, graphique, backing tracks |
@@ -89,3 +92,8 @@ dans le dossier temporaire du système.
 | `tests/e2e/transfert.spec.ts` | téléphone ⇄ tablette : deux appareils simulés s’échangent leurs données dans les deux sens |
 | `tests/e2e/voyants.spec.ts` | voyants de l’accueil : allumés par un vrai usage du jour, éteints le lendemain |
 | `tests/e2e/pwa.spec.ts` | installable, hors ligne, polices embarquées |
+
+## Données
+
+Le dictionnaire de rimes (`src/data/mots-fr.json`) est dérivé d’OpenSubtitles 2024 via OPUS (licence
+ODC-BY), par la liste de fréquences de @zxcvbn-ts/language-fr (MIT) : voir `src/data/NOTICE-mots-fr.md`.

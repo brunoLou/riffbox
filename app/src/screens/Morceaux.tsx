@@ -11,6 +11,7 @@ import {
 import { useGrids, useSetlists, useSongs } from '../lib/hooks';
 import { noteFr, noteSci } from '../lib/voice';
 import './Morceaux.css';
+import { LyricsHelp } from '../components/LyricsHelp';
 import { useDialog } from '../lib/useDialog';
 
 
@@ -169,7 +170,7 @@ function MorceauEditor({ id }: { id: string }) {
   const [songs, setSongs] = useSongs();
   const [, setSets] = useSetlists();
   const [grids, setGrids] = useGrids();
-  const [tab, setTab] = useState<'edit' | 'preview'>('edit');
+  const [tab, setTab] = useState<'edit' | 'preview' | 'rhymes'>('edit');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const area = useRef<HTMLTextAreaElement>(null);
   // Caret to restore right after an insertion re-renders the textarea (before the next keystroke).
@@ -308,6 +309,7 @@ function MorceauEditor({ id }: { id: string }) {
           <div className="mini-seg">
             <button className={tab === 'edit' ? 'on' : ''} onClick={() => setTab('edit')}>Écrire</button>
             <button className={tab === 'preview' ? 'on' : ''} onClick={() => setTab('preview')}>Aperçu</button>
+            <button className={tab === 'rhymes' ? 'on' : ''} onClick={() => setTab('rhymes')}>Rimes</button>
           </div>
         </div>
 
@@ -332,6 +334,8 @@ function MorceauEditor({ id }: { id: string }) {
             />
             <p className="help">{HELP}</p>
           </>
+        ) : tab === 'rhymes' ? (
+          <LyricsHelp chordpro={song.chordpro ?? ''} />
         ) : (
           <div className="preview">
             {lines.some(l => l.kind === 'line' && l.segs.length) ? lines.map((l, i) =>
