@@ -30,7 +30,7 @@ test('unknown addresses go home, old addresses still work', async ({ page }) => 
 
 test('the tab bar moves between the four tabs', async ({ page }) => {
   await page.goto('#/');
-  for (const [tab, url] of [['Composer', '/composer'], ['Pratiquer', '/pratiquer'], ['Scène', '/scene'], ['Accueil', '/']] as const) {
+  for (const [tab, url] of [['Composer', '/composer'], ['Pratiquer', '/pratiquer'], ['Live', '/scene'], ['Accueil', '/']] as const) {
     await page.getByRole('link', { name: tab }).click();
     await expect(page).toHaveURL(new RegExp(`#${url}$`));
     await expect(page.getByRole('link', { name: tab })).toHaveAttribute('aria-current', 'page');

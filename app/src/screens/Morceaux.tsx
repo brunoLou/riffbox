@@ -16,7 +16,7 @@ import { StressView } from '../components/StressView';
 import { useDialog } from '../lib/useDialog';
 
 
-/** "Setlists | Morceaux" switch at the top of the Scène tab. */
+/** "Setlists | Morceaux" switch at the top of the Live tab. */
 export function SceneTabs({ active }: { active: 0 | 1 }) {
   return (
     <div className="seg scene-tabs" style={{ gridTemplateColumns: 'repeat(2,minmax(0,1fr))' }}>
@@ -90,7 +90,7 @@ export function MorceauxScreen() {
       <div className="songs-scroll">
         <div className="head">
           <div className="head-titles">
-            <span className="kicker">Scène</span>
+            <span className="kicker">Live</span>
             <h1 className="display" style={{ fontSize: 30 }}>MORCEAUX</h1>
           </div>
           <span className="sets-count mono">{allSongs().length} titres</span>

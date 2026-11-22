@@ -30,7 +30,7 @@ export function SetlistsScreen() {
       <div className="sets-scroll">
         <div className="head">
           <div className="head-titles">
-            <span className="kicker">Scène</span>
+            <span className="kicker">Live</span>
             <h1 className="display" style={{ fontSize: 30 }}>SETLISTS</h1>
           </div>
           <span className="sets-count mono">{sets.length} sets</span>

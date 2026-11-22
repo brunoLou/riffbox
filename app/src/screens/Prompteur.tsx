@@ -94,7 +94,7 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
   const prevOff = edges.top && !hasPrev, nextOff = edges.bottom && !hasNext;
 
   return (
-    <Phone label="08 Scène" bg="#0f0e0d" column theme="dark" wide>
+    <Phone label="08 Live" bg="#0f0e0d" column theme="dark" wide>
       <StatusBar stage />
       <div className="stage-head" data-wakelock={wake}>
         <div className="stage-top">

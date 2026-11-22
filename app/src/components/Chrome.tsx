@@ -27,7 +27,7 @@ const TABS = [
   { label: 'Accueil', to: '/' },
   { label: 'Composer', to: '/composer' },
   { label: 'Pratiquer', to: '/pratiquer' },
-  { label: 'Scène', to: '/scene' },
+  { label: 'Live', to: '/scene' },
 ];
 
 /** Bottom tabs, with « + Idée » in the middle (the quick capture, on every screen with tabs). */

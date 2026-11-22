@@ -276,7 +276,7 @@ function Grille({ id }: { id: string }) {
                 </button>
               );
             })}
-            {!sets.length && <p className="sheet-empty">Aucune setlist. Créez-en une dans l’onglet Scène.</p>}
+            {!sets.length && <p className="sheet-empty">Aucune setlist. Créez-en une dans l’onglet Live.</p>}
           </div>
         </div>
       )}
