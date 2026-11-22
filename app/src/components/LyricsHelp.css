@@ -1,0 +1,27 @@
+.lyr-help { display: flex; flex-direction: column; gap: 14px; }
+.lyr-empty { margin: 4px 0; }
+.lyr-sec { display: flex; flex-direction: column; gap: 2px; }
+.lyr-sec-head { display: flex; align-items: baseline; justify-content: space-between; padding: 0 4px 4px; }
+.lyr-usual { font-size: 12px; color: var(--muted-3); }
+.lyr-line { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 8px; border-radius: 10px; text-align: left; }
+.lyr-line:active { background: var(--surface-2); }
+.lyr-letter { flex: none; width: 24px; height: 24px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font: 800 13px var(--f-mono); color: var(--ink); }
+.lyr-letter[data-l="A"] { background: #e9a23b; }
+.lyr-letter[data-l="B"] { background: #8fc1a9; }
+.lyr-letter[data-l="C"] { background: #c9a0dc; }
+.lyr-letter[data-l="D"] { background: #f0c987; }
+.lyr-letter[data-l="E"] { background: #9fb8e0; }
+.lyr-letter[data-l] { box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .15); }
+.lyr-letter:not([data-l]) { background: transparent; }
+.lyr-letter[data-l="F"], .lyr-letter[data-l="G"], .lyr-letter[data-l="H"] { background: #e6b8a2; }
+.lyr-text { flex: 1; min-width: 0; font-size: 15px; line-height: 1.35; color: var(--cream); }
+.lyr-count { flex: none; min-width: 28px; height: 26px; padding: 0 6px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--muted-3); background: var(--surface-2); }
+.lyr-count.odd { background: var(--amber); color: var(--ink); }
+.rhyme-sheet { max-height: 85%; overflow-y: auto; scrollbar-width: none; }
+.rhyme-sheet > * { flex-shrink: 0; }
+.rhyme-group { display: flex; flex-direction: column; gap: 6px; }
+.rhyme-group-title { font-size: 13px; font-weight: 700; color: var(--muted-2); }
+.rhyme-words { display: flex; flex-wrap: wrap; gap: 6px; }
+.rhyme-word { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: 18px; background: var(--surface-2); border: 1px solid var(--line); color: var(--cream); font-size: 15px; font-weight: 600; }
+.rhyme-word.on { border-color: var(--amber); }
+.rhyme-syl { font: 700 11px var(--f-mono); color: var(--muted-3); }

@@ -169,7 +169,7 @@ function MorceauEditor({ id }: { id: string }) {
   const [songs, setSongs] = useSongs();
   const [, setSets] = useSetlists();
   const [grids, setGrids] = useGrids();
-  const [tab, setTab] = useState<'edit' | 'preview'>('edit');
+  const [tab, setTab] = useState<'edit' | 'preview' | 'rhymes'>('edit');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const area = useRef<HTMLTextAreaElement>(null);
   // Caret to restore right after an insertion re-renders the textarea (before the next keystroke).
@@ -308,6 +308,7 @@ function MorceauEditor({ id }: { id: string }) {
           <div className="mini-seg">
             <button className={tab === 'edit' ? 'on' : ''} onClick={() => setTab('edit')}>Écrire</button>
             <button className={tab === 'preview' ? 'on' : ''} onClick={() => setTab('preview')}>Aperçu</button>
+            <button className={tab === 'rhymes' ? 'on' : ''} onClick={() => setTab('rhymes')}>Rimes</button>
           </div>
         </div>
 
