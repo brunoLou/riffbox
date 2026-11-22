@@ -252,6 +252,7 @@ function MorceauEditor({ id }: { id: string }) {
                 {KEY_FR.map((k, i) => <option key={i} value={i}>{k}</option>)}
               </select>
             </label>
+            <button className="detect-link" onClick={() => nav('/outils/ton', { state: { songId: id } })}>Détecter le ton à l’écoute ›</button>
             <label className="sheet-field">
               <span>Mode</span>
               <select className="text-input" value={song.minor ? 'm' : 'M'} onChange={e => update({ minor: e.target.value === 'm' || undefined })}>

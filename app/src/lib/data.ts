@@ -30,6 +30,7 @@ export const TILES: Tile[] = [
   { id: 'accords', name: 'Accords', sub: '17 types · CAGED', bg: '#2c2825', fg: '#efe6d2', a: 110, b: -60, to: '/pratiquer/accords', extra: true },
   { id: 'morceaux', name: 'Morceaux', sub: 'Paroles et accords', bg: '#4a3020', fg: '#efe6d2', a: -80, b: 40, to: '/scene/morceaux', extra: true },
   { id: 'tonalite', name: 'Tonalité', sub: 'Trouver ma tonalité', bg: '#2c2825', fg: '#efe6d2', a: 15, b: 95, to: '/voix/tonalite', extra: true },
+  { id: 'detect', name: 'Quel ton ?', sub: 'Tonalité à l’écoute', bg: '#4a3020', fg: '#efe6d2', a: -35, b: 75, to: '/outils/ton', extra: true },
   { id: 'reglages', name: 'Réglages', sub: 'Données et sauvegarde', bg: '#2c2825', fg: '#efe6d2', a: -120, b: 10, to: '/reglages', extra: true },
 ];
 

@@ -7,7 +7,7 @@ const SCREENS: [string, RegExp][] = [
   ['/pratiquer', /PRATIQUER/], ['/pratiquer/routine', /ÉTAPE/], ['/pratiquer/gammes', /GAMMES/], ['/pratiquer/accords', /ACCORDS/],
   ['/pratiquer/backing', /BACKING TRACKS/], ['/voix', /JUSTESSE VOCALE/], ['/voix/exercices', /ÉCHAUFFEMENTS/],
   ['/voix/melodies', /MÉLODIES/], ['/voix/prises', /MES PRISES/], ['/voix/tessiture', /MA TESSITURE/],
-  ['/voix/tonalite', /TROUVER MA TONALITÉ/], ['/voix/ex/gamme5', /GAMME 5 NOTES/], ['/outils/capo', /CAPODASTRE/],
+  ['/voix/tonalite', /TROUVER MA TONALITÉ/], ['/voix/ex/gamme5', /GAMME 5 NOTES/], ['/outils/capo', /CAPODASTRE/], ['/outils/ton', /QUEL TON/],
   ['/scene', /SETLISTS/], ['/scene/bar-du-port', /BAR DU PORT/], ['/scene/morceaux', /MORCEAUX/],
   ['/scene/morceau/s3', /MINUIT SHUFFLE/], ['/scene/bar-du-port/play/2', /MINUIT SHUFFLE/], ['/reglages', /RÉGLAGES/],
 ];

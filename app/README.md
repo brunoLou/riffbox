@@ -1,7 +1,7 @@
 # RIFFBOX
 
 La boîte à outils du guitariste : accordeur, métronome, carnet d’idées, grilles, gammes et accords,
-justesse vocale, setlists et prompteur de scène. Application web installable (PWA), qui fonctionne
+justesse vocale, tonalité d’un morceau à l’écoute, setlists et prompteur de scène. Application web installable (PWA), qui fonctionne
 hors ligne ; toutes les données restent sur l’appareil (export et import dans Réglages).
 
 ## Lancer
@@ -61,6 +61,7 @@ dans le dossier temporaire du système.
 | `tests/unit/chordpro.test.ts` | ChordPro : tonalités, directives d’autres apps, recueils, aller-retour des exemples |
 | `tests/unit/chordDetect.test.ts` | reconnaissance d’accords sur des grattages synthétisés (positions, harmoniques, désaccord, bruit) |
 | `tests/unit/chordFollow.test.ts` | suivi de la position dans le morceau à partir des accords entendus |
+| `tests/unit/keyDetect.test.ts` | tonalité à l’écoute : 5 progressions dans les 24 tonalités, majeur et relatif mineur départagés par la basse, degré de certitude |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
 | `tests/e2e/smoke.spec.ts` | chaque écran s’ouvre, navigation, anciennes adresses, micro refusé |
@@ -80,10 +81,11 @@ dans le dossier temporaire du système.
 | `tests/e2e/rappel.spec.ts` | rappel de sauvegarde : seulement avec du contenu perso, « Plus tard », fréquence, désactivation |
 | `tests/e2e/reglages.spec.ts` | thèmes, effacement des exemples, réinitialisation, sauvegarde et fusion |
 | `tests/e2e/design.spec.ts` | design system : couleurs et leurs valeurs dans les deux thèmes, composants vivants |
-| `tests/e2e/accessibilite.spec.ts` | axe-core (WCAG 2.2 AA) sur les 27 écrans dans les deux thèmes et sur les feuilles ouvertes ; feuilles au clavier ; focus visible |
+| `tests/e2e/accessibilite.spec.ts` | axe-core (WCAG 2.2 AA) sur les 28 écrans dans les deux thèmes et sur les feuilles ouvertes ; feuilles au clavier ; focus visible |
 | `tests/e2e/petits-ecrans.spec.ts` | téléphones de 640 à 780 px de haut : rien ne reste caché sous le bouton principal ou la barre d’onglets |
 | `tests/e2e/tablette.spec.ts` | tablette (iPad) : plein écran, colonne, prompteur large, manche entier, grille en deux colonnes |
 | `tests/e2e/suivre.spec.ts` | « Suivre ma guitare » : faux micro jouant les accords de Minuit Shuffle, le texte suit |
+| `tests/e2e/tonalite-ecoute.spec.ts` | « Quel ton ? » : faux micro jouant un morceau en Ré majeur, gamme ouverte, tonalité appliquée au morceau |
 | `tests/e2e/transfert.spec.ts` | téléphone ⇄ tablette : deux appareils simulés s’échangent leurs données dans les deux sens |
 | `tests/e2e/voyants.spec.ts` | voyants de l’accueil : allumés par un vrai usage du jour, éteints le lendemain |
 | `tests/e2e/pwa.spec.ts` | installable, hors ligne, polices embarquées |

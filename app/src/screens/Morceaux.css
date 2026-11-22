@@ -54,3 +54,4 @@
 .cp-check { flex: none; width: 26px; height: 26px; border-radius: 8px; border: 1.5px solid var(--line-2); display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--ink); }
 .cp-pick.on .cp-check { background: var(--amber); border-color: var(--amber); }
 .cp-dup { font-size: 12px; font-weight: 600; color: var(--warn); }
+.detect-link { grid-column: 1 / -1; order: 99; justify-self: start; min-height: 40px; color: var(--accent-text); font-weight: 700; font-size: 14px; }

@@ -3,6 +3,7 @@
  * Pure logic (testable without a browser) plus the microphone listener.
  */
 import { chroma, rankChords, type ChordShape } from './chordDetect';
+import { listenSpectrum } from './micSpectrum';
 import type { SongLine } from './music';
 
 /** One chord of the song where it is written: line index (in the parsed lines) and segment. */
@@ -71,44 +72,12 @@ export class ChordFollower {
 
 export interface ChordListener { stop(): void }
 
-/**
- * Listens to the guitar and reports, about ten times a second, the best of `candidates` when the
- * match is clear (else null). Raw signal: voice processing would cut the guitar's sustain.
- */
+/** Reports, about ten times a second, the best of `candidates` when the match is clear (else null). */
 export async function listenForChords(candidates: ChordShape[], onChord: (chord: string | null, ms: number) => void): Promise<ChordListener> {
-  if (!navigator.mediaDevices?.getUserMedia) throw new Error('unsupported');
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
-  const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-  const ac = new Ctx();
-  await ac.resume();
-  const src = ac.createMediaStreamSource(stream);
-  const an = ac.createAnalyser();
-  an.fftSize = 8192;
-  an.smoothingTimeConstant = 0.6;
-  src.connect(an);
-  const db = new Float32Array(an.frequencyBinCount);
-  const mags = new Float32Array(an.frequencyBinCount);
-  const time = new Float32Array(2048);
-
-  const timer = window.setInterval(() => {
-    an.getFloatTimeDomainData(time);
-    let sum = 0;
-    for (const v of time) sum += v * v;
-    if (Math.sqrt(sum / time.length) < 0.01) { onChord(null, performance.now()); return; }
-    an.getFloatFrequencyData(db);
-    for (let i = 0; i < db.length; i++) mags[i] = Number.isFinite(db[i]) ? 10 ** (db[i] / 20) : 0;
-    const ranked = rankChords(chroma(mags, ac.sampleRate, an.fftSize), candidates);
-    const [best, second] = ranked;
+  return listenSpectrum(({ mags, sampleRate, fftSize, rms, ms }) => {
+    if (rms < 0.01) { onChord(null, ms); return; }
+    const [best, second] = rankChords(chroma(mags, sampleRate, fftSize), candidates);
     const clear = best && best.score >= 0.72 && (!second || best.score - second.score >= 0.04);
-    onChord(clear ? best.name : null, performance.now());
-  }, 100);
-
-  return {
-    stop() {
-      clearInterval(timer);
-      src.disconnect();
-      stream.getTracks().forEach(t => t.stop());
-      void ac.close();
-    },
-  };
+    onChord(clear ? best.name : null, ms);
+  });
 }
