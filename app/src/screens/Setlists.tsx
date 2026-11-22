@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import {
-  allSongs, fmtDate, hasLyrics, fmtDur, fmtMin, setDuration, songById, songMeta, titlesLabel, type Setlist,
+  allSongs, hasLyrics, fmtDur, fmtMin, nextSet, setDateLabel, setDuration, songById, songMeta, sortSets, titlesLabel, toLocalInput, type Setlist,
 } from '../lib/setlists';
 import { useSetlists, useSongs } from '../lib/hooks';
 import { SceneTabs } from './Morceaux';
@@ -14,14 +14,13 @@ import './Setlists.css';
 export function SetlistsScreen() {
   const nav = useNavigate();
   const [sets, setSets] = useSetlists();
-  const sorted = [...sets].sort((a, b) => a.date - b.date);
-  const nextId = sorted.find(s => s.date >= Date.now())?.id;
+  const sorted = sortSets(sets);
+  const nextId = nextSet(sets)?.id;
 
   const create = () => {
     const id = 'set' + Date.now();
     const n = sets.filter(s => s.name.startsWith('Nouvelle setlist')).length + 1;
-    const date = new Date(Date.now() + 7 * 86400000); date.setHours(21, 0, 0, 0);
-    setSets([...sets, { id, name: n > 1 ? `Nouvelle setlist ${n}` : 'Nouvelle setlist', date: date.getTime(), songIds: [] }]);
+    setSets([...sets, { id, name: n > 1 ? `Nouvelle setlist ${n}` : 'Nouvelle setlist', songIds: [] }]);
     nav(`/scene/${id}`, { state: { edit: true } });
   };
 
@@ -43,7 +42,7 @@ export function SetlistsScreen() {
           return (
             <button key={s.id} className={'set-card' + (next ? ' next' : '')} onClick={() => nav(`/scene/${s.id}`)}>
               <div className="set-card-top">
-                <span className="set-date mono">{fmtDate(s.date)}</span>
+                <span className="set-date mono">{s.date !== undefined ? setDateLabel(s) : ''}</span>
                 {next && <span className="set-next"><span />Prochain</span>}
               </div>
               <span className="set-name">{s.name}</span>
@@ -74,6 +73,7 @@ export function SetlistDetail() {
   const loc = useLocation();
   const [edit, setEdit] = useState(() => !!(loc.state as { edit?: boolean } | null)?.edit);
   const [picking, setPicking] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   if (!set) return <Navigate to="/scene" replace />;
 
@@ -92,6 +92,14 @@ export function SetlistDetail() {
     nav(`/scene/morceau/${id}`, { state: { fresh: true, addToSet: set.id } });
   };
   const available = allSongs().filter(s => !set.songIds.includes(s.id));
+  /** Deletes the setlist (its songs stay in the library). */
+  const deleteSet = () => { setSets(all => all.filter(s => s.id !== set.id)); nav('/scene', { replace: true }); };
+  const setDate = (v: string) => update(s => {
+    const t = v ? new Date(v).getTime() : NaN;
+    if (Number.isNaN(t)) { const { date: _, ...rest } = s; return rest; }
+    return { ...s, date: t };
+  });
+  const addDate = () => { const d = new Date(Date.now() + 7 * 86400000); d.setHours(21, 0, 0, 0); update(s => ({ ...s, date: d.getTime() })); };
 
   return (
     <Phone label="08b Setlist">
@@ -109,12 +117,27 @@ export function SetlistDetail() {
                 : <span className="display set-title">{set.name.toUpperCase()}</span>}
             </div>
           </div>
-          <button className={'edit-btn' + (edit ? ' on' : '')} onClick={() => { setEdit(!edit); setPicking(false); }}>{edit ? 'Terminé' : 'Modifier'}</button>
+          <button className={'edit-btn' + (edit ? ' on' : '')} onClick={() => { setEdit(!edit); setPicking(false); setConfirmDelete(false); }}>{edit ? 'Terminé' : 'Modifier'}</button>
         </div>
 
+        {edit && (
+          <div className="set-date-edit">
+            {set.date !== undefined ? (
+              <>
+                <label className="sheet-field">
+                  <span>Date du concert</span>
+                  <input className="text-input" type="datetime-local" value={toLocalInput(set.date)} onChange={e => setDate(e.target.value)} />
+                </label>
+                <button className="btn-link" onClick={() => setDate('')}>Retirer la date</button>
+              </>
+            ) : (
+              <button className="btn-link" onClick={addDate}>+ Ajouter une date</button>
+            )}
+          </div>
+        )}
+
         <div className="set-info">
-          <span>{fmtDate(set.date)}</span>
-          <span className="sep">·</span>
+          {set.date !== undefined && <><span>{setDateLabel(set)}</span><span className="sep">·</span></>}
           <span>{titlesLabel(set.songIds.length)}</span>
           <span className="sep">·</span>
           <span>{fmtMin(setDuration(set))}</span>
@@ -172,6 +195,21 @@ export function SetlistDetail() {
             </div>
           )}
         </div>
+        {edit && (
+          <div className="set-delete">
+            {confirmDelete ? (
+              <>
+                <p className="help">Supprimer « {set.name} » ? Les morceaux restent dans la bibliothèque.</p>
+                <div className="confirm-row">
+                  <button className="btn-outline" onClick={() => setConfirmDelete(false)}>Annuler</button>
+                  <button className="btn-danger" onClick={deleteSet}>Supprimer</button>
+                </div>
+              </>
+            ) : (
+              <button className="btn-outline danger" onClick={() => setConfirmDelete(true)}>Supprimer la setlist…</button>
+            )}
+          </div>
+        )}
       </div>
       {!edit && (
         <button className="cta" disabled={!set.songIds.length} onClick={() => nav(`/scene/${set.id}/play/0`)}>▶  Jouer le set</button>

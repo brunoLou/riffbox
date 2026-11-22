@@ -96,7 +96,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/carnet.spec.ts` | filtres (dont le tempo), écoute, enregistrement conservé, nommage et étiquettes, idée texte, suppression |
 | `tests/e2e/grilles.spec.ts` | boucle sonore, édition, diagramme d’un accord, idées pour la suite, grille générée et « Une autre », riff → grille → setlist → scène |
 | `tests/e2e/morceaux.spec.ts` | bibliothèque, saisie des paroles, aperçu, rimes et syllabes, accords calés sur les temps forts, scène, import et export ChordPro |
-| `tests/e2e/setlists.spec.ts` | setlists, réordonnancement, pédalier, transposition, défilement |
+| `tests/e2e/setlists.spec.ts` | setlists, date facultative, suppression, réordonnancement, pédalier, transposition, défilement |
 | `tests/e2e/pedalier.spec.ts` | voyant du pédalier, écran maintenu allumé (Wake Lock simulé), apprentissage des touches, pédalier sur le métronome, la grille, les backing tracks et la routine |
 | `tests/e2e/pratiquer.spec.ts` | routine minutée, graphique, backing tracks |
 | `tests/e2e/routine.spec.ts` | routine modifiable : durées, noms, ajout, ordre, retrait, temps du jour gardé, rétablir |

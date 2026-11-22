@@ -18,7 +18,12 @@ export interface Song {
   melodyHigh?: number;
 }
 
-export interface Setlist { id: string; name: string; date: number; songIds: string[] }
+export interface Setlist {
+  id: string; name: string;
+  /** Date and time of the gig; none for a set that is not tied to a date. */
+  date?: number;
+  songIds: string[];
+}
 
 /** Example songs on first launch (invented titles; only Minuit Shuffle has lyrics). Editable afterwards. */
 export const INITIAL_SONGS: Song[] = [
@@ -115,4 +120,12 @@ export function fmtDate(t: number) {
   const h = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(t);
   return `${s.charAt(0).toUpperCase() + s.slice(1)} · ${h}`;
 }
+/** Sets in order: dated ones by date, then undated ones as created. */
+export const sortSets = (list: Setlist[]) =>
+  list.map((s, i) => ({ s, i })).sort((a, b) => (a.s.date ?? Infinity) - (b.s.date ?? Infinity) || a.i - b.i).map(x => x.s);
+/** The next gig to come (a dated set from today on). */
+export const nextSet = (list: Setlist[]) => sortSets(list).find(s => s.date !== undefined && s.date >= Date.now());
+export const setDateLabel = (s: Setlist) => (s.date !== undefined ? fmtDate(s.date) : 'Sans date');
+/** For a datetime-local input (local time). */
+export const toLocalInput = (t: number) => { const d = new Date(t - new Date(t).getTimezoneOffset() * 60000); return d.toISOString().slice(0, 16); };
 export const titlesLabel = (n: number) => `${n} titre${n > 1 ? 's' : ''}`;

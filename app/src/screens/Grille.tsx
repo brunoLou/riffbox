@@ -13,7 +13,7 @@ import { IN_N, KFR, OUT_N, OUT_PC, chordName, chordTypeId, degreeOf, mod12, type
 import { romanOf } from '../lib/suggest';
 import { ROLES, regenerateSection, seeded, styleDef } from '../lib/generate';
 import { SuggestPanel } from '../components/SuggestPanel';
-import { fmtDate, titlesLabel, type Setlist } from '../lib/setlists';
+import { fmtDate, sortSets, titlesLabel, type Setlist } from '../lib/setlists';
 import { GridChordSheet } from '../components/GridChordSheet';
 import { usePedal } from '../lib/pedal';
 import { readStored } from '../lib/store';
@@ -264,13 +264,13 @@ function Grille({ id }: { id: string }) {
               <span className="kicker sheet-kicker">Ajouter « {g.title} » à…</span>
               <button className="player-close" onClick={closeSheet} aria-label="Fermer">✕</button>
             </div>
-            {[...sets].sort((a, b) => a.date - b.date).map(s => {
+            {sortSets(sets).map(s => {
               const inSet = s.songIds.includes(songId);
               return (
                 <button key={s.id} className="pick-row" onClick={() => addToSet(s)}>
                   <div className="song-text">
                     <span className="song-title">{s.name}</span>
-                    <span className="song-meta">{fmtDate(s.date)} · {titlesLabel(s.songIds.length)}</span>
+                    <span className="song-meta">{s.date !== undefined ? `${fmtDate(s.date)} · ` : ''}{titlesLabel(s.songIds.length)}</span>
                   </div>
                   {inSet ? <span className="in-set">Déjà dedans ›</span> : <span className="pick-plus">+</span>}
                 </button>

@@ -8,7 +8,7 @@ import { KEY_FR } from '../lib/music';
 import { scaleDef } from '../lib/scales';
 import { INITIAL_IDEAS } from '../lib/ideas';
 import { doneSeconds, streak, useRoutine, type RoutineState, routineMin, routineSteps } from '../lib/routine';
-import { INITIAL_SETLISTS, readSongs, titlesLabel } from '../lib/setlists';
+import { INITIAL_SETLISTS, nextSet, readSongs, titlesLabel } from '../lib/setlists';
 import { readStored, useStoredState } from '../lib/store';
 import { currentTuning } from '../lib/tunings';
 import { readRange, noteFr } from '../lib/voice';
@@ -36,7 +36,7 @@ function subFor(t: Tile, r: RoutineState): string {
     case 'morceaux': return plural(readSongs().length, 'titre');
     case 'tonalite': { const v = readRange(); return v.measured ? `${noteFr(v.low)} – ${noteFr(v.high)}` : t.sub; }
     case 'setlists': {
-      const next = [...readStored('setlists', INITIAL_SETLISTS)].filter(s => s.date >= Date.now()).sort((a, b) => a.date - b.date)[0];
+      const next = nextSet(readStored('setlists', INITIAL_SETLISTS));
       return next ? `${next.name} · ${titlesLabel(next.songIds.length)}` : 'Aucun concert prévu';
     }
   }
