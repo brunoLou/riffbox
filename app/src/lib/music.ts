@@ -44,13 +44,21 @@ export const OUT_N = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'Db', 'Ab', 'Eb', 'Bb'
 export const IN_N = ['Am', 'Em', 'Bm', 'F#m', 'C#m', 'G#m', 'D#m', 'Bbm', 'Fm', 'Cm', 'Gm', 'Dm'];
 export const PC_IDX: Record<number, number> = {};
 OUT_PC.forEach((p, i) => (PC_IDX[p] = i));
+/** Minor keys as spelled on the wheel's inner ring (C♯ m, not D♭ m). */
+export const MINOR_FR: Record<number, string> = {
+  9: 'La', 4: 'Mi', 11: 'Si', 6: 'Fa♯', 1: 'Do♯', 8: 'Sol♯', 3: 'Ré♯', 10: 'Si♭', 5: 'Fa', 0: 'Do', 7: 'Sol', 2: 'Ré',
+};
 /** French key names as spelled on the wheel. */
 export const KFR: Record<number, string> = {
   0: 'Do', 7: 'Sol', 2: 'Ré', 9: 'La', 4: 'Mi', 11: 'Si', 6: 'Fa♯', 1: 'Ré♭', 8: 'La♭', 3: 'Mi♭', 10: 'Si♭', 5: 'Fa',
 };
 
 /** A grid chord: root pitch class, minor or major, and an optional colour (7th: dominant 7, or m7 when minor; sus4). */
-export interface Chord { pc: number; m?: boolean; x?: '7' | 'sus4' }
+export interface Chord {
+  pc: number; m?: boolean; x?: '7' | 'sus4';
+  /** Kept in place when a generated section is made again (« Une autre »). */
+  lock?: boolean;
+}
 
 export const chordName = (c: Chord) => {
   if (c.x === 'sus4') return OUT_N[PC_IDX[c.pc]] + 'sus4';

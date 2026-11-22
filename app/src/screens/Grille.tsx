@@ -11,6 +11,7 @@ import { INITIAL_IDEAS, type Idea } from '../lib/ideas';
 import { MetronomeEngine, type Pattern } from '../lib/metronome';
 import { IN_N, KFR, OUT_N, OUT_PC, chordName, chordTypeId, degreeOf, mod12, type Chord } from '../lib/music';
 import { romanOf } from '../lib/suggest';
+import { ROLES, regenerateSection, seeded, styleDef } from '../lib/generate';
 import { SuggestPanel } from '../components/SuggestPanel';
 import { fmtDate, titlesLabel, type Setlist } from '../lib/setlists';
 import { GridChordSheet } from '../components/GridChordSheet';
@@ -116,6 +117,13 @@ function Grille({ id }: { id: string }) {
     setChordAt(left ? Math.min(i, left - 1) : null);
   };
 
+  const regenerate = () => {
+    if (!g.style) return;
+    updateSection(p => regenerateSection(g.key, g.style!, ROLES[sec], p, seeded(Date.now())));
+  };
+  const toggleLock = (i: number) => updateSection(p => p.map((c, j) => (j === i ? { ...c, lock: c.lock ? undefined : true } : c)));
+  const locked = chords.filter(c => c.lock).length;
+
   const songId = gridSongId(g);
   const addToSet = (s: Setlist) => {
     if (!s.songIds.includes(songId)) setSets(all => all.map(x => (x.id === s.id ? { ...x, songIds: [...x.songIds, songId] } : x)));
@@ -174,12 +182,20 @@ function Grille({ id }: { id: string }) {
           ))}
         </div>
 
+        {g.style && (
+          <div className="regen-row">
+            <button className="regen-btn" onClick={regenerate}>🎲 Une autre version du {GRID_SECTIONS[sec].toLowerCase()}</button>
+            <span className="regen-hint">{styleDef(g.style).label}{locked ? ` · ${locked} gardé${locked > 1 ? 's' : ''}` : ''}</span>
+          </div>
+        )}
+
         <div className="hscroll slots">
           {chords.map((c, i) => {
             const on = playing && i === pos.bar;
             return (
               <button key={i} className={'slot' + (on ? ' on' : '')} onClick={() => setChordAt(i)} aria-label={`Accord ${chordName(c)} : diagramme`}>
                 <span className="slot-name">{chordName(c)}</span>
+                {c.lock && <span className="slot-lock" aria-label="gardé">🔒</span>}
                 <span className="slot-deg">{(!c.x && degreeOf(g.key, c.pc, c.m)) || romanOf(g.key, c)}</span>
               </button>
             );
@@ -238,7 +254,7 @@ function Grille({ id }: { id: string }) {
 
       {chordAt !== null && chords[chordAt] && (
         <GridChordSheet chords={chords} index={chordAt} gridKey={g.key} section={GRID_SECTIONS[sec]}
-          onIndex={setChordAt} onRemove={removeChord} onClose={() => setChordAt(null)} />
+          onIndex={setChordAt} onRemove={removeChord} onClose={() => setChordAt(null)} onLock={g.style ? toggleLock : undefined} />
       )}
 
       {sheet === 'setlist' && (

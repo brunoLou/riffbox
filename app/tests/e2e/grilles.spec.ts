@@ -155,3 +155,47 @@ test('ideas for what comes next: heard in context, added in one tap, cadences, a
   await page.locator('.slot', { hasText: 'E7' }).click();
   await expect(page.locator('.cs-sub')).toHaveText('Mi septième · V7 en La');
 });
+
+test('a grid generated from a style, a key and a structure; « Une autre » keeps the locked chords', async ({ page }) => {
+  await page.goto('#/composer');
+  await page.getByText('+ Grille').click();
+  const sheet = page.getByRole('dialog', { name: 'Nouvelle grille' });
+  await sheet.getByRole('button', { name: 'Rock' }).click();
+  await sheet.getByLabel('Tonalité').selectOption({ label: 'Mi (relatif Do♯ m)' });
+  await sheet.getByRole('button', { name: '8', exact: true }).click();
+  await sheet.getByLabel('Avec un pont').uncheck();
+  await button(page, 'Générer la grille').click();
+
+  await expect(page).toHaveURL(/#\/composer\/grille\/grid\d+$/);
+  await expect(page.locator('.grid-title')).toHaveText('ROCK EN MI');
+  await expect(page.locator('.hub-key')).toHaveText('Mi');
+  await expect(page.locator('.slots .slot')).toHaveCount(8);
+  await expect(page.locator('.seg button', { hasText: 'Pont' })).toHaveText('Pont ·'); // no bridge
+  await page.locator('.seg button', { hasText: 'Refrain' }).click();
+  await expect(page.locator('.slots .slot')).toHaveCount(8);
+  await page.locator('.seg button', { hasText: 'Couplet' }).click();
+
+  // Lock the first chord, then make the verse again: it stays, the section changes.
+  const first = await page.locator('.slot-name').first().textContent();
+  await page.locator('.slot').first().click();
+  await button(page, 'Garder cet accord si je régénère').click();
+  await page.getByLabel('Fermer').click();
+  await expect(page.locator('.slot').first().locator('.slot-lock')).toBeVisible();
+  await expect(page.locator('.regen-hint')).toHaveText('Rock · 1 gardé');
+  const before = await page.locator('.slot-name').allTextContents();
+  let changed = false;
+  for (let k = 0; k < 4 && !changed; k++) {
+    await page.locator('.regen-btn').click();
+    changed = (await page.locator('.slot-name').allTextContents()).join() !== before.join();
+  }
+  expect(changed).toBe(true);
+  await expect(page.locator('.slot-name').first()).toHaveText(first!);
+
+  // The choices are remembered; « Grille vide » still makes an empty one.
+  await page.goto('#/composer');
+  await page.getByText('+ Grille').click();
+  await expect(page.getByRole('dialog', { name: 'Nouvelle grille' }).getByRole('button', { name: 'Rock' })).toHaveAttribute('aria-pressed', 'true');
+  await button(page, 'Grille vide').click();
+  await expect(page.locator('.slots-empty')).toBeVisible();
+  await expect(page.locator('.regen-row')).toHaveCount(0);
+});

@@ -56,6 +56,7 @@ test('a song created from a setlist joins it', async ({ page }) => {
 test('a grid song gets its own record once, chords inserted once, deletion unlinks', async ({ page }) => {
   await page.goto('#/composer');
   await page.getByText('+ Grille').click();
+  await button(page, 'Grille vide').click();
   for (const n of ['A', 'D', 'E']) await page.locator('.wheel-chord', { has: page.locator('.wc-name', { hasText: new RegExp('^' + n + '$') }) }).click();
   await page.getByText('Setlist +').click();
   await page.locator('.set-sheet .pick-row', { hasText: 'Répét' }).click();

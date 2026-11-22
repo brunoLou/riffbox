@@ -13,3 +13,5 @@
 .cs-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .cs-actions > button { margin-top: 0; }
 .cs-remove { height: 44px; color: var(--warn); font-weight: 600; font-size: 14px; }
+.cs-lock { min-height: 44px; border-radius: 22px; border: 1.5px dashed var(--line-2); color: var(--muted-3); font-weight: 700; font-size: 14px; }
+.cs-lock.on { border-style: solid; border-color: var(--amber); color: var(--accent-text); }

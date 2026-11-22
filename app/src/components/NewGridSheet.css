@@ -1,0 +1,9 @@
+.newgrid-sheet { max-height: 88%; overflow-y: auto; scrollbar-width: none; }
+.newgrid-sheet > * { flex-shrink: 0; }
+.newgrid-sheet .btn-primary, .newgrid-sheet .btn-outline { margin-top: 4px; }
+.ng-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ng-chip { height: 40px; padding: 0 14px; border-radius: 20px; border: 1.5px solid var(--line-2); font-size: 14px; font-weight: 700; color: var(--muted-3); }
+.ng-chip.on { background: var(--amber); border-color: var(--amber); color: var(--ink); }
+.ng-seg { width: 120px; }
+.ng-seg > button { height: 36px; }
+.ng-check input { width: 24px; height: 24px; accent-color: var(--amber); }

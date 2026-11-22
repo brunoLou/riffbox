@@ -19,9 +19,11 @@ export const chordOf = (c: Chord) => ({ root: c.pc, type: chordType(chordTypeId(
  * Bottom sheet for one chord of a grid: its diagram, the other positions on the neck,
  * listen, step through the section's chords, open the library, or remove it.
  */
-export function GridChordSheet({ chords, index, gridKey, section, onIndex, onRemove, onClose }: {
+export function GridChordSheet({ chords, index, gridKey, section, onIndex, onRemove, onClose, onLock }: {
   chords: Chord[]; index: number; gridKey: number; section: string;
   onIndex: (i: number) => void; onRemove: (i: number) => void; onClose: () => void;
+  /** Generated grids: keep this chord when the section is made again. */
+  onLock?: (i: number) => void;
 }) {
   const nav = useNavigate();
   const [prefs, setPrefs] = useStoredState<Record<string, number>>(VOICING_PREF_KEY, {});
@@ -83,6 +85,11 @@ export function GridChordSheet({ chords, index, gridKey, section, onIndex, onRem
           <button className="btn-primary cs-listen" onClick={listen}>▶ Écouter</button>
           <button className="btn-outline cs-lib" onClick={openLibrary}>Bibliothèque ›</button>
         </div>
+        {onLock && (
+          <button className={'cs-lock' + (c.lock ? ' on' : '')} aria-pressed={!!c.lock} onClick={() => onLock(index)}>
+            {c.lock ? '🔒 Gardé si je régénère' : 'Garder cet accord si je régénère'}
+          </button>
+        )}
         <button className="cs-remove" onClick={() => onRemove(index)}>Retirer {name} de la grille</button>
       </div>
     </div>

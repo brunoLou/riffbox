@@ -24,6 +24,8 @@ export interface Grid {
   created: number;
   /** Riff from the notebook this grid was built from. */
   ideaId?: string;
+  /** Style it was generated in (« Une autre » makes sections again in this style). */
+  style?: import('./generate').GenStyle;
   /** Catalog song this grid belongs to; otherwise the grid is its own song ("g:<id>"). */
   songId?: string;
 }

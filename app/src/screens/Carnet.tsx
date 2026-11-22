@@ -5,7 +5,9 @@ import { playLick, playUrl, startRecording, type Playback, type Recording } from
 import { INITIAL_IDEAS, KIND_LABEL, MOODS, STYLES, keyLabel, mmss, relativeDay, type Idea, type IdeaKind } from '../lib/ideas';
 import { deleteBlob, getBlob, putBlob } from '../lib/blobs';
 import { firstChords, gridSongId, grooveDef, type Grid, type GridGroove } from '../lib/grids';
-import { KEY_FR, mod12 } from '../lib/music';
+import { KEY_FR, KFR, mod12 } from '../lib/music';
+import { generateGrid, seeded, styleDef, type GenOptions } from '../lib/generate';
+import { NewGridSheet } from '../components/NewGridSheet';
 import { useStoredState } from '../lib/store';
 import { useGrids, useSetlists } from '../lib/hooks';
 import { Wave } from '../components/Wave';
@@ -56,6 +58,7 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
   const [grids, setGrids] = useGrids();
   const [, setSets] = useSetlists();
   const [linking, setLinking] = useState<Idea | null>(null);
+  const [newSheet, setNewSheet] = useState(false);
   const [savedKind, setKind] = useStoredState<IdeaKind | 'all'>('carnet.kind', 'all');
   // Opening "Grilles" from home filters this visit only; the notebook's own filter is left as it was.
   const [override, setOverride] = useState<IdeaKind | undefined>(initialKind);
@@ -217,6 +220,19 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
     setGrids(all => [g, ...all]);
     nav(`/composer/grille/${id}`);
   };
+  /** A whole grid generated from a style, a key and a structure. */
+  const generated = (o: GenOptions) => {
+    const id = 'grid' + Date.now();
+    const def = styleDef(o.style);
+    const rng = seeded(Date.now());
+    const bpm = Math.round((def.bpm[0] + rng() * (def.bpm[1] - def.bpm[0])) / 2) * 2;
+    const g: Grid = {
+      id, title: `${def.label} en ${KFR[o.key]}`, created: Date.now(), key: o.key, bpm, groove: def.groove,
+      prog: generateGrid(o, rng), style: o.style,
+    };
+    setGrids(all => [g, ...all]);
+    nav(`/composer/grille/${id}`);
+  };
   const linkTo = (i: Idea, g: Grid) => {
     setGrids(all => all.map(x => (x.id === g.id ? { ...x, ideaId: i.id } : x)));
     nav(`/composer/grille/${g.id}`);
@@ -322,9 +338,11 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
         <div className="carnet-actions">
           <button className="cta rec-cta" onClick={startRec}><span className="rec-dot" />Enregistrer</button>
           <button className="grid-to-set" onClick={newText}>+ Texte</button>
-          <button className="grid-to-set" onClick={() => newGrid()}>+ Grille</button>
+          <button className="grid-to-set" onClick={() => setNewSheet(true)}>+ Grille</button>
         </div>
       )}
+
+      {newSheet && <NewGridSheet onClose={() => setNewSheet(false)} onEmpty={() => newGrid()} onGenerate={generated} />}
 
       {editing && <IdeaEditor idea={editing.idea} isNew={editing.isNew} onSave={saveIdea} onClose={() => setEditing(null)} />}
 
