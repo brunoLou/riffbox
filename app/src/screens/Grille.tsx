@@ -17,6 +17,7 @@ import { readStored } from '../lib/store';
 import { useGrids, useSetlists } from '../lib/hooks';
 import './Grille.css';
 import { useDialog } from '../lib/useDialog';
+import { markUsed } from '../lib/usage';
 
 const R = 159; // wheel radius (318 / 2)
 
@@ -104,7 +105,7 @@ function Grille({ id }: { id: string }) {
   const toggleLoop = () => {
     const e = engine.current!;
     if (playing) { e.stop(); setPlaying(false); setPos({ bar: 0, beat: -1 }); return; }
-    e.rewind(); setPos({ bar: 0, beat: -1 }); e.start(); setPlaying(true);
+    e.rewind(); setPos({ bar: 0, beat: -1 }); e.start(); setPlaying(true); markUsed('grilles');
   };
   const pickSection = (i: number) => { setSec(i); setChordAt(null); setPos({ bar: 0, beat: -1 }); engine.current!.rewind(); };
   const removeChord = (i: number) => {

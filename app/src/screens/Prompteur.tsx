@@ -9,6 +9,7 @@ import { usePedal } from '../lib/pedal';
 import { useWakeLock } from '../lib/wakeLock';
 import { useGuitarFollow } from './useGuitarFollow';
 import './Prompteur.css';
+import { useMarkUsed } from '../lib/usage';
 
 /** Auto-scroll rate at 1×, in px per ms (0.8 px every 30 ms in the prototype). */
 const BASE_RATE = 0.8 / 30;
@@ -30,6 +31,7 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
   const [playing, setPlaying] = useState(false);
   const [edges, setEdges] = useState({ top: true, bottom: false });
   const wake = useWakeLock();
+  useMarkUsed('setlists'); // playing a set
   const [follow, setFollow] = useStoredState('stage.follow', false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const pos = useRef(0);

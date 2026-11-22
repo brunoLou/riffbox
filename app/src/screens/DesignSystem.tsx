@@ -59,7 +59,8 @@ export default function DesignSystem() {
   const [sw, setSw] = useState(true);
   const [sel, setSel] = useState(1);
   const C = voicings(0, chordType('maj'))[0];
-  const tiles = ['tuner', 'metro', 'carnet', 'grilles', 'backing'].map(id => TILES.find(t => t.id === id)!);
+  // Two LEDs lit, as when those tools were used today.
+  const tiles = ['tuner', 'metro', 'carnet', 'grilles', 'backing'].map(id => ({ ...TILES.find(t => t.id === id)!, on: id === 'tuner' || id === 'metro' }));
   const noop = () => {};
 
   return (
@@ -118,7 +119,7 @@ export default function DesignSystem() {
 
         <section className="ds-card" aria-label="Tuile-pédale">
           <span className="kicker">Tuile-pédale</span>
-          <p className="ds-desc">Un outil de l’accueil : voyant (actif), deux boutons décoratifs, nom, résumé en direct, footswitch. Petite ou large.</p>
+          <p className="ds-desc">Un outil de l’accueil : voyant (allumé si l’outil a servi aujourd’hui), deux boutons décoratifs, nom, résumé en direct, footswitch. Petite ou large.</p>
           <div className="pedal-grid ds-pedals" data-theme="dark">
             {tiles.map(t => (
               <PedalTile key={t.id} t={t} wide={!!t.wide} edit={false} lifted={false}

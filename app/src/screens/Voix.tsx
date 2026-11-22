@@ -10,6 +10,7 @@ import {
   type Piece, type Take, type TracePoint,
 } from '../lib/voice';
 import './Voix.css';
+import { useMarkUsed } from '../lib/usage';
 
 const median = (a: number[]) => { const b = [...a].sort((x, y) => x - y); return b[Math.floor(b.length / 2)]; };
 
@@ -43,6 +44,7 @@ export function ToleranceStepper({ tol, setTol }: { tol: number; setTol: (n: num
 /* ---------- Hub: vocal tuner and free curve ---------- */
 
 export default function Voix() {
+  useMarkUsed('voix'); // a reference tool: opening it is using it
   const nav = useNavigate();
   const [view, setView] = useStoredState<'note' | 'curve'>('voice.view', 'note');
   const [tol, setTol] = useTolerance();

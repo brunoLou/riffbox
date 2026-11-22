@@ -11,6 +11,7 @@ import { KEY_FR, KEY_ORDER, NOTE_L, mod12 } from '../lib/music';
 import { useStoredState } from '../lib/store';
 import './Accords.css';
 import { useFretWidth } from '../lib/useFretWidth';
+import { useMarkUsed } from '../lib/usage';
 
 /** "Gammes | Accords" switch shared by the two libraries. */
 export function LibTabs({ active }: { active: 0 | 1 }) {
@@ -27,6 +28,7 @@ const OPEN_W = 30, MIN_FRET_W = 40, LAST = 15;
 const STRING_LABELS = ['E', 'A', 'D', 'G', 'B', 'e'];
 
 export default function Accords() {
+  useMarkUsed('accords'); // a reference tool: opening it is using it
   const [root, setRoot] = useStoredState('chords.root', 9);
   const [typeId, setTypeId] = useStoredState('chords.type', 'maj');
   const [labels, setLabels] = useStoredState<'notes' | 'intervals' | 'fingers'>('chords.labels', 'notes');

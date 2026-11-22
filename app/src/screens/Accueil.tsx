@@ -16,6 +16,7 @@ import { buildBackup, saveBackup } from '../lib/backup';
 import { backupReminder, daysAgo, markBackedUp, snoozeReminder } from '../lib/reminder';
 import './Accueil.css';
 import { useDialog } from '../lib/useDialog';
+import { useUsedToday } from '../lib/usage';
 
 function todayLabel() {
   const s = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'short' }).format(new Date());
@@ -55,6 +56,7 @@ export default function Accueil() {
   const [dragId, setDragId] = useState<string | null>(null);
   const [catalog, setCatalog] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const used = useUsedToday();
   const dlgCatalog = useDialog(() => { setCatalog(false); setConfirmReset(false); });
   const lastTarget = useRef<string | null>(null);
   const r = useRoutine();
@@ -143,7 +145,7 @@ export default function Accueil() {
 
         <div className={'pedal-grid' + (dragId ? ' dragging' : '')} onPointerMove={onPointerMove} onPointerUp={endDrag} onPointerCancel={endDrag}>
           {slots.map(s => {
-            const t = { ...byId.get(s.id)!, sub: subFor(byId.get(s.id)!, r) };
+            const t = { ...byId.get(s.id)!, sub: subFor(byId.get(s.id)!, r), on: used.has(s.id) };
             return (
               <PedalTile key={s.id} t={t} wide={s.wide} edit={edit} lifted={dragId === s.id}
                 onOpen={() => nav(s.id === 'routine' ? '/pratiquer/routine' : t.to)}
@@ -157,6 +159,9 @@ export default function Accueil() {
             <button className="add-pedal" onClick={() => setCatalog(true)}>+ Ajouter une pédale</button>
           )}
         </div>
+        {!edit && slots.length > 0 && (
+          <p className="led-legend"><span className="led on" aria-hidden />Voyant allumé : outil utilisé aujourd’hui</p>
+        )}
 
         <button className="settings-link" onClick={() => nav('/reglages')}><span>Réglages et données</span><span>›</span></button>
       </div>
@@ -172,7 +177,7 @@ export default function Accueil() {
             <div className="catalog-list">
               {missing.map(t => (
                 <button key={t.id} className="pick-row" onClick={() => add(t)}>
-                  <span className="cat-swatch" style={{ background: t.bg }}><span className={'led' + (t.on ? ' on' : '')} /></span>
+                  <span className="cat-swatch" style={{ background: t.bg }}><span className="led" /></span>
                   <div className="song-text">
                     <span className="song-title">{t.name}</span>
                     <span className="song-meta">{t.sub}</span>

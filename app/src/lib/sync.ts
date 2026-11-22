@@ -4,6 +4,7 @@
  * version. Nothing is overwritten by an older copy, and nothing deleted comes back.
  */
 import { readStored, registerWriteHook, serialized, writeStored } from './store';
+import { markUsed } from './usage';
 
 /** Collections of items with an `id`, synced item by item. */
 export const SYNC_LISTS = ['ideas', 'grids', 'songs', 'setlists', 'voice.takes', 'tuner.custom'] as const;
@@ -11,7 +12,7 @@ export const SYNC_LISTS = ['ideas', 'grids', 'songs', 'setlists', 'voice.takes',
 export const SYNC_VALUES = ['routine.steps', 'voice.range', 'grid.voicings'] as const;
 /** Device settings and bookkeeping that stay on each device. */
 export const LOCAL_KEYS = ['settings.theme', 'home.layout', 'pedal.keys', 'routine', 'practice.seeded', 'backup.last', 'backup.since',
-  'backup.snooze', 'backup.remind', 'sync.lastSent', 'sync.lastReceived', 'stage.follow'];
+  'backup.snooze', 'backup.remind', 'sync.lastSent', 'sync.lastReceived', 'stage.follow', 'usage.today'];
 
 export const DELETED_KEY = 'sync.deleted';
 export const VALUE_TIMES_KEY = 'sync.valueTimes';
@@ -65,9 +66,24 @@ function pruneTombstones(t: Tombstones, now = Date.now()): Tombstones {
   return Object.fromEntries(Object.entries(t).filter(([, at]) => at >= limit));
 }
 
+/** Home board tile lit when a collection changes. */
+const TILE_OF: Record<(typeof SYNC_LISTS)[number], string> = {
+  ideas: 'carnet', grids: 'grilles', songs: 'morceaux', setlists: 'setlists', 'voice.takes': 'voix', 'tuner.custom': 'tuner',
+};
+
 /** Install the stamping on every write (once, at start-up). */
 export function installSync() {
-  for (const list of SYNC_LISTS) registerWriteHook<Item[]>(list, (prev, next) => stampList(list, prev, next));
+  for (const list of SYNC_LISTS) {
+    registerWriteHook<Item[]>(list, (prev, next) => {
+      const out = stampList(list, prev, next);
+      // A real change (not the first save of the examples) lights the tool's LED on the home board.
+      if (prev && Array.isArray(out)) {
+        const sig = (xs: Item[]) => xs.map(x => `${x?.id}@${x?.updated}`).join();
+        if (sig(prev) !== sig(out)) markUsed(TILE_OF[list]);
+      }
+      return out;
+    });
+  }
   for (const key of SYNC_VALUES) {
     registerWriteHook<unknown>(key, (prev, next) => {
       if (JSON.stringify(prev) !== JSON.stringify(next)) {

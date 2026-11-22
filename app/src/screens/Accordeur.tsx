@@ -10,6 +10,7 @@ import {
 } from '../lib/tunings';
 import './Accordeur.css';
 import { useDialog } from '../lib/useDialog';
+import { useMarkUsed } from '../lib/usage';
 
 const TICKS: { c: number; h: string; col: string }[] = [];
 for (let c = -50; c <= 50; c += 5) {
@@ -30,6 +31,7 @@ export default function Accordeur() {
   const [str, setStr] = useStoredState('tuner.string', 1);
   const [mic, setMic] = useState<Mic>('starting');
   const [reading, setReading] = useState<{ hz: number; cents: number } | null>(null);
+  useMarkUsed('tuner', !!reading); // a note heard
   const [attempt, setAttempt] = useState(0);
   /** Tuning being created (no id) or edited. */
   const [editing, setEditing] = useState<Tuning | null>(null);

@@ -8,6 +8,7 @@ import {
 import { usePedal } from '../lib/pedal';
 import { useStoredState } from '../lib/store';
 import './Metronome.css';
+import { markUsed } from '../lib/usage';
 
 export const BPM_MIN = 40, BPM_MAX = 240;
 
@@ -30,7 +31,7 @@ export default function Metronome() {
   useEffect(() => () => engine.current?.dispose(), []);
 
   const toggle = () => {
-    if (playing) { engine.current!.stop(); setBeat(null); } else engine.current!.start();
+    if (playing) { engine.current!.stop(); setBeat(null); } else { engine.current!.start(); markUsed('metro'); }
     setPlaying(!playing);
   };
 

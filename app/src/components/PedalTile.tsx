@@ -34,6 +34,7 @@ export function PedalTile({ t, wide, edit, lifted, onOpen, onRemove, onResize, o
       <div className="pedal-text">
         <span className="pedal-name">{t.name}</span>
         <span className="pedal-sub">{t.sub}</span>
+        {t.on && <span className="sr-only">, utilisé aujourd’hui</span>}
       </div>
       {edit
         ? <button className="pedal-size" onClick={onResize} aria-label={wide ? `Réduire ${t.name}` : `Agrandir ${t.name}`}>{wide ? '↔ Petite' : '↔ Large'}</button>

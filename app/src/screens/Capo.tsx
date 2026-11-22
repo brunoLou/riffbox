@@ -3,6 +3,7 @@ import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import { bestCapo, capoOptions } from '../lib/capo';
 import { KEY_FR, KEY_ORDER, mod12 } from '../lib/music';
 import './Voix.css';
+import { useMarkUsed } from '../lib/usage';
 
 const NAMES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
 /** I–IV–V (or i–iv–v) chords of the shapes key, as played on the guitar. */
@@ -11,6 +12,7 @@ const shapeChords = (k: number, minor: boolean) =>
 
 /** Capo calculator: which shapes and fret give the key that must sound. */
 export default function Capo() {
+  useMarkUsed('capo'); // a reference tool: opening it is using it
   const [params, setParams] = useSearchParams();
   const key = mod12(Number(params.get('key') ?? 7));
   const minor = params.get('m') === '1';

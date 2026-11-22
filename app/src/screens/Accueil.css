@@ -105,3 +105,5 @@
 .backup-nudge-save:disabled { opacity: .6; }
 .backup-nudge-later { height: 44px; border-radius: 22px; border: 1.5px solid var(--line-2); color: var(--cream); font-weight: 600; font-size: 15px; }
 .backup-nudge-done { margin: 0; padding: 10px 14px; border-radius: 14px; background: var(--surface-2); font-size: 14px; color: var(--led-text); }
+.led-legend { margin: 2px 0 0; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted-2); }
+.led-legend .led { width: 8px; height: 8px; flex: none; }

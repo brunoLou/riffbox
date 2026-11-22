@@ -6,6 +6,7 @@ import { mod12 } from '../lib/music';
 import { usePedal } from '../lib/pedal';
 import { useStoredState } from '../lib/store';
 import './Backing.css';
+import { markUsed } from '../lib/usage';
 
 const STYLES = ['Tous', 'Blues', 'Rock', 'Funk'] as const;
 type Tweaks = Record<string, { key: number; bpm: number }>;
@@ -40,6 +41,7 @@ export default function Backing() {
     if (sel?.id === t.id && playing) { e.stop(); setPlaying(false); return; }
     if (sel?.id !== t.id) { setSelId(t.id); live.current = { t, ...tw(t) }; e.rewind(); setPos({ bar: 0, beat: -1 }); }
     if (!e.running) e.start();
+    markUsed('backing');
     setPlaying(true);
   };
   const stop = () => { engine.current!.stop(); setPlaying(false); setPos({ bar: 0, beat: -1 }); };

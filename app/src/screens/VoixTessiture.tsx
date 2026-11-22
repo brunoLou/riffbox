@@ -10,6 +10,7 @@ import { useMicPitch } from '../lib/useMicPitch';
 import { DEFAULT_RANGE, MELODIES, buildTimeline, noteFr, noteSci, voiceType, type VoiceRange } from '../lib/voice';
 import { MicMessage } from './Voix';
 import './Voix.css';
+import { useMarkUsed } from '../lib/usage';
 
 const KB_LO = 36, KB_HI = 84; // C2–C6 on the range bar
 const pct = (m: number) => ((m - KB_LO) / (KB_HI - KB_LO)) * 100;
@@ -147,6 +148,7 @@ export function fitMelody(r: { low: number; high: number }, mel: { low: number; 
 interface Candidate { id: string; title: string; key: number; minor?: boolean; low: number; high: number; songId?: string }
 
 export function Tonalite() {
+  useMarkUsed('tonalite'); // a reference tool: opening it is using it
   const nav = useNavigate();
   const range = readStored<VoiceRange>('voice.range', DEFAULT_RANGE);
   const [songs, setSongs] = useSongs();

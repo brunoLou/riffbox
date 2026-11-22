@@ -7,6 +7,7 @@ import { readStored, useStoredState } from '../lib/store';
 import { LibTabs } from './Accords';
 import './Gammes.css';
 import { useFretWidth } from '../lib/useFretWidth';
+import { useMarkUsed } from '../lib/usage';
 
 const OPEN_W = 34, MIN_FRET_W = 46, LAST = 17;
 const STRING_LABELS = ['E', 'A', 'D', 'G', 'B', 'e'];
@@ -34,6 +35,7 @@ function buildNeck(def: ScaleDef, key: number, blue: boolean, showInt: boolean, 
 }
 
 export default function Gammes() {
+  useMarkUsed('manche'); // a reference tool: opening it is using it
   // First launch after the update: keep the pentatonic chosen before.
   const [scaleId, setScaleId] = useStoredState('scale.id', readStored('scale.maj', false) ? 'pmaj' : 'pmin');
   const [key, setKey] = useStoredState('scale.key', 9);

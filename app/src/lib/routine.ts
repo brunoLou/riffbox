@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { readStored, writeStored } from './store';
+import { markUsed } from './usage';
 
 export interface RoutineStep { id: string; name: string; short: string; detail: string; min: number; link?: { label: string; to: string } }
 
@@ -99,6 +100,7 @@ function ensureToday() {
 
 export const routine = {
   start() {
+    markUsed('routine');
     ensureToday();
     if (state.done) return;
     if (timer === null) timer = window.setInterval(tick, 1000);
