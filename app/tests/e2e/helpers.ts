@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -86,3 +87,38 @@ export const fakeMic = (wav: string) => ({
 /** A button whose accessible name is exactly `name`. */
 export const button = (page: Page, name: string | RegExp) => page.getByRole('button', { name, exact: typeof name === 'string' });
 export const texts = (page: Page, selector: string) => page.locator(selector).allTextContents();
+
+/* ---------- Audio files ---------- */
+
+/** Reads a ZIP or WAV file in Python (its own zipfile / RIFF parsing), independently of the app. */
+export const inspectAudio = (file: string) => JSON.parse(execFileSync('python3', ['-c', `
+import json, struct, sys, zipfile, io
+def wav_info(b):
+    assert b[:4] == b'RIFF' and b[8:12] == b'WAVE'
+    assert struct.unpack('<I', b[4:8])[0] == len(b) - 8
+    i, out = 12, {}
+    while i < len(b):
+        cid, size = b[i:i+4].decode('latin1'), struct.unpack('<I', b[i+4:i+8])[0]
+        body = b[i+8:i+8+size]
+        if cid == 'fmt ': out['fmt'] = struct.unpack('<HHIIHH', body[:16])
+        if cid == 'acid': f, root, _, _, beats, den, num, tempo = struct.unpack('<IHHfIHHf', body); out['acid'] = [f, root, beats, num, den, round(tempo, 2)]
+        if cid == 'LIST': n = struct.unpack('<I', body[8:12])[0]; out['info'] = body[12:12+n].rstrip(b'\\0').decode()
+        if cid == 'data':
+            s = [int.from_bytes(body[k:k+3], 'little', signed=True) for k in range(0, len(body) - 2, 3)]
+            rate = out['fmt'][2]
+            out['frames'] = len(s)
+            out['seconds'] = round(len(s) / rate, 2)
+            mid = s[len(s)//4: len(s)//4 + rate // 2]
+            out['peak'] = max(abs(x) for x in s) / 8388608
+            out['crossings_per_s'] = sum(1 for a, c in zip(mid, mid[1:]) if a < 0 <= c) * 2
+        i += 8 + size + (size & 1)
+    return out
+p = sys.argv[1]
+if p.endswith('.zip'):
+    z = zipfile.ZipFile(p); assert z.testzip() is None
+    csv = [n for n in z.namelist() if n.endswith('index.csv')]
+    print(json.dumps({'names': z.namelist(), 'csv': z.read(csv[0]).decode('utf-8-sig') if csv else None,
+      'wavs': {n: wav_info(z.read(n)) for n in z.namelist() if n.endswith('.wav')}}))
+else:
+    print(json.dumps(wav_info(open(p, 'rb').read())))
+`, file]).toString());

@@ -6,7 +6,7 @@ test.use(fakeMic(guitarString('a11y-mic', 196)));
 const ROUTES = [
   '/', '/accordeur', '/metronome', '/composer', '/composer/grilles', '/composer/grille/g-minuit', '/pratiquer', '/pratiquer/routine',
   '/pratiquer/routine/modifier', '/pratiquer/gammes', '/pratiquer/accords', '/pratiquer/backing', '/voix', '/voix/exercices',
-  '/voix/melodies', '/voix/prises', '/voix/tessiture', '/voix/tonalite', '/voix/ex/gamme5', '/outils/capo', '/outils/ton', '/scene',
+  '/voix/melodies', '/voix/prises', '/voix/tessiture', '/voix/tonalite', '/voix/ex/gamme5', '/outils/capo', '/outils/ton', '/pratiquer/looper', '/scene',
   '/scene/bar-du-port', '/scene/morceaux', '/scene/morceau/s3', '/scene/bar-du-port/play/2', '/reglages', '/reglages/design',
 ];
 /** WCAG 2.2 A and AA, plus axe's best practices (landmarks, one h1…). */
@@ -94,7 +94,7 @@ test('sheets with the keyboard: focus goes in, Tab stays in, Escape closes and g
 
 test('keyboard focus is visible', async ({ page }) => {
   await page.goto('#/metronome');
+  await expect(page.locator('h1')).toBeVisible();
   await page.keyboard.press('Tab');
-  const outline = await page.evaluate(() => getComputedStyle(document.activeElement!).outlineStyle);
-  expect(outline).toBe('solid');
+  await expect.poll(() => page.evaluate(() => document.activeElement !== document.body && getComputedStyle(document.activeElement!).outlineStyle)).toBe('solid');
 });

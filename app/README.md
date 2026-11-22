@@ -15,6 +15,14 @@ npm run preview    # sert dist/ sur http://localhost:4173
 
 Le micro (accordeur, voix, enregistrement) demande `localhost` ou une adresse en https.
 
+## Looper
+
+Pratiquer › Looper : une boucle de 1 à 8 mesures au tempo choisi, enregistrée après une mesure de
+décompte, puis des couches superposées, chacune exactement une boucle (capture au micro à l’échantillon
+près, AudioWorklet). Le retard entre le haut-parleur et le micro est retiré de chaque couche : estimé,
+réglable, ou mesuré par des bips (sans casque). Pédalier : → enregistrer, espace lecture, ← annuler.
+La boucle va dans le carnet, ou s’exporte en pistes WAV (chaque couche et le mix) pour un logiciel de musique.
+
 ## Exporter vers un logiciel de musique
 
 Réglages › « Exporter pour un logiciel de musique » : tous les enregistrements (carnet, prises vocales) en
@@ -75,6 +83,7 @@ dans le dossier temporaire du système.
 | `tests/unit/lyrics.test.ts` | paroles : syllabes chantées (vers célèbres), rimes, schéma de rimes, dictionnaire de rimes |
 | `tests/unit/stress.test.ts` | temps forts : accent des syllabes françaises, accords calés sur la syllabe accentuée |
 | `tests/unit/wav.test.ts` | WAV 24 bits (tempo, tonique, titre intégrés), ZIP, mono / stéréo |
+| `tests/unit/loop.test.ts` | looper : longueur exacte des boucles, capture au micro à l’échantillon près, mixage, mesure du retard par bips |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
 | `tests/e2e/smoke.spec.ts` | chaque écran s’ouvre, navigation, anciennes adresses, micro refusé |
@@ -94,7 +103,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/rappel.spec.ts` | rappel de sauvegarde : seulement avec du contenu perso, « Plus tard », fréquence, désactivation |
 | `tests/e2e/reglages.spec.ts` | thèmes, effacement des exemples, réinitialisation, sauvegarde et fusion |
 | `tests/e2e/design.spec.ts` | design system : couleurs et leurs valeurs dans les deux thèmes, composants vivants |
-| `tests/e2e/accessibilite.spec.ts` | axe-core (WCAG 2.2 AA) sur les 28 écrans dans les deux thèmes et sur les feuilles ouvertes ; feuilles au clavier ; focus visible |
+| `tests/e2e/accessibilite.spec.ts` | axe-core (WCAG 2.2 AA) sur les 29 écrans dans les deux thèmes et sur les feuilles ouvertes ; feuilles au clavier ; focus visible |
 | `tests/e2e/petits-ecrans.spec.ts` | téléphones de 640 à 780 px de haut : rien ne reste caché sous le bouton principal ou la barre d’onglets |
 | `tests/e2e/tablette.spec.ts` | tablette (iPad) : plein écran, colonne, prompteur large, manche entier, grille en deux colonnes |
 | `tests/e2e/suivre.spec.ts` | « Suivre ma guitare » : faux micro jouant les accords de Minuit Shuffle, le texte suit |
@@ -102,6 +111,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/transfert.spec.ts` | téléphone ⇄ tablette : deux appareils simulés s’échangent leurs données dans les deux sens |
 | `tests/e2e/voyants.spec.ts` | voyants de l’accueil : allumés par un vrai usage du jour, éteints le lendemain |
 | `tests/e2e/export-daw.spec.ts` | export pour logiciel de musique : vrai enregistrement au faux micro, WAV et ZIP relus en Python (format, tempo, tonique, hauteur du son) |
+| `tests/e2e/looper.spec.ts` | looper au faux micro : décompte, couches, pédalier, pistes WAV d’exactement une boucle, carnet ; tempo d’une grille, retard |
 | `tests/e2e/pwa.spec.ts` | installable, hors ligne, polices embarquées |
 
 ## Données

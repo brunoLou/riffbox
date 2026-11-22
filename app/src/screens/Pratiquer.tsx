@@ -109,6 +109,11 @@ export default function Pratiquer() {
             <span className="prat-tool-name">Backing tracks</span>
             <span className="prat-tool-sub">{TRACKS.length} pistes · blues, rock, funk</span>
           </button>
+          <button className="prat-tool" style={{ gridColumn: 'span 2' }} onClick={() => nav('/pratiquer/looper')}>
+            <span className="led prat-tool-led" />
+            <span className="prat-tool-name">Looper</span>
+            <span className="prat-tool-sub">Enregistrer une boucle et jouer par-dessus</span>
+          </button>
           <button className="prat-tool wood" style={{ gridColumn: 'span 2' }} onClick={() => nav('/outils/ton')}>
             <span className="led prat-tool-led" />
             <span className="prat-tool-name">Quel ton ?</span>

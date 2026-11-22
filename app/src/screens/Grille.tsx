@@ -324,6 +324,7 @@ function Grille({ id }: { id: string }) {
                 <p className="sheet-empty">Aucun riff relié. Dans le carnet, ouvrez un riff et touchez « Ajouter à une grille ».</p>
               )}
             </div>
+            <button className="btn-outline" onClick={() => nav('/pratiquer/looper', { state: { bpm: g.bpm, key: g.key, title: g.title } })}>Jouer par-dessus dans le looper ›</button>
             {confirmDelete ? (
               <div className="confirm-row">
                 <button className="btn-outline" onClick={() => setConfirmDelete(false)}>Annuler</button>

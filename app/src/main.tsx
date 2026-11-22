@@ -25,6 +25,7 @@ import Routine from './screens/Routine';
 import RoutineEdit from './screens/RoutineEdit';
 import DesignSystem from './screens/DesignSystem';
 import DetecteurTon from './screens/DetecteurTon';
+import Looper from './screens/Looper';
 import Backing from './screens/Backing';
 import Reglages from './screens/Reglages';
 
@@ -63,6 +64,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/voix/tonalite" element={<Tonalite />} />
           <Route path="/outils/capo" element={<Capo />} />
           <Route path="/outils/ton" element={<DetecteurTon />} />
+          <Route path="/pratiquer/looper" element={<Looper />} />
           <Route path="/scene" element={<SetlistsScreen />} />
           <Route path="/scene/morceaux" element={<MorceauxScreen />} />
           <Route path="/scene/morceau/:songId" element={<MorceauRoute />} />
