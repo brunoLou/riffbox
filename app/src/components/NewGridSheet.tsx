@@ -1,11 +1,13 @@
-import { STYLES, type GenOptions, type GenStyle } from '../lib/generate';
+import { useNavigate } from 'react-router-dom';
+import { STYLES, keyForVoice, styleDef, type GenOptions, type GenStyle } from '../lib/generate';
+import { noteFr, readRange } from '../lib/voice';
 import { KFR, MINOR_FR, OUT_PC, mod12 } from '../lib/music';
 import { useStoredState } from '../lib/store';
 import { useDialog } from '../lib/useDialog';
 import './NewGridSheet.css';
 
-type Choice = { style: GenStyle; key: number | 'random'; bars: 4 | 8; bridge: boolean };
-const DEFAULT: Choice = { style: 'pop', key: 'random', bars: 4, bridge: true };
+type Choice = { style: GenStyle; key: number | 'random' | 'voice'; bars: 4 | 8; bridge: boolean };
+const DEFAULT: Choice = { style: 'pop', key: 'voice', bars: 4, bridge: true };
 
 /** « Nouvelle grille » : an empty grid, or one generated from a style, a key and a structure. */
 export function NewGridSheet({ onEmpty, onGenerate, onClose }: {
@@ -14,10 +16,15 @@ export function NewGridSheet({ onEmpty, onGenerate, onClose }: {
   // The last choices are remembered for next time.
   const [c, setC] = useStoredState<Choice>('grid.genChoice', DEFAULT);
   const dlg = useDialog(onClose);
+  const nav = useNavigate();
+  const range = readRange();
+  const voice = keyForVoice(range.low, range.high, c.style);
+  // « Pour ma voix » needs a measured range; an old choice falls back to « au hasard ».
+  const keyChoice = c.key === 'voice' && !range.measured ? 'random' : c.key;
   const set = (p: Partial<Choice>) => setC({ ...c, ...p });
   const go = () => onGenerate({
     style: c.style, bars: c.bars, bridge: c.bridge,
-    key: c.key === 'random' ? OUT_PC[Math.floor(Math.random() * 12)] : c.key,
+    key: keyChoice === 'random' ? OUT_PC[Math.floor(Math.random() * 12)] : keyChoice === 'voice' ? voice.key : keyChoice,
   });
 
   return (
@@ -39,11 +46,21 @@ export function NewGridSheet({ onEmpty, onGenerate, onClose }: {
 
         <label className="sheet-field">
           <span>Tonalité</span>
-          <select className="text-input" value={String(c.key)} onChange={e => set({ key: e.target.value === 'random' ? 'random' : Number(e.target.value) })}>
+          <select className="text-input" value={String(keyChoice)}
+            onChange={e => set({ key: e.target.value === 'random' || e.target.value === 'voice' ? e.target.value : Number(e.target.value) })}>
+            <option value="voice" disabled={!range.measured}>Pour ma voix{range.measured ? '' : ' (tessiture à mesurer)'}</option>
             <option value="random">Au hasard</option>
             {OUT_PC.map(pc => <option key={pc} value={pc}>{KFR[pc]} (relatif {MINOR_FR[mod12(pc + 9)]} m)</option>)}
           </select>
         </label>
+        {keyChoice === 'voice' ? (
+          <p className="ng-voice" role="status">
+            En <b>{KFR[voice.key]}{styleDef(c.style).minorFeel ? ` (centré sur ${MINOR_FR[mod12(voice.key + 9)]} m)` : ''}</b> : une mélodie typique
+            irait de {noteFr(voice.melodyLow)} à {noteFr(voice.melodyHigh)}, dans votre tessiture ({noteFr(range.low)} – {noteFr(range.high)}).
+          </p>
+        ) : !range.measured && (
+          <button className="btn-link ng-measure" onClick={() => nav('/voix/tessiture')}>Mesurer ma tessiture pour choisir le ton de ma voix ›</button>
+        )}
 
         <div className="sheet-field row">
           <span>Mesures par section</span>

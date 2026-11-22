@@ -15,6 +15,8 @@ export interface StyleDef {
   verse: string[]; chorus: string[]; bridge: string[];
   /** Chance of each variation being applied to a chord. */
   vary: number;
+  /** The melody revolves around the relative minor (vi) rather than the major tonic. */
+  minorFeel?: boolean;
 }
 
 export const STYLES: StyleDef[] = [
@@ -46,7 +48,7 @@ export const STYLES: StyleDef[] = [
     verse: ['ii7 V7 I I', 'I vi7 ii7 V7', 'iii7 vi7 ii7 V7', 'I VI7 ii7 V7'],
     chorus: ['IV7 iv I VI7', 'ii7 V7 iii7 VI7', 'I I7 IV iv', 'ii7 V7 I vi7'],
     bridge: ['III7 III7 VI7 VI7', 'II7 II7 ii7 V7', 'iii7 VI7 ii7 V7'] },
-  { id: 'chanson', label: 'Chanson française', groove: 'shuffle', bpm: [84, 112], vary: 0.2,
+  { id: 'chanson', label: 'Chanson française', groove: 'shuffle', bpm: [84, 112], vary: 0.2, minorFeel: true,
     verse: ['vi ii V I', 'vi iii IV I', 'vi ii III7 vi', 'I vi ii V', 'vi IV ii III7'],
     chorus: ['IV V iii vi', 'ii V I vi', 'IV I ii III7', 'IV V I vi', 'vi ii V I'],
     bridge: ['IV iv I vi', 'ii III7 vi vi', 'bVI bVII I I', 'IV V III7 vi'] },
@@ -136,3 +138,30 @@ export function regenerateSection(key: number, style: GenStyle, role: Role, curr
 }
 
 export const ROLES: Role[] = ['verse', 'chorus', 'bridge'];
+
+/* ---------- Key for the singer's voice ---------- */
+
+/** A typical song melody, in semitones from its tonic: from the fifth below to the sixth above. */
+export const MELODY_SPAN = { lo: -5, hi: 9 };
+/** Keys that are easy on the guitar (open chords), as the melody's tonic: major, then minor. */
+const EASY_MAJOR = [0, 7, 2, 9, 4];
+const EASY_MINOR = [9, 4, 2, 11];
+
+/**
+ * The grid key that puts a typical melody of `style` in the voice `low`–`high` (MIDI): centred,
+ * a little low for comfort (as for the vocal exercises). When a guitar-friendly key is a semitone
+ * away and still fits, it is preferred.
+ */
+export function keyForVoice(low: number, high: number, style: GenStyle): { key: number; tonic: number; melodyLow: number; melodyHigh: number } {
+  const { lo, hi } = MELODY_SPAN;
+  const room = high - low - (hi - lo);
+  let tonic = low - lo + Math.max(0, Math.floor(room * 0.4));
+  const minor = !!styleDef(style).minorFeel;
+  const easy = minor ? EASY_MINOR : EASY_MAJOR;
+  if (!easy.includes(mod12(tonic))) {
+    const fits = (t: number) => t + lo >= low && t + hi <= high;
+    const alt = [tonic + 1, tonic - 1].find(t => easy.includes(mod12(t)) && fits(t));
+    if (alt !== undefined) tonic = alt;
+  }
+  return { key: minor ? mod12(tonic + 3) : mod12(tonic), tonic, melodyLow: tonic + lo, melodyHigh: tonic + hi };
+}

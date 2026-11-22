@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { chordType, voicings } from '../../src/lib/chords';
-import { STYLES, degreeChord, generateGrid, generateSection, regenerateSection, seeded } from '../../src/lib/generate';
+import { STYLES, degreeChord, generateGrid, generateSection, keyForVoice, regenerateSection, seeded } from '../../src/lib/generate';
 import { chordName, chordTypeId, mod12, sameChord, type Chord } from '../../src/lib/music';
 
 const names = (cs: Chord[]) => cs.map(chordName).join(' ');
@@ -77,5 +77,35 @@ describe('« Une autre »', () => {
   it('an empty section gets four chords; a section of 8 stays 8', () => {
     expect(regenerateSection(0, 'folk', 'chorus', [], seeded(1))).toHaveLength(4);
     expect(regenerateSection(0, 'folk', 'chorus', generateSection(0, 'folk', 'chorus', 8, seeded(2)), seeded(3))).toHaveLength(8);
+  });
+});
+
+describe('a key for my voice', () => {
+  const fits = (r: ReturnType<typeof keyForVoice>, low: number, high: number) => r.melodyLow >= low && r.melodyHigh <= high;
+  it('puts a typical melody inside the range, a little low for comfort', () => {
+    // Baritone A1–F♯3 (MIDI 45–66): room 7 → tonic 2 semitones above the lowest fit.
+    const r = keyForVoice(45, 66, 'pop');
+    expect(fits(r, 45, 66)).toBe(true);
+    expect(r.melodyHigh - r.melodyLow).toBe(14);
+    expect(r.melodyLow - 45).toBeLessThanOrEqual(66 - r.melodyHigh);
+  });
+  it('prefers a guitar-friendly key a semitone away when it still fits', () => {
+    // 51–70: the plain answer is a tonic on B♭ (58); La (57) is a semitone away and still fits.
+    const low = 51, high = 70;
+    const r = keyForVoice(low, high, 'pop');
+    expect(r.key).toBe(9);
+    expect(fits(r, low, high)).toBe(true);
+  });
+  it('a voice of every height gets a key, and the melody fits whenever the range is wide enough', () => {
+    for (let low = 40; low <= 64; low++) {
+      const r = keyForVoice(low, low + 17, 'folk');
+      expect(fits(r, low, low + 17), `${low}`).toBe(true);
+      expect(r.key).toBeGreaterThanOrEqual(0);
+    }
+  });
+  it('a style centred on the relative minor: the grid key is its relative major', () => {
+    const r = keyForVoice(45, 66, 'chanson');
+    expect(fits(r, 45, 66)).toBe(true);
+    expect(mod12(r.key + 9)).toBe(mod12(r.tonic)); // the melody's tonic is vi of the grid key
   });
 });

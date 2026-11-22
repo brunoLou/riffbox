@@ -199,3 +199,26 @@ test('a grid generated from a style, a key and a structure; « Une autre » keep
   await expect(page.locator('.slots-empty')).toBeVisible();
   await expect(page.locator('.regen-row')).toHaveCount(0);
 });
+
+test('a generated grid in the key of my voice, once the range is measured', async ({ page }) => {
+  await page.goto('#/composer');
+  await page.getByText('+ Grille').click();
+  let sheet = page.getByRole('dialog', { name: 'Nouvelle grille' });
+  // Not measured yet: the choice is offered but not available, with a way to measure.
+  await expect(sheet.getByLabel('Tonalité').locator('option[value="voice"]')).toHaveJSProperty('disabled', true);
+  await expect(sheet.getByLabel('Tonalité')).toHaveValue('random');
+  await expect(sheet.getByRole('button', { name: /Mesurer ma tessiture/ })).toBeVisible();
+
+  // A measured baritone range, La1 – Fa♯3.
+  await page.evaluate(() => localStorage.setItem('riffbox:v1:voice.range', JSON.stringify({ low: 45, high: 66, measured: true })));
+  await page.reload();
+  await page.getByText('+ Grille').click();
+  sheet = page.getByRole('dialog', { name: 'Nouvelle grille' });
+  await sheet.getByRole('button', { name: 'Folk' }).click();
+  await expect(sheet.getByLabel('Tonalité')).toHaveValue('voice');
+  await expect(sheet.locator('.ng-voice')).toContainText('dans votre tessiture (La1 – Fa♯3)');
+  const key = (await sheet.locator('.ng-voice b').textContent())!.trim();
+  await button(page, 'Générer la grille').click();
+  await expect(page.locator('.hub-key')).toHaveText(key);
+  await expect(page.locator('.grid-title')).toHaveText(`FOLK EN ${key.toUpperCase()}`);
+});

@@ -7,3 +7,6 @@
 .ng-seg { width: 120px; }
 .ng-seg > button { height: 36px; }
 .ng-check input { width: 24px; height: 24px; accent-color: var(--amber); }
+.ng-voice { margin: -2px 0 0; font-size: 13px; line-height: 1.45; color: var(--muted-3); }
+.ng-voice b { color: var(--cream); }
+.ng-measure { align-self: flex-start; text-align: left; }
