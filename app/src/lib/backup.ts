@@ -1,10 +1,11 @@
 /** Backup file: every saved value plus the audio recordings, in one JSON file. */
 import { dateStamp, shareOrDownload } from './files';
-import { allBlobs, clearBlobs, getBlob, putBlob } from './blobs';
+import { allBlobs, clearBlobs, putBlob } from './blobs';
 import { INITIAL_GRIDS } from './grids';
 import { INITIAL_IDEAS, type Idea } from './ideas';
 import { INITIAL_SETLISTS, INITIAL_SONGS } from './setlists';
-import { allStored, clearAllStored, readStored, writeStored } from './store';
+import { allStored, clearAllStored, readStored, withoutWriteHooks, writeStored } from './store';
+import { planMerge, type MergePlan, type MergeStats } from './sync';
 
 export const BACKUP_APP = 'riffbox';
 export const BACKUP_VERSION = 1;
@@ -18,8 +19,8 @@ export interface BackupFile {
   audio: Record<string, string>;
 }
 
-/** Collections merged item by item (by id) on import; existing items are never overwritten. */
-const COLLECTIONS = ['ideas', 'grids', 'songs', 'setlists', 'voice.takes'];
+/** Collections checked when reading a file (merged item by item: see sync.ts). */
+const COLLECTIONS = ['ideas', 'grids', 'songs', 'setlists', 'voice.takes', 'tuner.custom'];
 /** Defaults written into the file when never modified, so the backup is complete on its own. */
 const DEFAULTS: Record<string, unknown> = { ideas: INITIAL_IDEAS, grids: INITIAL_GRIDS, songs: INITIAL_SONGS, setlists: INITIAL_SETLISTS };
 
@@ -76,34 +77,25 @@ export function summarize(b: BackupFile): BackupSummary {
 export async function restoreReplace(b: BackupFile) {
   clearAllStored();
   await clearBlobs();
-  for (const [k, v] of Object.entries(b.data)) writeStored(k, v);
+  withoutWriteHooks(() => { for (const [k, v] of Object.entries(b.data)) writeStored(k, v); });
   for (const [id, u] of Object.entries(b.audio)) await putBlob(id, await fromDataUrl(u));
 }
 
-/**
- * Add the backup to the current data: new items join each collection, existing ones are kept,
- * practice minutes keep the larger value per day, other settings are only filled in when missing.
- * Returns how many items were added.
- */
-export async function restoreMerge(b: BackupFile): Promise<number> {
+/** What receiving this file would change here (for the preview). */
+export function previewMerge(b: BackupFile): MergePlan {
   const current = allStored();
-  let added = 0;
-  for (const [k, v] of Object.entries(b.data)) {
-    if (COLLECTIONS.includes(k)) {
-      const mine = (current[k] as { id: string }[] | undefined) ?? (readStored(k, DEFAULTS[k] ?? []) as { id: string }[]);
-      const ids = new Set(mine.map(x => x.id));
-      const extra = (v as { id: string }[]).filter(x => x && typeof x.id === 'string' && !ids.has(x.id));
-      added += extra.length;
-      writeStored(k, [...mine, ...extra]);
-    } else if (k === 'practice.log' && v && typeof v === 'object') {
-      const mine = (current[k] as Record<string, number>) ?? {};
-      const merged = { ...mine };
-      for (const [day, min] of Object.entries(v as Record<string, number>)) merged[day] = Math.max(merged[day] ?? 0, min);
-      writeStored(k, merged);
-    } else if (!(k in current)) {
-      writeStored(k, v);
-    }
-  }
-  for (const [id, u] of Object.entries(b.audio)) if (!(await getBlob(id))) await putBlob(id, await fromDataUrl(u));
-  return added;
+  return planMerge(b.data, k => current[k], DEFAULTS);
+}
+
+/**
+ * Bring the other device's data in: new items join, the most recent version of each item wins,
+ * items deleted on either side stay deleted, practice minutes keep the larger value per day,
+ * device settings stay as they are. Recordings of new or newer items come from the file.
+ */
+export async function restoreMerge(b: BackupFile): Promise<MergeStats> {
+  const plan = previewMerge(b);
+  // The merged items already carry their own dates: write them as they are.
+  withoutWriteHooks(() => { for (const [k, v] of Object.entries(plan.writes)) writeStored(k, v); });
+  for (const id of plan.audioIds) if (b.audio[id]) await putBlob(id, await fromDataUrl(b.audio[id]));
+  return plan.stats;
 }

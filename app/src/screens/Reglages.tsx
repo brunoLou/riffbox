@@ -2,10 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import {
-  buildBackup, readBackup, restoreMerge, restoreReplace, saveBackup, summarize, type BackupFile,
+  buildBackup, previewMerge, readBackup, restoreMerge, restoreReplace, saveBackup, summarize, type BackupFile,
 } from '../lib/backup';
 import { blobsBytes, clearBlobs } from '../lib/blobs';
 import { SETTINGS } from '../lib/data';
+import { SYNC_LISTS, mergeSummary, type MergePlan } from '../lib/sync';
+import { dateStamp, shareOrDownload } from '../lib/files';
+import { markBackedUp } from '../lib/reminder';
 import { LAST_BACKUP_KEY, REMIND_CHOICES, REMIND_DEFAULT, REMIND_KEY, daysAgo } from '../lib/reminder';
 import {
   DEFAULT_PEDAL_KEYS, PEDAL_ACTIONS, PEDAL_NAMES, PEDAL_SCREENS, actionFor, assignKey, canBePedal, keyLabel, normKey,
@@ -146,6 +149,9 @@ export default function Reglages() {
           </dl>
           <p className="settings-note">Tout reste sur ce téléphone : rien n’est envoyé sur internet.</p>
         </div>
+
+        <span className="kicker settings-section">Téléphone ⇄ tablette</span>
+        <TransferCard />
 
         <BackupCard />
 
@@ -291,6 +297,115 @@ function PedalCard() {
   );
 }
 
+const LIST_NAMES: Record<string, string> = {
+  ideas: 'Idées', grids: 'Grilles', songs: 'Morceaux', setlists: 'Setlists', 'voice.takes': 'Prises vocales', 'tuner.custom': 'Accordages perso',
+};
+const when = (iso: string | null) => (iso ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso)) : null);
+
+/**
+ * Phone ⇄ tablet: send everything to the other device as a file (share sheet), and receive the
+ * other device's file: the most recent version of each item wins, nothing is lost.
+ */
+function TransferCard() {
+  const [lastSent, setLastSent] = useStoredState<string | null>('sync.lastSent', null);
+  const [lastReceived, setLastReceived] = useStoredState<string | null>('sync.lastReceived', null);
+  const [busy, setBusy] = useState<null | 'send' | 'receive'>(null);
+  const [msg, setMsg] = useState<{ text: string; error?: boolean } | null>(null);
+  const [incoming, setIncoming] = useState<{ file: BackupFile; plan: MergePlan } | null>(null);
+  const input = useRef<HTMLInputElement>(null);
+
+  const send = async () => {
+    setBusy('send'); setMsg(null);
+    try {
+      const b = await buildBackup();
+      const d = new Date();
+      const name = `riffbox-envoi-${dateStamp(d)}-${String(d.getHours()).padStart(2, '0')}h${String(d.getMinutes()).padStart(2, '0')}.json`;
+      const how = await shareOrDownload(name, new Blob([JSON.stringify(b)], { type: 'application/json' }), 'RIFFBOX : à recevoir sur l’autre appareil');
+      if (how === 'cancelled') { setMsg({ text: 'Envoi annulé.' }); return; }
+      setLastSent(b.exportedAt);
+      markBackedUp(b.exportedAt); // the data now lives on two devices
+      setMsg({ text: how === 'shared'
+        ? 'Fichier partagé. Sur l’autre appareil : Réglages › Recevoir, puis choisissez ce fichier.'
+        : 'Fichier téléchargé. Envoyez-le sur l’autre appareil, puis : Réglages › Recevoir.' });
+    } catch {
+      setMsg({ text: 'L’envoi a échoué. Réessayez.', error: true });
+    } finally { setBusy(null); }
+  };
+
+  const pick = async (f: File | undefined) => {
+    if (!f) return;
+    setMsg(null);
+    try {
+      const file = await readBackup(f);
+      setIncoming({ file, plan: previewMerge(file) });
+    } catch (e) { setIncoming(null); setMsg({ text: (e as Error).message, error: true }); }
+    finally { if (input.current) input.current.value = ''; }
+  };
+
+  const apply = async () => {
+    if (!incoming) return;
+    setBusy('receive');
+    try {
+      const st = await restoreMerge(incoming.file);
+      setLastReceived(new Date().toISOString());
+      setMsg({ text: `${mergeSummary(st)}. Redémarrage…` });
+      setTimeout(() => { window.location.hash = '#/reglages'; window.location.reload(); }, 900);
+    } catch {
+      setBusy(null);
+      setMsg({ text: 'La réception a échoué. Vos données n’ont pas été modifiées.', error: true });
+    }
+  };
+
+  const changes = incoming ? SYNC_LISTS.map(k => ({ k, s: incoming.plan.byList[k] })).filter(x => x.s && x.s.added + x.s.updated + x.s.removed > 0) : [];
+  const nothing = incoming && Object.keys(incoming.plan.writes).length === 0;
+
+  return (
+    <div className="settings-card transfer-card">
+      <div className="settings-action">
+        <span className="settings-help">
+          Envoyez vos données à votre autre appareil. À la réception, il garde ce qu’il a, ajoute ce qui manque et prend
+          <b> la version la plus récente</b> de chaque idée, grille, morceau ou setlist. Ce que vous avez supprimé reste supprimé.
+        </span>
+        <div className="confirm-row">
+          <button className="btn-primary" onClick={() => void send()} disabled={busy !== null}>{busy === 'send' ? 'Préparation…' : 'Envoyer'}</button>
+          <button className="btn-outline" onClick={() => input.current?.click()} disabled={busy !== null}>Recevoir…</button>
+        </div>
+        <input ref={input} type="file" accept=".json,application/json" hidden onChange={e => void pick(e.target.files?.[0])} aria-label="Fichier reçu de l’autre appareil" />
+        {(lastSent || lastReceived) && (
+          <span className="settings-help transfer-dates">
+            {lastSent && <>Dernier envoi : {when(lastSent)}</>}{lastSent && lastReceived && ' · '}{lastReceived && <>Dernière réception : {when(lastReceived)}</>}
+          </span>
+        )}
+        {msg && <p className={'backup-msg' + (msg.error ? ' error' : '')} role="status">{msg.text}</p>}
+
+        {incoming && busy !== 'receive' && (
+          <div className="backup-import transfer-preview">
+            <span className="settings-label">Envoyé le {when(incoming.file.exportedAt) ?? 'date inconnue'}</span>
+            {nothing ? (
+              <span className="settings-help">Cet appareil est déjà à jour : rien à changer.</span>
+            ) : (
+              <>
+                <dl className="data-list">
+                  {changes.map(({ k, s: st }) => (
+                    <div key={k}><dt>{LIST_NAMES[k]}</dt><dd>{[
+                      st.added && `+${st.added} nouveau${st.added > 1 ? 'x' : ''}`,
+                      st.updated && `${st.updated} mis à jour`,
+                      st.removed && `−${st.removed} supprimé${st.removed > 1 ? 's' : ''}`,
+                    ].filter(Boolean).join(' · ')}</dd></div>
+                  ))}
+                  {changes.length === 0 && <div><dt>Réglages, routine, pratique</dt><dd>mis à jour</dd></div>}
+                </dl>
+                <button className="btn-primary" onClick={() => void apply()}>Mettre à jour cet appareil</button>
+              </>
+            )}
+            <button className="btn-link" onClick={() => setIncoming(null)}>{nothing ? 'Fermer' : 'Annuler'}</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function BackupCard() {
   const [last, setLast] = useStoredState<string | null>(LAST_BACKUP_KEY, null);
   const [remind, setRemind] = useStoredState<number>(REMIND_KEY, REMIND_DEFAULT);
@@ -326,7 +441,7 @@ function BackupCard() {
   const doMerge = async () => {
     if (!pending) return;
     setBusy('import');
-    try { const n = await restoreMerge(pending); setMsg({ text: `${n ? `${plural(n, 'élément ajouté', 'éléments ajoutés')}` : 'Rien de nouveau à ajouter'}. Redémarrage…` }); setTimeout(restart, 900); }
+    try { const st = await restoreMerge(pending); setMsg({ text: `${mergeSummary(st)}. Redémarrage…` }); setTimeout(restart, 900); }
     catch { setBusy(null); setMsg({ text: 'L’import a échoué. Vos données n’ont pas été modifiées.', error: true }); }
   };
   const doReplace = async () => {
@@ -376,7 +491,7 @@ function BackupCard() {
               <div><dt>Jours de pratique</dt><dd>{sum.days}</dd></div>
             </dl>
             <button className="btn-primary" onClick={() => void doMerge()}>Ajouter à mes données</button>
-            <span className="settings-help">Garde tout ce qui est sur ce téléphone et ajoute ce qui manque.</span>
+            <span className="settings-help">Garde ce qui est sur ce téléphone, ajoute ce qui manque et prend la version la plus récente de chaque élément.</span>
             {confirmReplace ? (
               <>
                 <span className="settings-help warn">Tout ce qui est sur ce téléphone sera effacé et remplacé par cette sauvegarde.</span>

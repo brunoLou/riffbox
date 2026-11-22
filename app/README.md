@@ -61,6 +61,7 @@ dans le dossier temporaire du système.
 | `tests/unit/chordpro.test.ts` | ChordPro : tonalités, directives d’autres apps, recueils, aller-retour des exemples |
 | `tests/unit/chordDetect.test.ts` | reconnaissance d’accords sur des grattages synthétisés (positions, harmoniques, désaccord, bruit) |
 | `tests/unit/chordFollow.test.ts` | suivi de la position dans le morceau à partir des accords entendus |
+| `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
 | `tests/e2e/smoke.spec.ts` | chaque écran s’ouvre, navigation, anciennes adresses, micro refusé |
 | `tests/e2e/accueil.spec.ts` | tuiles, glisser-déposer, clavier, taille, catalogue, rétablir |
@@ -82,4 +83,5 @@ dans le dossier temporaire du système.
 | `tests/e2e/accessibilite.spec.ts` | axe-core (WCAG 2.2 AA) sur les 27 écrans dans les deux thèmes et sur les feuilles ouvertes ; feuilles au clavier ; focus visible |
 | `tests/e2e/tablette.spec.ts` | tablette (iPad) : plein écran, colonne, prompteur large, manche entier, grille en deux colonnes |
 | `tests/e2e/suivre.spec.ts` | « Suivre ma guitare » : faux micro jouant les accords de Minuit Shuffle, le texte suit |
+| `tests/e2e/transfert.spec.ts` | téléphone ⇄ tablette : deux appareils simulés s’échangent leurs données dans les deux sens |
 | `tests/e2e/pwa.spec.ts` | installable, hors ligne, polices embarquées |

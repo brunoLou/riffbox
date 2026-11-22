@@ -74,7 +74,7 @@ test('backup: export, restore after a reset, and merge on another device', async
   await expect(page.locator('.backup-msg')).toContainText('avec 1 enregistrement');
 
   // A file that is not a backup is refused.
-  await page.locator('input[type=file]').setInputFiles({ name: 'x.json', mimeType: 'application/json', buffer: Buffer.from('{"hello":1}') });
+  await page.getByLabel('Fichier de sauvegarde').setInputFiles({ name: 'x.json', mimeType: 'application/json', buffer: Buffer.from('{"hello":1}') });
   await expect(page.locator('.backup-msg')).toHaveText('Ce fichier n’est pas une sauvegarde RIFFBOX.');
 
   // Reset (the app reloads itself on the home screen), then restore everything.
@@ -82,7 +82,7 @@ test('backup: export, restore after a reset, and merge on another device', async
   await Promise.all([page.waitForEvent('load'), page.locator('.settings-card.danger .btn-danger').click()]);
   await expect(page).toHaveURL(/#\/$/);
   await page.goto('#/reglages');
-  await page.locator('input[type=file]').setInputFiles(file);
+  await page.getByLabel('Fichier de sauvegarde').setInputFiles(file);
   await expect(page.locator('.backup-import .data-list')).toContainText('Enregistrements audio1');
   await button(page, 'Tout remplacer…').click();
   // The app reloads itself on the same address once the data is written: wait for that reload.
@@ -105,9 +105,9 @@ test('backup: export, restore after a reset, and merge on another device', async
   await p2.locator('.set-title-input').fill('Set B');
   await p2.getByRole('button', { name: 'Terminé', exact: true }).click();
   await p2.goto('/#/reglages');
-  await p2.locator('input[type=file]').setInputFiles(file);
+  await p2.getByLabel('Fichier de sauvegarde').setInputFiles(file);
   await p2.getByRole('button', { name: 'Ajouter à mes données', exact: true }).click();
-  await expect(p2.locator('.backup-msg')).toContainText('élément');
+  await expect(p2.locator('.backup-msg')).toContainText('Élément : 1 ajouté');
   await p2.waitForTimeout(1500);
   await p2.goto('/#/composer');
   await expect(p2.locator('.idea-title', { hasText: memo })).toHaveCount(1);

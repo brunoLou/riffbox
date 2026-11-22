@@ -4,6 +4,7 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import './fonts';
 import './styles.css';
 import { requestPersistence } from './lib/store';
+import { installSync } from './lib/sync';
 import { initTheme } from './lib/theme';
 import Accueil from './screens/Accueil';
 import Accordeur from './screens/Accordeur';
@@ -26,6 +27,7 @@ import DesignSystem from './screens/DesignSystem';
 import Backing from './screens/Backing';
 import Reglages from './screens/Reglages';
 
+installSync();
 requestPersistence();
 initTheme();
 

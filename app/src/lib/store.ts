@@ -22,8 +22,28 @@ function load<T>(key: string): { found: boolean; value?: T } {
   return { found: false };
 }
 
+/**
+ * Hooks that may adjust a value before it is written (e.g. stamping modification dates for the
+ * transfer between devices). They receive the previous value, if any.
+ */
+const WRITE_HOOKS: Record<string, (prev: unknown, next: unknown) => unknown> = {};
+export function registerWriteHook<T>(key: string, fn: (prev: T | undefined, next: T) => T) {
+  WRITE_HOOKS[key] = fn as (prev: unknown, next: unknown) => unknown;
+}
+let hooksOff = 0;
+/** Write values exactly as given (a merge that already carries its own dates). */
+export function withoutWriteHooks<R>(fn: () => R): R {
+  hooksOff++;
+  try { return fn(); } finally { hooksOff--; }
+}
+
 /** Write a value now (memory + disk). Per-key serializers can strip fields that must not be saved. */
 export function writeStored<T>(key: string, value: T) {
+  const hook = WRITE_HOOKS[key];
+  if (hook && !hooksOff) {
+    const prev = load<T>(key);
+    value = hook(prev.found ? prev.value : undefined, value) as T;
+  }
   mem.set(key, value);
   try {
     const ser = SERIALIZERS[key];
@@ -36,6 +56,8 @@ const SERIALIZERS: Record<string, (v: unknown) => unknown> = {};
 export function registerSerializer<T>(key: string, fn: (v: T) => unknown) {
   SERIALIZERS[key] = fn as (v: unknown) => unknown;
 }
+/** A value as it is saved on disk (transient fields stripped). */
+export const serialized = (key: string, v: unknown) => (SERIALIZERS[key] ? SERIALIZERS[key](v) : v);
 
 /** Read a stored value without subscribing (e.g. for a summary on another screen). */
 export function readStored<T>(key: string, fallback: T): T {
@@ -58,7 +80,8 @@ export function useStoredState<T>(key: string, init: T) {
     const prev = mem.get(key) as T;
     const next = typeof u === 'function' ? (u as (p: T) => T)(prev) : u;
     writeStored(key, next);
-    setV(next);
+    // What was written, write hooks included (e.g. modification dates).
+    setV(mem.get(key) as T);
   }, [key]);
   // Another screen (e.g. the quick capture over the notebook) may write the same key.
   useEffect(() => {
