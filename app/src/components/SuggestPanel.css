@@ -1,0 +1,17 @@
+.suggest { display: flex; flex-direction: column; gap: 8px; }
+.suggest-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.suggest-kicker { color: var(--accent-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.suggest-tabs { flex: none; display: flex; gap: 2px; padding: 3px; border-radius: 12px; background: var(--surface-2); }
+.suggest-tabs button { height: 34px; padding: 0 10px; border-radius: 9px; font-size: 13px; font-weight: 700; color: var(--muted-3); white-space: nowrap; }
+.suggest-tabs button.on { background: var(--line); color: var(--cream); }
+.suggest-list { gap: 8px; }
+.sug { flex: none; position: relative; display: flex; width: 150px; border-radius: 14px; background: var(--surface-2); border: 1.5px solid var(--line); }
+.sug.playing { border-color: var(--amber); }
+.sug-add { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 9px 4px 9px 12px; text-align: left; }
+.sug-add:disabled { opacity: .45; }
+.sug-name { font-family: var(--f-mono); font-weight: 700; font-size: 17px; color: var(--cream); white-space: nowrap; }
+.sug-deg { font-family: var(--f-mono); font-size: 11px; font-weight: 700; color: var(--accent-text); }
+.sug-why { font-size: 12px; line-height: 1.3; color: var(--muted-3); }
+.sug-play { flex: none; width: 40px; display: flex; align-items: flex-start; justify-content: center; padding-top: 12px; font-size: 13px; color: var(--muted-3); border-left: 1px solid var(--line); }
+.sug.playing .sug-play { color: var(--amber); }
+.suggest-full { margin: 0; font-size: 14px; color: var(--muted-3); }

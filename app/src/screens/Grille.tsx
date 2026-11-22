@@ -9,7 +9,9 @@ import {
 } from '../lib/grids';
 import { INITIAL_IDEAS, type Idea } from '../lib/ideas';
 import { MetronomeEngine, type Pattern } from '../lib/metronome';
-import { IN_N, KFR, OUT_N, OUT_PC, chordName, degreeOf, mod12, type Chord } from '../lib/music';
+import { IN_N, KFR, OUT_N, OUT_PC, chordName, chordTypeId, degreeOf, mod12, type Chord } from '../lib/music';
+import { romanOf } from '../lib/suggest';
+import { SuggestPanel } from '../components/SuggestPanel';
 import { fmtDate, titlesLabel, type Setlist } from '../lib/setlists';
 import { GridChordSheet } from '../components/GridChordSheet';
 import { usePedal } from '../lib/pedal';
@@ -34,7 +36,7 @@ export default function GrilleRoute() {
 function loopPattern(g: Grid, chords: Chord[]): Pattern {
   return buildBacking({
     id: g.id, name: g.title, style: grooveDef(g.groove).style, groove: g.groove, key: g.key, bpm: g.bpm, form: '',
-    bars: chords.map(c => ({ deg: mod12(c.pc - g.key), q: c.m ? 'm' : 'maj' })),
+    bars: chords.map(c => ({ deg: mod12(c.pc - g.key), q: chordTypeId(c) })),
   }, g.key, g.bpm);
 }
 
@@ -97,7 +99,7 @@ function Grille({ id }: { id: string }) {
 
   const update = (fn: (x: Grid) => Grid) => setGrids(all => all.map(x => (x.id === id ? fn(x) : x)));
   const updateSection = (fn: (p: Chord[]) => Chord[]) => update(x => ({ ...x, prog: x.prog.map((p, i) => (i === sec ? fn(p) : p)) }));
-  const shift = (n: number) => update(x => ({ ...x, key: mod12(x.key + n), prog: x.prog.map(p => p.map(c => ({ pc: mod12(c.pc + n), m: c.m }))) }));
+  const shift = (n: number) => update(x => ({ ...x, key: mod12(x.key + n), prog: x.prog.map(p => p.map(c => ({ ...c, pc: mod12(c.pc + n) }))) }));
   const tapWheel = (pc: number, m: boolean) => {
     if (mode === 'key') update(x => ({ ...x, key: m ? mod12(pc + 3) : pc }));
     else updateSection(p => (p.length >= GRID_MAX_CHORDS ? p : [...p, { pc, m }]));
@@ -178,7 +180,7 @@ function Grille({ id }: { id: string }) {
             return (
               <button key={i} className={'slot' + (on ? ' on' : '')} onClick={() => setChordAt(i)} aria-label={`Accord ${chordName(c)} : diagramme`}>
                 <span className="slot-name">{chordName(c)}</span>
-                <span className="slot-deg">{degreeOf(g.key, c.pc, c.m) || '—'}</span>
+                <span className="slot-deg">{(!c.x && degreeOf(g.key, c.pc, c.m)) || romanOf(g.key, c)}</span>
               </button>
             );
           })}
@@ -187,6 +189,9 @@ function Grille({ id }: { id: string }) {
             <button className="slot-add" onClick={() => setMode('add')} aria-label="Ajouter un accord">+</button>
           )}
         </div>
+
+        <SuggestPanel gridKey={g.key} chords={chords} bpm={g.bpm} room={GRID_MAX_CHORDS - chords.length}
+          onAdd={add => updateSection(p => [...p, ...add].slice(0, GRID_MAX_CHORDS))} />
 
         <div className="seg seg-dim" style={{ gridTemplateColumns: 'repeat(2,minmax(0,1fr))' }}>
           <button className={mode === 'add' ? 'on' : ''} onClick={() => setMode('add')}>Ajouter un accord</button>

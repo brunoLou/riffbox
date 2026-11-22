@@ -121,3 +121,37 @@ test('a minor chord outside the key, and removing a chord from the sheet', async
   await button(page, 'Retirer C#m de la grille').click();
   await expect(page.locator('.slot-name')).toHaveCount(3);
 });
+
+test('ideas for what comes next: heard in context, added in one tap, cadences, a full section', async ({ page }) => {
+  await page.goto('#/composer/grille/g-minuit'); // Couplet: A D A E, in La
+  const slots = page.locator('.slots .slot-name');
+  await expect(page.locator('.suggest-kicker')).toHaveText('Après E');
+  await expect(page.locator('.sug-name').first()).toHaveText('A');
+  await expect(page.locator('.sug-why').nth(1)).toHaveText('cadence trompeuse');
+
+  // Heard after the two chords before it, then stopped.
+  await button(page, 'Écouter A, E, A').click();
+  await expect(page.locator('.sug.playing')).toHaveCount(1);
+  await button(page, 'Arrêter l’écoute').click();
+  await expect(page.locator('.sug.playing')).toHaveCount(0);
+
+  await page.getByRole('button', { name: /^Ajouter A : retour/ }).click();
+  await expect(slots).toHaveText(['A', 'D', 'A', 'E', 'A']);
+  await expect(page.locator('.suggest-kicker')).toHaveText('Après A');
+
+  // A colour: the ♭VII, shown with its degree.
+  await button(page, 'Couleurs').click();
+  await page.locator('.sug-add', { hasText: '♭VII' }).click();
+  await expect(slots.last()).toHaveText('G');
+  await expect(page.locator('.slot-deg').last()).toHaveText('♭VII');
+
+  // A cadence adds two chords; then the section is full.
+  await button(page, 'Pour finir').click();
+  await page.locator('.sug-add', { hasText: 'V7 → I' }).click();
+  await expect(slots).toHaveText(['A', 'D', 'A', 'E', 'A', 'G', 'E7', 'A']);
+  await expect(page.locator('.suggest-full')).toBeVisible();
+
+  // The seventh shows its own diagram.
+  await page.locator('.slot', { hasText: 'E7' }).click();
+  await expect(page.locator('.cs-sub')).toHaveText('Mi septième · V7 en La');
+});

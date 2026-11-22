@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { strum, type Playback } from '../lib/audio';
 import { SHAPE_FR, capPos, chordType, voicingMidi, voicings } from '../lib/chords';
-import { KEY_FR, chordName, degreeOf, type Chord } from '../lib/music';
+import { KEY_FR, chordName, chordTypeId, degreeOf, type Chord } from '../lib/music';
+import { romanOf } from '../lib/suggest';
 import { useStoredState, writeStored } from '../lib/store';
 import { ChordDiagram } from './ChordDiagram';
 import './GridChordSheet.css';
@@ -12,7 +13,7 @@ import { useDialog } from '../lib/useDialog';
 export const VOICING_PREF_KEY = 'grid.voicings';
 
 /** Root and type of a grid chord in the chord library's terms. */
-export const chordOf = (c: Chord) => ({ root: c.pc, type: chordType(c.m ? 'm' : 'maj') });
+export const chordOf = (c: Chord) => ({ root: c.pc, type: chordType(chordTypeId(c)) });
 
 /**
  * Bottom sheet for one chord of a grid: its diagram, the other positions on the neck,
@@ -34,7 +35,7 @@ export function GridChordSheet({ chords, index, gridKey, section, onIndex, onRem
   const list = useMemo(() => voicings(root, type), [root, type]);
   const vi = Math.min(prefs[name] ?? 0, list.length - 1);
   const v = list[vi];
-  const deg = degreeOf(gridKey, c.pc, c.m);
+  const deg = c.x ? '' : degreeOf(gridKey, c.pc, c.m);
 
   const listen = () => { player.current?.stop(); player.current = strum(voicingMidi(v)); };
   const pick = (i: number) => {
@@ -61,7 +62,7 @@ export function GridChordSheet({ chords, index, gridKey, section, onIndex, onRem
           <button className="cs-step" onClick={() => onIndex(index - 1)} disabled={index === 0} aria-label="Accord précédent">‹</button>
           <div className="cs-title">
             <span className="cs-name">{name}</span>
-            <span className="cs-sub">{KEY_FR[c.pc]} {c.m ? 'mineur' : 'majeur'}{deg ? ` · degré ${deg} en ${KEY_FR[gridKey]}` : ' · hors du ton'}</span>
+            <span className="cs-sub">{KEY_FR[c.pc]} {type.fr}{deg ? ` · degré ${deg} en ${KEY_FR[gridKey]}` : c.x ? ` · ${romanOf(gridKey, c)} en ${KEY_FR[gridKey]}` : ' · hors du ton'}</span>
           </div>
           <button className="cs-step" onClick={() => onIndex(index + 1)} disabled={index === chords.length - 1} aria-label="Accord suivant">›</button>
         </div>

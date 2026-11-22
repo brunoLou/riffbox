@@ -1,7 +1,7 @@
 import { GROOVES, type GrooveId, type Hit, type Pattern, type Step } from './metronome';
 import { KEY_FR, mod12 } from './music';
 
-export type Quality = '7' | 'm7' | '9' | '5' | 'maj' | 'm';
+export type Quality = '7' | 'm7' | '9' | '5' | 'maj' | 'm' | 'sus4';
 export interface BarChord { deg: number; q: Quality }
 export interface Track {
   id: string; name: string; style: string; groove: Exclude<GrooveId, 'clic'>;
@@ -28,8 +28,8 @@ export const TRACKS: Track[] = [
 export const BPM_RANGE = [50, 180] as const;
 
 const NAMES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
-const SUFFIX: Record<Quality, string> = { '7': '7', m7: 'm7', '9': '9', '5': '5', maj: '', m: 'm' };
-const VOICING: Record<Quality, number[]> = { '7': [0, 4, 10], m7: [0, 3, 7, 10], '9': [0, 4, 10, 14], '5': [0, 7, 12], maj: [0, 4, 7], m: [0, 3, 7] };
+const SUFFIX: Record<Quality, string> = { '7': '7', m7: 'm7', '9': '9', '5': '5', maj: '', m: 'm', sus4: 'sus4' };
+const VOICING: Record<Quality, number[]> = { '7': [0, 4, 10], m7: [0, 3, 7, 10], '9': [0, 4, 10, 14], '5': [0, 7, 12], maj: [0, 4, 7], m: [0, 3, 7], sus4: [0, 5, 7] };
 
 export const chordLabel = (key: number, c: BarChord) => NAMES[mod12(key + c.deg)] + SUFFIX[c.q];
 export const trackKey = (key: number, minor?: boolean) => KEY_FR[mod12(key)] + (minor ? ' m' : '');

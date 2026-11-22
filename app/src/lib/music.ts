@@ -49,12 +49,15 @@ export const KFR: Record<number, string> = {
   0: 'Do', 7: 'Sol', 2: 'Ré', 9: 'La', 4: 'Mi', 11: 'Si', 6: 'Fa♯', 1: 'Ré♭', 8: 'La♭', 3: 'Mi♭', 10: 'Si♭', 5: 'Fa',
 };
 
-export interface Chord { pc: number; m?: boolean }
+/** A grid chord: root pitch class, minor or major, and an optional colour (7th: dominant 7, or m7 when minor; sus4). */
+export interface Chord { pc: number; m?: boolean; x?: '7' | 'sus4' }
 
 export const chordName = (c: Chord) => {
+  if (c.x === 'sus4') return OUT_N[PC_IDX[c.pc]] + 'sus4';
   const i = PC_IDX[c.m ? mod12(c.pc + 3) : c.pc];
-  return c.m ? IN_N[i] : OUT_N[i];
+  return (c.m ? IN_N[i] : OUT_N[i]) + (c.x === '7' ? '7' : '');
 };
+export const sameChord = (a: Chord, b: Chord) => a.pc === b.pc && !!a.m === !!b.m && a.x === b.x;
 
 /** Roman-numeral degree of a diatonic triad in a major key, or '' if outside. */
 export function degreeOf(key: number, pc: number, minor?: boolean): string {
@@ -72,3 +75,7 @@ export const NOTE_L = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 
 /** Key chips order on the Gammes screen (starts on La). */
 export const KEY_ORDER = [9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8];
 
+
+/** The chord's type id, as named by the chord library and the backing tracks (maj, m, 7, m7, sus4). */
+export const chordTypeId = (c: Chord): 'maj' | 'm' | '7' | 'm7' | 'sus4' =>
+  c.x === 'sus4' ? 'sus4' : c.x === '7' ? (c.m ? 'm7' : '7') : c.m ? 'm' : 'maj';
