@@ -81,6 +81,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/reglages.spec.ts` | thèmes, effacement des exemples, réinitialisation, sauvegarde et fusion |
 | `tests/e2e/design.spec.ts` | design system : couleurs et leurs valeurs dans les deux thèmes, composants vivants |
 | `tests/e2e/accessibilite.spec.ts` | axe-core (WCAG 2.2 AA) sur les 27 écrans dans les deux thèmes et sur les feuilles ouvertes ; feuilles au clavier ; focus visible |
+| `tests/e2e/petits-ecrans.spec.ts` | téléphones de 640 à 780 px de haut : rien ne reste caché sous le bouton principal ou la barre d’onglets |
 | `tests/e2e/tablette.spec.ts` | tablette (iPad) : plein écran, colonne, prompteur large, manche entier, grille en deux colonnes |
 | `tests/e2e/suivre.spec.ts` | « Suivre ma guitare » : faux micro jouant les accords de Minuit Shuffle, le texte suit |
 | `tests/e2e/transfert.spec.ts` | téléphone ⇄ tablette : deux appareils simulés s’échangent leurs données dans les deux sens |
