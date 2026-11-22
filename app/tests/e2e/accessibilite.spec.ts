@@ -67,6 +67,9 @@ test('the sheets pass axe once open', async ({ page }) => {
   await page.locator('.lyr-line').first().click();
   await expect(page.locator('.rhyme-word').first()).toBeVisible();
   await audit(page, 'feuille de rimes');
+  await page.keyboard.press('Escape');
+  await page.locator('.mini-seg button', { hasText: 'Temps' }).click();
+  await audit(page, 'onglet temps forts');
 });
 
 test('sheets with the keyboard: focus goes in, Tab stays in, Escape closes and gives focus back; the pedal waits', async ({ page }) => {

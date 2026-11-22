@@ -155,3 +155,31 @@ test('lyrics help: syllables and rhyme letters per line, a rhyme finder on the l
   await page.locator('.mini-seg button', { hasText: 'Rimes' }).click();
   await expect(page.locator('.lyr-count')).toHaveText(['3', '3']);
 });
+
+test('strong beats: stressed syllables shown, chords moved onto them one by one or all at once, undo', async ({ page }) => {
+  await page.goto('#/scene/morceau/s6'); // Bayou sec: write a couplet with chords on weak syllables
+  await page.locator('.chordpro').fill('{c:Couplet}\n[C]Je chante [G]sous la pluie\n[F]Le moteur tous[C]se la radio\n[Am]Il pleure dans mon [G]cœur');
+  await page.locator('.mini-seg button', { hasText: 'Temps' }).click();
+
+  const lines = page.locator('.st-line');
+  await expect(lines).toHaveCount(3);
+  await expect(lines.nth(0).locator('.st-syl.s3')).toHaveText('pluie');
+  await expect(lines.nth(1).locator('.st-syl.s0')).toHaveText(['Cse']); // the chord C sits on the mute « se »
+  await expect(lines.nth(2)).not.toHaveClass(/wrong/); // already on the beat
+  await expect(page.locator('.st-chord.off')).toHaveText(['G', 'C']);
+
+  // One chord.
+  await button(page, 'Caler G sur « pluie »').click();
+  await expect(page.locator('.backup-msg')).toContainText('G calé sur « pluie ».');
+  await expect(lines.nth(0).locator('.st-syl', { hasText: 'pluie' }).locator('.st-chord')).toHaveText('G');
+
+  // Undo, then all at once.
+  await page.getByRole('button', { name: 'Annuler' }).click();
+  await expect(page.locator('.st-chord.off')).toHaveCount(2);
+  await button(page, 'Caler 2 accords sur les temps forts').click();
+  await expect(page.locator('.backup-msg')).toContainText('2 accords calés sur les temps forts.');
+  await expect(button(page, 'Tous les accords sont sur un temps fort')).toBeDisabled();
+
+  await page.locator('.mini-seg button', { hasText: 'Écrire' }).click();
+  await expect(page.locator('.chordpro')).toHaveValue('{c:Couplet}\n[C]Je chante sous la [G]pluie\n[F]Le moteur [C]tousse la radio\n[Am]Il pleure dans mon [G]cœur');
+});

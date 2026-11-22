@@ -29,7 +29,7 @@ const WHOLE: Record<string, string> = {
   aiment: 'Em', sèment: 'sEm', ferment: 'fErm', dorment: 'dorm', ont: 'O', font: 'fO', sont: 'sO', vont: 'vO',
 };
 /** Words in -ent whose ending is heard (nouns, adjectives, adverbs), unlike verbs (ils chantent). */
-const ENT_HEARD = new Set(('souvent parent parents serpent présent présents content contents absent absents accident accidents argent ' +
+export const ENT_HEARD = new Set(('souvent parent parents serpent présent présents content contents absent absents accident accidents argent ' +
   'talent talents client clients urgent prudent patient patients violent violents différent différents évident récent récents ' +
   'adolescent innocent innocents décent ardent torrent torrents vent vents dent dents lent lents cent cents sent ment rent ' +
   'comment moment moments instant instants pourtant serment serments sentiment sentiments firmament ciment aliment océan ' +
