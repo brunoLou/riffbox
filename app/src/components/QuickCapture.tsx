@@ -75,7 +75,8 @@ export function QuickCapture({ children }: { children: (button: ReactNode) => Re
   useEffect(() => () => recording.current?.cancel(), []);
   useEffect(() => {
     if (!saved) return;
-    const t = setTimeout(() => setSaved(null), 5000);
+    // Long enough to read, and to touch « Voir ›».
+    const t = setTimeout(() => setSaved(null), 8000);
     return () => clearTimeout(t);
   }, [saved]);
 

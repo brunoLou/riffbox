@@ -7,6 +7,7 @@ import { INITIAL_SETLISTS, songById, songKey, type Setlist, type Song } from '..
 import { readStored, useStoredState } from '../lib/store';
 import { usePedal } from '../lib/pedal';
 import { useWakeLock } from '../lib/wakeLock';
+import { useGuitarFollow } from './useGuitarFollow';
 import './Prompteur.css';
 
 /** Auto-scroll rate at 1×, in px per ms (0.8 px every 30 ms in the prototype). */
@@ -29,11 +30,13 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
   const [playing, setPlaying] = useState(false);
   const [edges, setEdges] = useState({ top: true, bottom: false });
   const wake = useWakeLock();
+  const [follow, setFollow] = useStoredState('stage.follow', false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const pos = useRef(0);
 
   const lines = useMemo(() => (song.chordpro ? parseChordPro(song.chordpro, trans) : []), [song, trans]);
   const fs = readStored(SETTINGS.stageFontSize.key, SETTINGS.stageFontSize.def);
+  const gf = useGuitarFollow(lines, scrollRef, follow);
   const total = set.songIds.length;
   const hasPrev = index > 0, hasNext = index < total - 1;
 
@@ -43,6 +46,10 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
     setEdges({ top: el.scrollTop <= 1, bottom: el.scrollTop + el.clientHeight >= el.scrollHeight - 2 });
   }, []);
   useLayoutEffect(measure, [measure, lines]);
+
+  // Following the guitar and auto-scroll exclude each other.
+  useEffect(() => { if (playing) setFollow(false); }, [playing, setFollow]);
+  useEffect(() => { if (follow) setPlaying(false); }, [follow]);
 
   // Smooth auto-scroll; keeps a float position so slow speeds still move.
   useEffect(() => {
@@ -114,15 +121,17 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
         </div>
       </div>
 
-      <div className="lyrics" ref={scrollRef} onScroll={measure} style={{ '--fs': `${fs}px` } as CSSProperties} tabIndex={0} role="region" aria-label="Paroles">
+      <div className="lyrics" ref={scrollRef} onScroll={() => { measure(); gf.onScroll(); }} style={{ '--fs': `${fs}px` } as CSSProperties} tabIndex={0} role="region" aria-label="Paroles">
         {lines.length ? lines.map((l, i) =>
           l.kind === 'section' ? (
             <div key={i} className="lyric-section">{l.label}</div>
           ) : (
-            <div key={i} className={'lyric-line' + (l.segs.every(g => !g.text.trim()) ? ' chords-only' : '')}>
+            <div key={i} data-line={i} className={'lyric-line' + (l.segs.every(g => !g.text.trim()) ? ' chords-only' : '')}>
               {l.segs.map((g, j) => (
-                <div key={j} className="lyric-seg">
-                  <span className="lyric-chord">{g.chord}</span>
+                <div key={j} className={'lyric-seg'
+                  + (gf.current?.line === i && gf.current.seg === j ? ' now' : '')
+                  + (gf.next?.line === i && gf.next.seg === j ? ' next' : '')}>
+                  <span className="lyric-chord"><b>{g.chord.trimEnd()}</b>{g.chord.slice(g.chord.trimEnd().length)}</span>
                   <span className="lyric-text">{g.text}</span>
                 </div>
               ))}
@@ -152,6 +161,20 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
             <div><span>Défil.</span><span className="mono">{SPEEDS[speed]}×</span></div>
             <button onClick={() => setSpeed(Math.min(SPEEDS.length - 1, speed + 1))} aria-label="Accélérer le défilement">+</button>
           </div>
+        </div>
+        <div className="follow-row">
+          <button className={'follow-btn' + (follow ? ' on' : '')} aria-pressed={follow} disabled={!gf.hasChords}
+            title={gf.hasChords ? 'Le texte avance quand vous jouez les accords du morceau.' : 'Ce titre n’a pas d’accords à suivre.'}
+            onClick={() => setFollow(!follow)}>
+            <span className={'follow-led' + (gf.state === 'on' ? ' on' : '')} aria-hidden />Suivre ma guitare
+          </button>
+          {follow && (
+            <span className="follow-status" role="status">
+              {gf.state === 'denied' ? 'Micro refusé'
+                : gf.state === 'starting' ? 'Micro…'
+                : <>{gf.heard ? <>Entendu <b>{gf.heard}</b></> : 'J’écoute…'}{gf.next && <> · ensuite <b>{gf.next.chord}</b></>}</>}
+            </span>
+          )}
         </div>
         <div className="transport">
           <button className="page-btn" style={{ color: 'var(--muted-3)' }} disabled={prevOff} onClick={() => page(-1)}>{prevLabel}</button>

@@ -55,6 +55,26 @@ export function sungNote(name: string, hz: number, cents = 0): string {
   });
 }
 
+/**
+ * A guitar strumming a chord sequence: each chord (MIDI notes, low to high) lasts `secs`, strummed
+ * at its start and again halfway, strings 15 ms apart, with harmonics and a natural decay.
+ */
+export function strummedChords(name: string, chords: number[][], secs = 1.6): string {
+  const freqs = chords.map(c => c.map(m => 440 * 2 ** ((m - 69) / 12)));
+  return writeWav(name, Math.ceil(chords.length * secs) + 1, t => {
+    const i = Math.min(chords.length - 1, Math.floor(t / secs));
+    const local = t - i * secs;
+    const since = local % (secs / 2);
+    let v = 0;
+    freqs[i].forEach((f, s) => {
+      const dt = since - s * 0.015;
+      if (dt < 0) return;
+      for (let k = 1; k <= 6; k++) v += (1 / k ** 1.3) * Math.exp(-dt * (1.2 + k * 0.4)) * Math.sin(2 * Math.PI * f * k * dt);
+    });
+    return v * 0.12;
+  });
+}
+
 /** Launch options for a test file whose microphone plays `wav`. */
 export const fakeMic = (wav: string) => ({
   permissions: ['microphone'],

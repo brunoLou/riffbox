@@ -26,9 +26,10 @@ test('record over the metronome without leaving it: the idea takes its tempo, th
   await expect(name.locator('.idea-bpm')).toHaveText('92 BPM');
   await page.keyboard.type('Riff du métronome');
   await name.getByRole('button', { name: 'Enregistrer', exact: true }).click();
+  // The confirmation shows for 8 s: check it first.
+  await expect(page.locator('.qc-toast')).toContainText('Rangé dans le Carnet : Riff du métronome');
   await expect(page).toHaveURL(/#\/metronome$/);
   await expect(page.locator('.cta')).toHaveText('Arrêter'); // still playing
-  await expect(page.locator('.qc-toast')).toContainText('Rangé dans le Carnet : Riff du métronome');
 
   await page.locator('.qc-toast').getByRole('link', { name: 'Voir ›' }).click();
   await expect(page).toHaveURL(/#\/composer$/);

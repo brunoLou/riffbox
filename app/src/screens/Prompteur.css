@@ -43,3 +43,17 @@
 .lyric-line.chords-only .lyric-chord { padding-right: .6em; }
 .stage-edit, .stage-edit:hover { color: var(--muted-3); text-decoration: none; min-width: 44px; height: 40px; justify-content: center; }
 .write-lyrics, .write-lyrics:hover { align-self: flex-start; margin-top: 4px; height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid var(--amber); color: var(--amber-hi); font-weight: 700; font-size: 15px; display: flex; align-items: center; text-decoration: none; }
+
+/* « Suivre ma guitare » */
+.follow-row { display: flex; align-items: center; gap: 12px; min-height: 44px; }
+.follow-btn { flex: none; display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid var(--line-2); color: var(--cream); font-weight: 700; font-size: 15px; }
+.follow-btn.on { border-color: var(--led); color: var(--led-text); }
+.follow-btn:disabled { opacity: .4; cursor: default; }
+.follow-led { width: 10px; height: 10px; border-radius: 50%; background: var(--led-off); }
+.follow-led.on { background: var(--led); box-shadow: 0 0 8px var(--led); }
+.follow-status { min-width: 0; font-size: 14px; color: var(--muted-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.follow-status b { font-family: var(--f-mono); color: var(--cream); }
+/* The chord being played, and the next one to play. */
+.lyric-chord > b { font-weight: inherit; }
+.lyric-seg.now .lyric-chord > b { background: var(--amber); color: var(--ink); border-radius: 6px; padding: 0 4px; margin-left: -4px; }
+.lyric-seg.next .lyric-chord > b { text-decoration: underline dotted var(--amber); text-underline-offset: 5px; }
