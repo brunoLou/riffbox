@@ -15,6 +15,14 @@ npm run preview    # sert dist/ sur http://localhost:4173
 
 Le micro (accordeur, voix, enregistrement) demande `localhost` ou une adresse en https.
 
+## Exporter vers un logiciel de musique
+
+Réglages › « Exporter pour un logiciel de musique » : tous les enregistrements (carnet, prises vocales) en
+WAV 24 bits 48 kHz, mono pour une prise de micro, dans un .zip avec un index (`index.csv`). Le nom de
+chaque fichier donne la date, le titre, le tempo et la tonalité ; le fichier contient aussi le tempo
+et la tonique (bloc « acid », lu par Ableton Live et FL Studio) et le titre (LIST/INFO, lu par Reaper).
+Un enregistrement seul : « WAV ↓ » dans le carnet.
+
 ## Tablette
 
 Sur un écran tactile plus large qu’un téléphone (ou une fois l’app installée), l’app passe en plein
@@ -66,6 +74,7 @@ dans le dossier temporaire du système.
 | `tests/unit/generate.test.ts` | générateur de grilles : styles, contraste couplet / refrain, accords gardés |
 | `tests/unit/lyrics.test.ts` | paroles : syllabes chantées (vers célèbres), rimes, schéma de rimes, dictionnaire de rimes |
 | `tests/unit/stress.test.ts` | temps forts : accent des syllabes françaises, accords calés sur la syllabe accentuée |
+| `tests/unit/wav.test.ts` | WAV 24 bits (tempo, tonique, titre intégrés), ZIP, mono / stéréo |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
 | `tests/e2e/smoke.spec.ts` | chaque écran s’ouvre, navigation, anciennes adresses, micro refusé |
@@ -92,6 +101,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/tonalite-ecoute.spec.ts` | « Quel ton ? » : faux micro jouant un morceau en Ré majeur, gamme ouverte, tonalité appliquée au morceau |
 | `tests/e2e/transfert.spec.ts` | téléphone ⇄ tablette : deux appareils simulés s’échangent leurs données dans les deux sens |
 | `tests/e2e/voyants.spec.ts` | voyants de l’accueil : allumés par un vrai usage du jour, éteints le lendemain |
+| `tests/e2e/export-daw.spec.ts` | export pour logiciel de musique : vrai enregistrement au faux micro, WAV et ZIP relus en Python (format, tempo, tonique, hauteur du son) |
 | `tests/e2e/pwa.spec.ts` | installable, hors ligne, polices embarquées |
 
 ## Données

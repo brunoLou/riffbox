@@ -8,6 +8,8 @@ import { firstChords, gridSongId, grooveDef, type Grid, type GridGroove } from '
 import { KEY_FR, KFR, mod12 } from '../lib/music';
 import { generateGrid, seeded, styleDef, type GenOptions } from '../lib/generate';
 import { NewGridSheet } from '../components/NewGridSheet';
+import { listRecordings, recordingWav, wavName } from '../lib/dawExport';
+import { shareOrDownload } from '../lib/files';
 import { useStoredState } from '../lib/store';
 import { useGrids, useSetlists } from '../lib/hooks';
 import { Wave } from '../components/Wave';
@@ -233,6 +235,12 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
     setGrids(all => [g, ...all]);
     nav(`/composer/grille/${id}`);
   };
+  /** One recording as a WAV file, for a music program. */
+  const exportWav = async (i: Idea) => {
+    const r = listRecordings().find(x => x.id === i.id);
+    const res = r && await recordingWav(r);
+    if (r && res) await shareOrDownload(wavName(r), res.wav, r.title);
+  };
   const linkTo = (i: Idea, g: Grid) => {
     setGrids(all => all.map(x => (x.id === g.id ? { ...x, ideaId: i.id } : x)));
     nav(`/composer/grille/${g.id}`);
@@ -319,6 +327,9 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
                     ? <button className="idea-action primary" onClick={() => nav(`/composer/grille/${i.grid!.id}`)}>Ouvrir la grille ›</button>
                     : (i.kind === 'riff' || i.kind === 'memo') && <button className="idea-action primary" onClick={() => setLinking(i)}>Ajouter à une grille ›</button>}
                   {!i.grid && <button className="idea-action" onClick={() => setEditing({ idea: i, isNew: false })}>Modifier</button>}
+                  {!i.grid && i.hasAudio && (
+                    <button className="idea-action" onClick={() => void exportWav(i)} aria-label={`Exporter « ${i.title} » en WAV`}>WAV ↓</button>
+                  )}
                   <button className="idea-action danger" onClick={() => remove(i)}>Supprimer</button>
                 </div>
               )}

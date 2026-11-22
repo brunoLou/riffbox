@@ -16,7 +16,8 @@ export interface Recording {
 
 export async function startRecording(onLevel: (level: number) => void): Promise<Recording> {
   if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') throw new Error('unsupported');
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  // Raw sound for music: no echo cancelling, noise suppression or automatic gain (they pump and dull a guitar).
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
   const ac = ctx();
   const src = ac.createMediaStreamSource(stream);
   const an = ac.createAnalyser();

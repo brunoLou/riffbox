@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { exportForDaw, listRecordings } from '../lib/dawExport';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import {
@@ -154,6 +155,8 @@ export default function Reglages() {
         <TransferCard />
 
         <BackupCard />
+
+        <DawCard />
 
         <div className="settings-card">
           <div className="settings-action">
@@ -506,6 +509,43 @@ function BackupCard() {
             <button className="btn-link" onClick={() => { setPending(null); setConfirmReplace(false); }}>Ne pas importer</button>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Export pour un logiciel de musique ---------- */
+
+function DawCard() {
+  const [busy, setBusy] = useState<string | null>(null);
+  const [msg, setMsg] = useState<{ text: string; error?: boolean } | null>(null);
+  const count = useMemo(() => listRecordings().length, []);
+  const go = async () => {
+    setMsg(null); setBusy('Préparation…');
+    try {
+      const r = await exportForDaw((d, t) => setBusy(`Conversion ${Math.min(d + 1, t)} / ${t}…`));
+      if (!r.count) { setMsg({ text: 'Aucun enregistrement n’a pu être lu.', error: true }); return; }
+      const how = await shareOrDownload(r.name, r.zip, 'Enregistrements RIFFBOX');
+      if (how === 'cancelled') { setMsg({ text: 'Export annulé.' }); return; }
+      setMsg({ text: `${plural(r.count, 'enregistrement', 'enregistrements')} ${how === 'shared' ? 'partagé' : 'téléchargé'}${r.count > 1 ? 's' : ''} en WAV (${fmtBytes(r.zip.size)}).`
+        + (r.failed.length ? ` Illisible${r.failed.length > 1 ? 's' : ''} : ${r.failed.join(', ')}.` : '') });
+    } catch {
+      setMsg({ text: 'L’export a échoué. Réessayez.', error: true });
+    } finally { setBusy(null); }
+  };
+  return (
+    <div className="settings-card">
+      <div className="settings-action">
+        <span className="settings-label">Exporter pour un logiciel de musique</span>
+        <span className="settings-help">
+          Tous vos enregistrements (riffs, mémos, prises vocales) en WAV 24 bits 48 kHz, le format que lisent FL Studio,
+          Reaper, Ableton Live, Logic ou Cubase. Le tempo et la tonalité sont dans le nom et dans le fichier
+          (Ableton et FL Studio les lisent) ; un index les récapitule. Le tout dans un fichier .zip.
+        </span>
+        <button className="btn-primary" onClick={() => void go()} disabled={!!busy || !count}>
+          {busy ?? (count ? `Exporter ${plural(count, 'enregistrement', 'enregistrements')} (.zip)` : 'Aucun enregistrement à exporter')}
+        </button>
+        {msg && <p className={'backup-msg' + (msg.error ? ' error' : '')} role="status">{msg.text}</p>}
       </div>
     </div>
   );
