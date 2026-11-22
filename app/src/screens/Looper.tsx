@@ -19,6 +19,7 @@ const LATENCY_KEY = 'looper.latencyMs';
 let engine: LooperEngine | null = null;
 const getEngine = () => (engine ??= new LooperEngine(readStored<LoopSettings>('looper.settings', LOOP_DEFAULTS)));
 
+const fmtMb = (b: number) => `${(b / 1024 / 1024).toFixed(1).replace('.', ',')} Mo en mémoire`;
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
 
 /** /pratiquer/looper — record a loop over a click, then layers on top, all in time. */
@@ -34,6 +35,7 @@ export default function Looper() {
   const [msg, setMsg] = useState<{ text: string; error?: boolean } | null>(null);
   const [measuring, setMeasuring] = useState(false);
   const [denied, setDenied] = useState(false);
+  const [confirmMerge, setConfirmMerge] = useState(false);
   const [, setIdeas] = useStoredState<Idea[]>('ideas', INITIAL_IDEAS);
   const pos = useRef(e.position());
   const ring = useRef<SVGCircleElement>(null);
@@ -194,6 +196,24 @@ export default function Looper() {
         </div>
         {denied && <p className="backup-msg error" role="alert">Micro refusé : autorisez-le dans le navigateur.</p>}
 
+        {e.layers.length > 0 && (
+          <div className="loop-layers-head">
+            <span className="kicker">{e.layers.length} couche{e.layers.length > 1 ? 's' : ''} · {fmtMb(e.bytes)}</span>
+            {confirmMerge ? (
+              <span className="merge-confirm" role="group" aria-label="Confirmer la fusion">
+                <button className="btn-link" onClick={() => setConfirmMerge(false)}>Annuler</button>
+                <button className="merge-btn on" onClick={() => { const n = e.mergeable.length; e.mergeLayers(); setConfirmMerge(false); setMsg({ text: `${n} couches fusionnées en une.` }); }}>
+                  Fusionner {e.mergeable.length} couches
+                </button>
+              </span>
+            ) : (
+              <button className="merge-btn" onClick={() => setConfirmMerge(true)} disabled={busy || e.mergeable.length < 2}>Fusionner…</button>
+            )}
+          </div>
+        )}
+        {confirmMerge && (
+          <p className="loop-note">Les couches audibles deviennent une seule, à leurs volumes actuels : vous libérez de la mémoire, mais ne pourrez plus les séparer. Les couches muettes restent à part.</p>
+        )}
         {e.layers.length > 0 && (
           <div className="loop-layers">
             {e.layers.map((l, i) => (

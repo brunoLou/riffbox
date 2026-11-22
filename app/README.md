@@ -21,7 +21,9 @@ Pratiquer › Looper : une boucle de 1 à 8 mesures au tempo choisi, enregistré
 décompte, puis des couches superposées, chacune exactement une boucle (capture au micro à l’échantillon
 près, AudioWorklet). Le retard entre le haut-parleur et le micro est retiré de chaque couche : estimé,
 réglable, ou mesuré par des bips (sans casque). Pédalier : → enregistrer, espace lecture, ← annuler.
-La boucle va dans le carnet, ou s’exporte en pistes WAV (chaque couche et le mix) pour un logiciel de musique.
+Un limiteur sur la sortie évite la saturation quel que soit le nombre de couches ; « Fusionner » réunit
+les couches audibles en une pour libérer la mémoire. La boucle va dans le carnet, ou s’exporte en pistes
+WAV (chaque couche et le mix) pour un logiciel de musique.
 
 ## Exporter vers un logiciel de musique
 
@@ -111,7 +113,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/transfert.spec.ts` | téléphone ⇄ tablette : deux appareils simulés s’échangent leurs données dans les deux sens |
 | `tests/e2e/voyants.spec.ts` | voyants de l’accueil : allumés par un vrai usage du jour, éteints le lendemain |
 | `tests/e2e/export-daw.spec.ts` | export pour logiciel de musique : vrai enregistrement au faux micro, WAV et ZIP relus en Python (format, tempo, tonique, hauteur du son) |
-| `tests/e2e/looper.spec.ts` | looper au faux micro : décompte, couches, pédalier, pistes WAV d’exactement une boucle, carnet ; tempo d’une grille, retard |
+| `tests/e2e/looper.spec.ts` | looper au faux micro : décompte, couches, pédalier, fusion des couches, pistes WAV d’exactement une boucle, carnet ; tempo d’une grille, retard |
 | `tests/e2e/pwa.spec.ts` | installable, hors ligne, polices embarquées |
 
 ## Données

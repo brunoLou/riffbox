@@ -32,3 +32,8 @@
 .loop-key { height: 40px; font-size: 15px; max-width: 170px; }
 .loop-actions .btn-primary, .loop-actions .btn-outline { margin-top: 4px; }
 .loop-carnet { align-self: center; }
+.loop-layers-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px; }
+.merge-btn { min-height: 36px; padding: 0 14px; border-radius: 18px; border: 1.5px solid var(--line-2); color: var(--cream); font-weight: 700; font-size: 13px; white-space: nowrap; }
+.merge-btn:disabled { opacity: .4; }
+.merge-btn.on { background: var(--amber); border-color: var(--amber); color: var(--ink); }
+.merge-confirm { display: flex; align-items: center; gap: 8px; }

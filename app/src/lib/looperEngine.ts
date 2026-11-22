@@ -3,7 +3,7 @@
  * ScriptProcessor where worklets are missing), a loop clock, a click, layers played in a loop.
  * Everything is timed on the audio clock; the latency compensation shifts what is recorded.
  */
-import { Capture, captureStart, loopFrames, loopPhase, loopSeconds, measureLatency, nextLoopStart, type Chunk, type LoopSettings } from './loop';
+import { Capture, captureStart, loopFrames, loopPhase, loopSeconds, measureLatency, mix, nextLoopStart, type Chunk, type LoopSettings } from './loop';
 
 export interface Layer { id: number; data: Float32Array; gain: number; muted: boolean }
 export type LooperState =
@@ -35,6 +35,7 @@ export class LooperEngine {
   t0 = 0;
 
   private master: GainNode;
+  readonly limiter: DynamicsCompressorNode;
   private clickBus: GainNode;
   private gains = new Map<number, GainNode>();
   private sources = new Map<number, AudioBufferSourceNode>();
@@ -54,7 +55,15 @@ export class LooperEngine {
     this.ac = new Ctx({ latencyHint: 'interactive' });
     this.settings = settings;
     this.master = this.ac.createGain();
-    this.master.connect(this.ac.destination);
+    // A limiter on the layers: however many are stacked, the sound never clips.
+    this.limiter = this.ac.createDynamicsCompressor();
+    this.limiter.threshold.value = -6;
+    this.limiter.knee.value = 3;
+    this.limiter.ratio.value = 20;
+    this.limiter.attack.value = 0.002;
+    this.limiter.release.value = 0.12;
+    this.master.connect(this.limiter);
+    this.limiter.connect(this.ac.destination);
     this.clickBus = this.ac.createGain();
     this.clickBus.gain.value = 0.5;
     this.clickBus.connect(this.ac.destination);
@@ -235,6 +244,35 @@ export class LooperEngine {
     this.layers = this.layers.filter(l => l.id !== id);
     if (!this.layers.length && this.state.kind === 'playing') this.stop();
     this.onChange();
+  }
+
+  /** Memory taken by the layers (each kept twice: recorded samples and the playing buffer). */
+  get bytes() { return this.layers.reduce((n, l) => n + l.data.length * 4 * 2, 0); }
+  /** The layers a merge would combine: those that can be heard. */
+  get mergeable() { return this.layers.filter(l => !l.muted && l.gain > 0); }
+
+  /**
+   * Merges the layers that can be heard into one, at their volumes (muted layers stay apart).
+   * Frees memory and keeps stacking possible; the merged layers cannot be separated again.
+   */
+  mergeLayers(): boolean {
+    const merged = this.mergeable;
+    if (merged.length < 2) return false;
+    const data = mix(merged.map(l => ({ data: l.data, gain: l.gain })), this.frames);
+    const at = this.layers.indexOf(merged[0]);
+    const layer: Layer = { id: this.nextId++, data, gain: 1, muted: false };
+    const playing = this.state.kind !== 'idle' && this.state.kind !== 'countin';
+    merged.forEach(l => {
+      try { this.sources.get(l.id)?.stop(); } catch { /* not started */ }
+      this.sources.delete(l.id);
+      this.gains.get(l.id)?.disconnect();
+      this.gains.delete(l.id);
+    });
+    this.layers = this.layers.filter(l => !merged.includes(l));
+    this.layers.splice(at, 0, layer);
+    if (playing) this.startLayer(layer, this.ac.currentTime + 0.01);
+    this.onChange();
+    return true;
   }
 
   clear() { this.stop(); [...this.layers].forEach(l => this.removeLayer(l.id)); }
