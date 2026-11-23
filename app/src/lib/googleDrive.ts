@@ -6,7 +6,7 @@
 import type { SyncRemote } from './cloudSync';
 
 /** OAuth client of the app (public: it only identifies the app to Google). */
-export const GOOGLE_CLIENT_ID = '';
+export const GOOGLE_CLIENT_ID = '391513495591-86boohtji5tht41ca7dbnsoqk2vb455t.apps.googleusercontent.com';
 const SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
 const API = 'https://www.googleapis.com/drive/v3';
 const UPLOAD = 'https://www.googleapis.com/upload/drive/v3';
@@ -37,6 +37,9 @@ function loadGis(): Promise<Gis> {
   });
   return gisLoad;
 }
+
+/** Loads Google's sign-in ahead of the tap, so its window opens right on the tap (no pop-up blocker). */
+export const preloadGoogle = () => { if (driveConfigured()) loadGis().catch(() => { /* offline: retried on the tap */ }); };
 
 /**
  * A token, asking Google when needed. `prompt: 'consent'` the first time; afterwards Google answers

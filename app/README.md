@@ -68,7 +68,7 @@ n’est jamais lu). Fusion : la version la plus récente de chaque élément gag
 voyagent. Quand Google redemande la connexion (environ toutes les heures), un bouton
 « ↻ Synchroniser » apparaît sur l’accueil.
 
-Il faut l’identifiant OAuth Google de l’app dans `GOOGLE_CLIENT_ID` (`src/lib/googleDrive.ts`) ;
+L’identifiant OAuth Google de l’app est dans `GOOGLE_CLIENT_ID` (`src/lib/googleDrive.ts`, public) ;
 sans lui, la carte l’explique et le transfert par fichier reste disponible.
 
 ## Ordinateur

@@ -76,8 +76,12 @@ test('Google Drive: connect two devices, changes travel both ways on their own',
   await ctx.close();
 });
 
-test('without the Google identifier the card explains, and the file transfer stays', async ({ page }) => {
+test('with the app\u2019s Google identifier, the card offers to connect (Google is not called before the tap)', async ({ page }) => {
+  const google: string[] = [];
+  page.on('request', r => { if (/googleapis\.com/.test(r.url())) google.push(r.url()); });
   await page.goto('#/reglages');
-  await expect(page.locator('.settings-card', { hasText: 'Google Drive' })).toContainText('reste à configurer');
-  await expect(page.getByRole('button', { name: 'Connecter Google Drive' })).toHaveCount(0);
+  const card = page.locator('.settings-card', { hasText: 'Google Drive' });
+  await expect(card.getByRole('button', { name: 'Connecter Google Drive' })).toBeVisible();
+  await expect(card).toContainText('dossier caché réservé à RIFFBOX');
+  expect(google).toEqual([]);
 });

@@ -1,5 +1,5 @@
 import { exportForDaw, listRecordings } from '../lib/dawExport';
-import { connectDrive, disconnectDrive, syncAvailable, syncNow, useDriveState } from '../lib/autoSync';
+import { connectDrive, disconnectDrive, preloadGoogle, syncAvailable, syncNow, useDriveState } from '../lib/autoSync';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
@@ -564,6 +564,7 @@ const ago = (t: number) => {
 
 function DriveCard() {
   const st = useDriveState();
+  useEffect(preloadGoogle, []);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [confirmOff, setConfirmOff] = useState(false);

@@ -6,6 +6,7 @@
 import { useSyncExternalStore } from 'react';
 import { syncOnce, type SyncRemote, type SyncResult } from './cloudSync';
 import { DriveAuthError, driveConfigured, driveRemote, signIn, signOut, tokenValid } from './googleDrive';
+export { preloadGoogle } from './googleDrive';
 import { onAnyWrite } from './store';
 
 const STATE_KEY = 'riffbox-drive-state';

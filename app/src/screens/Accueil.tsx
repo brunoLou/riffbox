@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Phone, StatusBar, TabBar } from '../components/Chrome';
 import { PedalTile } from '../components/PedalTile';
@@ -17,7 +17,7 @@ import { backupReminder, daysAgo, markBackedUp, snoozeReminder } from '../lib/re
 import './Accueil.css';
 import { useDialog } from '../lib/useDialog';
 import { useUsedToday } from '../lib/usage';
-import { syncNow, useDriveState } from '../lib/autoSync';
+import { preloadGoogle, syncNow, useDriveState } from '../lib/autoSync';
 
 function todayLabel() {
   const s = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'short' }).format(new Date());
@@ -245,6 +245,8 @@ function BackupReminder() {
 /** When Google asks to sign in again (it cannot happen without a tap), one tap here resumes the sync. */
 function DriveChip() {
   const st = useDriveState();
-  if (!st.connected || st.status !== 'needsTap') return null;
+  const show = st.connected && st.status === 'needsTap';
+  useEffect(() => { if (show) preloadGoogle(); }, [show]);
+  if (!show) return null;
   return <button className="drive-chip" onClick={() => void syncNow(true)}>↻ Synchroniser avec Google Drive</button>;
 }
