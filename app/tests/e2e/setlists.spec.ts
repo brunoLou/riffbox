@@ -25,7 +25,8 @@ test('reorders, removes and adds titles', async ({ page }) => {
 test('plays the set: the pedal turns pages, then moves to the next song', async ({ page }) => {
   await page.goto('#/scene/bar-du-port');
   await page.locator('.song-row', { hasText: 'Minuit Shuffle' }).click();
-  await expect(page.locator('.stage-back')).toHaveText('‹ Bar du Port · 3/9');
+  await expect(page.locator('.stage-pos')).toHaveText('Bar du Port · 3/9');
+  await expect(page.locator('.stage-back')).toHaveText('✕ Quitter');
   await expect(page.locator('.stage-title')).toHaveText('MINUIT SHUFFLE');
   // As many pages as the lyrics take (the layout decides), then the next song.
   for (let i = 0; i < 12 && (await page.locator('.stage-title').textContent()) === 'MINUIT SHUFFLE'; i++) {

@@ -1,6 +1,9 @@
 .stage-head { flex: none; padding: 6px 18px 12px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid var(--surface-3); }
 .stage-top { display: flex; align-items: center; justify-content: space-between; }
-.stage-back, .stage-back:hover { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: var(--muted-2); text-decoration: none; }
+.stage-where { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.stage-back, .stage-back:hover { flex: none; display: inline-flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 20px; border: 1.5px solid var(--line-2); font-size: 15px; font-weight: 700; color: var(--cream); text-decoration: none; }
+.stage-back:hover { border-color: var(--amber); }
+.stage-pos { font-size: 14px; font-weight: 600; color: var(--muted-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stage-pedal { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted-2); }
 .stage-pedal span { width: 9px; height: 9px; border-radius: 50%; background: var(--muted-3); transition: transform .12s, box-shadow .12s; }
 .stage-pedal.seen span { background: var(--led); box-shadow: 0 0 8px var(--led); }

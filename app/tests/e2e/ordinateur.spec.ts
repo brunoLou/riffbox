@@ -61,3 +61,16 @@ test('on a computer: « / » searches the songs; files dropped on the window are
   await expect(page.getByRole('button', { name: 'Mes fichiers' })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('.track', { hasText: 'Mon blues 80 bpm' }).locator('.track-bpm')).toHaveText('80 BPM');
 });
+
+test('on a computer: the live has a clear « Quitter » button, and Escape leaves it too', async ({ page }) => {
+  await page.goto('#/scene/bar-du-port/play/2');
+  const quit = page.getByRole('link', { name: 'Quitter le live, retour à Bar du Port' });
+  await expect(quit).toBeVisible();
+  await quit.click();
+  await expect(page).toHaveURL(/#\/scene\/bar-du-port$/);
+  await expect(page.locator('.tabbar')).toBeVisible();
+
+  await page.goto('#/scene/bar-du-port/play/2');
+  await page.keyboard.press('Escape');
+  await expect(page).toHaveURL(/#\/scene\/bar-du-port$/);
+});

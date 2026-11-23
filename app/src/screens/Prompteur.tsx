@@ -80,6 +80,13 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
     return () => cancelAnimationFrame(raf);
   }, [playing, speed]);
 
+  // Escape leaves the live, back to the set (a setting being learnt for the pedal is not affected).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !e.defaultPrevented) nav(`/scene/${set.id}`); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [nav, set.id]);
+
   const goSong = useCallback((i: number) => nav(`/scene/${set.id}/play/${i}`, { replace: true }), [nav, set.id]);
 
   /** Pedal / button: turn a page, or change song at the top/bottom of the page. */
@@ -114,7 +121,10 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
       <StatusBar stage />
       <div className="stage-head" data-wakelock={wake}>
         <div className="stage-top">
-          <Link to={`/scene/${set.id}`} className="stage-back">‹ {set.name} · {index + 1}/{total}</Link>
+          <div className="stage-where">
+            <Link to={`/scene/${set.id}`} className="stage-back" aria-label={`Quitter le live, retour à ${set.name}`} title="Quitter le live (Échap)">✕ Quitter</Link>
+            <span className="stage-pos">{set.name} · {index + 1}/{total}</span>
+          </div>
           <div
             className={'stage-pedal' + (pedal ? ' seen' : '') + (flash ? ' flash' : '')}
             role="status"
