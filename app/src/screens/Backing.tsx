@@ -12,6 +12,7 @@ import { FileControls } from '../components/FileControls';
 import { deleteBlob } from '../lib/blobs';
 import { MY_TRACKS_KEY, attachedTo, fmtTime, type MyTrack } from '../lib/myBacking';
 import { storeAudioFile, useFilePlayer } from '../lib/useFilePlayer';
+import { useDropOffered } from '../lib/dropped';
 
 const STYLES = ['Tous', 'Blues', 'Rock', 'Funk'] as const;
 type Tweaks = Record<string, { key: number; bpm: number }>;
@@ -21,6 +22,8 @@ export default function Backing() {
   /** The app's synthesised tracks, or the player's own audio files. */
   const [source, setSource] = useStoredState<'app' | 'mine'>('backing.source', 'app');
   const stopMine = useRef<() => void>(() => {});
+  // Audio dropped on the window: into « Mes fichiers ».
+  useDropOffered('audio', () => setSource('mine'));
   const [selId, setSelId] = useStoredState<string | null>('backing.sel', null);
   const [tweaks, setTweaks] = useStoredState<Tweaks>('backing.tweaks', {});
   const [playing, setPlaying] = useState(false);

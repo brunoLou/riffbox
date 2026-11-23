@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import { CHORDPRO_EXT, chordProFileName, exportChordPro, exportSongbook, importChordPro, type ImportedSong } from '../lib/chordpro';
@@ -15,6 +15,7 @@ import { LyricsHelp } from '../components/LyricsHelp';
 import { StressView } from '../components/StressView';
 import { useDialog } from '../lib/useDialog';
 import { looksLikeChordPro, textToChordPro } from '../lib/chordSheet';
+import { useDropped } from '../lib/dropped';
 
 
 /** "Setlists | Morceaux" switch at the top of the Live tab. */
@@ -81,7 +82,7 @@ export function MorceauxScreen() {
     if (!out.length) { setMsg({ text: 'Aucun morceau trouvé : pas d’accords reconnus (ni ChordPro, ni accords au-dessus des paroles).', error: true }); return; }
     setFound(out);
   };
-  const pickFiles = async (files: FileList | null) => {
+  const pickFiles = async (files: FileList | File[] | null) => {
     if (!files?.length) return;
     setMsg(null); setReading(true);
     const all: ImportedSong[] = [];
@@ -101,6 +102,20 @@ export function MorceauxScreen() {
     setPasted(null);
     offer(songs);
   };
+  // « / » or Ctrl+F (Cmd+F): search the library (on a computer).
+  const search = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const typing = e.target instanceof HTMLElement && e.target.closest('input, textarea, select, [contenteditable]');
+      if ((e.key === '/' && !typing && !e.ctrlKey && !e.metaKey) || (e.key.toLowerCase() === 'f' && (e.ctrlKey || e.metaKey))) {
+        e.preventDefault(); search.current?.focus(); search.current?.select();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+  // Files dropped on the window (a computer) are imported here.
+  useDropped('songs', files => void pickFiles(files));
   const confirmImport = () => {
     const chosen = (found ?? []).filter(x => x.on);
     const stamp = Date.now();
@@ -126,7 +141,7 @@ export function MorceauxScreen() {
           <span className="sets-count mono">{allSongs().length} titres</span>
         </div>
         <SceneTabs active={1} />
-        <input className="text-input search" type="search" placeholder="Rechercher un titre" value={q} onChange={e => setQ(e.target.value)} aria-label="Rechercher un titre" />
+        <input ref={search} className="text-input search" type="search" placeholder="Rechercher un titre  ( / )" value={q} onChange={e => setQ(e.target.value)} aria-label="Rechercher un titre" />
         <div className="cp-row">
           <button className="btn-outline cp-btn" onClick={() => fileInput.current?.click()} disabled={reading}>{reading ? 'Lecture…' : 'Importer…'}</button>
           <button className="btn-outline cp-btn" onClick={() => setPasted('')}>Coller…</button>

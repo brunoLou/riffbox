@@ -229,3 +229,73 @@ h1 { margin: 0; font-weight: inherit; }
   .phone-wide .grid-body > .wheel { grid-column: 2; grid-row: 1 / span 6; align-self: start; margin-top: 70px; transform: scale(1.3); transform-origin: top center; }
   .phone-wide .grid-actions { left: max(18px, calc(50% - 500px)); right: auto; width: min(calc(100% - 36px), 512px); }
 }
+
+/* ---------- Computer ----------
+ * A wide screen with a mouse: no phone frame, the tabs as a sidebar on the left, the screens in a
+ * wide centred column; the stage, the grid and the neck take the whole width. */
+@media (min-width: 900px) and (hover: hover) and (pointer: fine) {
+  :root { --side: 220px; --col: 880px; }
+  .stage { padding: 0; display: block; min-height: 100dvh; }
+  .phone { width: 100vw; height: 100vh; height: 100dvh; border-radius: 0; box-shadow: none; }
+  .statusbar > * { visibility: hidden; }
+  .statusbar { height: 22px; }
+  /* With tabs: room for the sidebar; a centred column, or the whole width for wide screens. */
+  .phone:has(> .tabbar) { margin-left: var(--side); width: calc(100vw - var(--side)); box-shadow: -1px 0 0 var(--line); }
+  .phone:not(.phone-wide):has(> .tabbar) {
+    width: min(var(--col), calc(100vw - var(--side)));
+    margin-left: calc(var(--side) + max(0px, (100vw - var(--side) - var(--col)) / 2));
+    box-shadow: 0 0 0 1px var(--line);
+  }
+  .phone:not(.phone-wide):not(:has(> .tabbar)) { width: min(var(--col), 100vw); margin: 0 auto; box-shadow: 0 0 0 1px var(--line); }
+
+  /* The tabs become a sidebar. */
+  .tabbar {
+    position: fixed; left: 0; top: 0; bottom: 0; right: auto; width: var(--side); height: auto;
+    grid-template-columns: 1fr; grid-auto-rows: 48px; align-content: start; gap: 4px;
+    padding: 24px 14px; border-top: none; border-right: 1px solid var(--panel-border);
+  }
+  .tabbar::before {
+    content: 'RIFFBOX'; display: block; padding: 0 12px 18px; font-family: var(--f-display); font-weight: 900; font-size: 28px;
+    letter-spacing: .04em; color: var(--amber);
+  }
+  .tab { flex-direction: row; justify-content: flex-start; gap: 12px; padding: 0 12px; border-radius: 12px; font-size: 16px; }
+  .tab::before { width: 4px; height: 22px; }
+  .tab:hover { background: var(--surface-2); }
+  .tab.on { background: var(--surface-2); }
+  .tab-idea { order: 10; flex-direction: row; justify-content: flex-start; gap: 12px; padding: 0 12px; margin-top: 18px; font-size: 16px; }
+
+  /* Main buttons and players sit at the bottom of the content, not above a tab bar. */
+  .phone .cta, .phone .grid-actions, .phone .carnet-actions, .phone .rtransport { bottom: 24px; }
+  .player, .my-player { bottom: 0; }
+  .phone:has(> .cta, > .grid-actions, > .rtransport) > .screen-body { padding-bottom: 110px; }
+  .screen-body, .prat-scroll, .backing-scroll, .songs-scroll, .sets-scroll { padding-bottom: 40px; }
+  .phone:has(> .cta, > .carnet-actions, > .rtransport) > [class*='-scroll'] { padding-bottom: 110px; }
+  .backing-scroll.with-player { padding-bottom: 320px; }
+  .backing-scroll.with-sound { padding-bottom: 400px; }
+
+  /* Sheets keep a readable width, centred. */
+  .sheet-backdrop { justify-content: center; }
+  .sheet-backdrop > * { max-width: 720px; }
+
+  /* Home: four pedals a row. */
+  .phone .pedal-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  /* Stage, neck and grid: as on a tablet in landscape. */
+  .phone-wide .lyrics { --stage-scale: 1.45; padding-left: 48px; padding-right: 48px; }
+  .phone-wide .stage-head { padding-left: 48px; padding-right: 48px; }
+  .phone-wide .stage-title { font-size: 60px; }
+  .phone-wide .stage-controls { padding-left: max(18px, calc(50% - 360px)); padding-right: max(18px, calc(50% - 360px)); }
+  .phone-wide .neck-screen > * { width: 100%; max-width: var(--col); margin-left: auto; margin-right: auto; }
+  .phone-wide .neck-screen > .neck-wrap { max-width: none; }
+  .phone-wide .grid-body {
+    max-width: 1040px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 440px; column-gap: 48px; align-content: start;
+  }
+  .phone-wide .grid-body > * { grid-column: 1; }
+  .phone-wide .grid-body > .wheel { grid-column: 2; grid-row: 1 / span 8; align-self: start; margin-top: 70px; transform: scale(1.3); transform-origin: top center; }
+  .phone-wide .grid-actions { left: max(18px, calc(50% - 520px)); right: auto; width: min(calc(100% - 36px), 552px); }
+  .phone-wide .rec-sheet { left: max(0px, calc(50% - 360px)); right: max(0px, calc(50% - 360px)); }
+}
+
+/* Files dropped on the window (song sheets, audio). */
+.drop-zone { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: rgba(10, 9, 8, .72); pointer-events: none; }
+.drop-zone span { margin: 24px; padding: 28px 40px; border-radius: 24px; border: 3px dashed var(--amber); color: var(--cream); font-size: 20px; font-weight: 700; text-align: center; background: var(--panel); }

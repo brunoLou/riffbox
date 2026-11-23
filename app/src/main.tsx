@@ -27,6 +27,7 @@ import DesignSystem from './screens/DesignSystem';
 import DetecteurTon from './screens/DetecteurTon';
 import Looper from './screens/Looper';
 import Coach from './screens/Coach';
+import { FileDrop } from './components/FileDrop';
 import Backing from './screens/Backing';
 import Reglages from './screens/Reglages';
 
@@ -37,6 +38,7 @@ initTheme();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HashRouter>
+      <FileDrop />
       <div className="stage">
         <Routes>
           <Route path="/" element={<Accueil />} />

@@ -7,6 +7,7 @@ import { useStoredState } from '../lib/store';
 import { useDialog } from '../lib/useDialog';
 import { markUsed } from '../lib/usage';
 import './MyBackingPanel.css';
+import { useDropped } from '../lib/dropped';
 
 /** Length of an audio file, or null when this browser cannot read it. */
 function probeDuration(blob: Blob): Promise<number | null> {
@@ -96,7 +97,7 @@ export function MyBackingPanel({ onStart, stopRef }: { onStart: () => void; stop
     left: restart,
   });
 
-  const add = async (files: FileList | null) => {
+  const add = async (files: FileList | File[] | null) => {
     if (!files?.length) return;
     setMsg(null); setBusy(true);
     const added: MyTrack[] = [];
@@ -121,6 +122,8 @@ export function MyBackingPanel({ onStart, stopRef }: { onStart: () => void; stop
     ].filter(Boolean);
     if (parts.length) setMsg({ text: parts.join(' '), error: !added.length });
   };
+
+  useDropped('audio', files => void add(files));
 
   const remove = (id: string) => {
     if (selId === id) close();

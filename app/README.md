@@ -58,6 +58,15 @@ chaque fichier donne la date, le titre, le tempo et la tonalité ; le fichier co
 et la tonique (bloc « acid », lu par Ableton Live et FL Studio) et le titre (LIST/INFO, lu par Reaper).
 Un enregistrement seul : « WAV ↓ » dans le carnet.
 
+## Ordinateur
+
+Sur un écran d’au moins 900 px avec une souris, l’app quitte son cadre de téléphone : les onglets
+deviennent une barre latérale, les écrans une colonne large et centrée ; le live, la grille (roue des quintes
+à côté des accords) et le manche prennent toute la largeur ; l’accueil range quatre pédales par ligne.
+On peut déposer des fichiers sur la fenêtre : PDF, ChordPro ou texte vont à l’import des morceaux, l’audio
+dans « Mes fichiers » des backing tracks. « / » ou Ctrl+F (Cmd+F) cherche un morceau. Chrome et Edge
+proposent d’installer l’app, qui a alors sa fenêtre et fonctionne hors ligne.
+
 ## Tablette
 
 Sur un écran tactile plus large qu’un téléphone (ou une fois l’app installée), l’app passe en plein
@@ -145,6 +154,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/import-pdf.spec.ts` | import d’un vrai PDF (recueil de deux morceaux imprimé par Chromium) et d’un texte collé |
 | `tests/e2e/backing-perso.spec.ts` | backing tracks perso : fichier associé à une backing track et choix RIFFBOX / mon fichier (son RIFFBOX inchangé), fichiers indépendants, vitesse, boucle, conservation, suppression |
 | `tests/e2e/coach.spec.ts` | coach au faux micro : objectifs, styles, trois tests (accords, gamme, rythme), programme, routine du jour, retour à sa routine ; niveaux indiqués sans test |
+| `tests/e2e/ordinateur.spec.ts` | ordinateur (1440 × 900) : barre latérale, colonne large, accueil sur 4 colonnes, grille et roue côte à côte, recherche au clavier, fichiers déposés sur la fenêtre |
 | `tests/e2e/pwa.spec.ts` | installable, hors ligne, polices embarquées |
 
 ## Données
