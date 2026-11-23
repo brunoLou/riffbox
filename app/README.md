@@ -15,6 +15,13 @@ npm run preview    # sert dist/ sur http://localhost:4173
 
 Le micro (accordeur, voix, enregistrement) demande `localhost` ou une adresse en https.
 
+## Backing tracks perso
+
+Pratiquer › Backing tracks › « Mes fichiers » : vos propres fichiers audio (MP3, M4A, WAV, OGG…), gardés sur
+l’appareil, joués en boucle, ralentis ou accélérés de 50 à 150 % sans changer de ton ; nom, tonalité et tempo
+modifiables. Ils suivent les sauvegardes et le transfert vers la tablette. « RIFFBOX » garde les backing tracks
+de l’app.
+
 ## Looper
 
 Pratiquer › Looper : une boucle de 1 à 8 mesures au tempo choisi, enregistrée après une mesure de
@@ -96,7 +103,7 @@ dans le dossier temporaire du système.
 | `tests/unit/wav.test.ts` | WAV 24 bits (tempo, tonique, titre intégrés), ZIP, mono / stéréo |
 | `tests/unit/loop.test.ts` | looper : longueur exacte des boucles, capture au micro à l’échantillon près, mixage, mesure du retard par bips |
 | `tests/unit/chordSheet.test.ts` | grilles « accords au-dessus des paroles » (texte et PDF) → ChordPro : noms d’accords anglais et français, sections, capo, tonalité déduite, recueils |
-| `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises |
+| `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises, backing tracks perso avec leur son |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
 | `tests/e2e/smoke.spec.ts` | chaque écran s’ouvre, navigation, anciennes adresses, micro refusé |
 | `tests/e2e/accueil.spec.ts` | tuiles, glisser-déposer, clavier, taille, catalogue, rétablir |
@@ -125,6 +132,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/export-daw.spec.ts` | export pour logiciel de musique : vrai enregistrement au faux micro, WAV et ZIP relus en Python (format, tempo, tonique, hauteur du son) |
 | `tests/e2e/looper.spec.ts` | looper au faux micro : décompte, couches, pédalier, fusion des couches, pistes WAV d’exactement une boucle, carnet ; tempo d’une grille, retard |
 | `tests/e2e/import-pdf.spec.ts` | import d’un vrai PDF (recueil de deux morceaux imprimé par Chromium) et d’un texte collé |
+| `tests/e2e/backing-perso.spec.ts` | backing tracks perso : ajout d’un vrai fichier audio, lecture, vitesse, boucle, édition, conservation, suppression |
 | `tests/e2e/pwa.spec.ts` | installable, hors ligne, polices embarquées |
 
 ## Données

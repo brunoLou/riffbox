@@ -6,6 +6,7 @@ import { mod12 } from '../lib/music';
 import { usePedal } from '../lib/pedal';
 import { useStoredState } from '../lib/store';
 import './Backing.css';
+import { MyBackingPanel } from '../components/MyBackingPanel';
 import { markUsed } from '../lib/usage';
 
 const STYLES = ['Tous', 'Blues', 'Rock', 'Funk'] as const;
@@ -13,6 +14,9 @@ type Tweaks = Record<string, { key: number; bpm: number }>;
 
 export default function Backing() {
   const [style, setStyle] = useStoredState<(typeof STYLES)[number]>('backing.style', 'Tous');
+  /** The app's synthesised tracks, or the player's own audio files. */
+  const [source, setSource] = useStoredState<'app' | 'mine'>('backing.source', 'app');
+  const stopMine = useRef<() => void>(() => {});
   const [selId, setSelId] = useStoredState<string | null>('backing.sel', null);
   const [tweaks, setTweaks] = useStoredState<Tweaks>('backing.tweaks', {});
   const [playing, setPlaying] = useState(false);
@@ -40,6 +44,7 @@ export default function Backing() {
     const e = engine.current!;
     if (sel?.id === t.id && playing) { e.stop(); setPlaying(false); return; }
     if (sel?.id !== t.id) { setSelId(t.id); live.current = { t, ...tw(t) }; e.rewind(); setPos({ bar: 0, beat: -1 }); }
+    stopMine.current();
     if (!e.running) e.start();
     markUsed('backing');
     setPlaying(true);
@@ -56,18 +61,18 @@ export default function Backing() {
 
   // Pedal: play / pause the open track (or the first one shown), or start again from bar 1.
   const pedalPlay = () => { const t = sel ?? shown[0]; if (t) play(t); };
-  usePedal({
+  usePedal(source === 'app' ? {
     right: pedalPlay,
     middle: pedalPlay,
     left: () => { if (sel) { engine.current!.rewind(); setPos({ bar: 0, beat: -1 }); } },
-  });
+  } : {});
   const cur = sel ? tw(sel) : null;
   const bars = sel?.bars ?? [];
 
   return (
     <Phone label="07 Backing tracks">
       <StatusBar />
-      <div className={'backing-scroll' + (sel ? ' with-player' : '')}>
+      <div className={'backing-scroll' + ((source === 'app' && sel) || source === 'mine' ? ' with-player' : '')}>
         <div className="head">
           <div className="head-l">
             <BackButton fallback="/pratiquer" />
@@ -78,11 +83,20 @@ export default function Backing() {
           </div>
         </div>
 
-        <div className="seg" style={{ gridTemplateColumns: 'repeat(4,minmax(0,1fr))' }}>
-          {STYLES.map(s => <button key={s} className={s === style ? 'on' : ''} onClick={() => setStyle(s)}>{s}</button>)}
+        <div className="seg" style={{ gridTemplateColumns: 'repeat(2,minmax(0,1fr))' }} role="group" aria-label="Source">
+          <button className={source === 'app' ? 'on' : ''} aria-pressed={source === 'app'} onClick={() => setSource('app')}>RIFFBOX</button>
+          <button className={source === 'mine' ? 'on' : ''} aria-pressed={source === 'mine'} onClick={() => { setSource('mine'); close(); }}>Mes fichiers</button>
         </div>
 
-        {shown.map(t => {
+        {source === 'mine' && <MyBackingPanel onStart={stop} stopRef={stopMine} />}
+
+        {source === 'app' && (
+        <div className="seg seg-dim" style={{ gridTemplateColumns: 'repeat(4,minmax(0,1fr))' }}>
+          {STYLES.map(s => <button key={s} className={s === style ? 'on' : ''} onClick={() => setStyle(s)}>{s}</button>)}
+        </div>
+        )}
+
+        {source === 'app' && shown.map(t => {
           const v = tw(t);
           const isSel = sel?.id === t.id, isPlaying = isSel && playing;
           return (
@@ -103,7 +117,7 @@ export default function Backing() {
         })}
       </div>
 
-      {sel && cur && (
+      {source === 'app' && sel && cur && (
         <div className="player" role="region" aria-label="Lecteur">
           <div className="player-head">
             <span className="player-kicker"><span className={'led' + (playing ? ' on' : '')} style={{ width: 8, height: 8 }} />{playing ? 'En lecture' : 'En pause'} · {sel.name}</span>

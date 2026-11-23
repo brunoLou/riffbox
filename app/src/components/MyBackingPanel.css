@@ -1,0 +1,10 @@
+.my-add { margin-top: 0; }
+.my-empty { margin: 4px; font-size: 14px; line-height: 1.5; color: var(--muted-3); }
+.my-text { text-align: left; padding: 0; }
+.my-seek { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; font-size: 12px; color: var(--muted-3); }
+.my-seek input { width: 100%; accent-color: var(--amber); }
+.my-side { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+.my-loop, .my-restart { min-height: 36px; padding: 0 10px; border-radius: 18px; border: 1.5px solid var(--line-2); font-size: 13px; font-weight: 700; color: var(--muted-3); white-space: nowrap; }
+.my-loop.on { border-color: var(--amber); color: var(--accent-text); }
+.my-note { margin: -4px 0 0; font-size: 12.5px; color: var(--muted-3); text-align: center; }
+.player-ctrls .stepper button:disabled { opacity: .35; }

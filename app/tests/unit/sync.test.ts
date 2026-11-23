@@ -32,6 +32,16 @@ describe('dates of change', () => {
 describe('receiving the other device’s data', () => {
   const mine = (data: Record<string, unknown>) => (k: string) => data[k];
 
+  it('my own backing tracks travel too, with their sound, and their deletion', () => {
+    const track = (id: string, name: string, updated: number) => ({ id, name, created: 1, size: 10, type: 'audio/mpeg', duration: 60, updated });
+    const plan = planMerge({ 'backing.mine': [track('t1', 'Blues lent', 300), track('t2', 'Funk', 300)] }, mine({ 'backing.mine': [track('t1', 'Blues', 100)] }));
+    expect((plan.writes['backing.mine'] as { name: string }[]).map(t => t.name)).toEqual(['Blues lent', 'Funk']);
+    expect(plan.audioIds).toEqual(expect.arrayContaining(['t1', 't2'])); // their audio is brought over
+    expect(plan.byList['backing.mine']).toEqual({ added: 1, updated: 1, removed: 0 });
+    const gone = planMerge({ 'backing.mine': [], [DELETED_KEY]: { 'backing.mine:t1': 500 } }, mine({ 'backing.mine': [track('t1', 'Blues', 300)] }));
+    expect(gone.writes['backing.mine']).toEqual([]);
+  });
+
   it('new items join, the newer version wins, an older one is ignored', () => {
     const here = { songs: [song('a', 'A here', 300), song('b', 'B here', 300)] };
     const there = { songs: [song('a', 'A there', 400), song('b', 'B there', 200), song('c', 'C', 100)] };

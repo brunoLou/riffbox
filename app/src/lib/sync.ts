@@ -7,7 +7,7 @@ import { readStored, registerWriteHook, serialized, writeStored } from './store'
 import { markUsed } from './usage';
 
 /** Collections of items with an `id`, synced item by item. */
-export const SYNC_LISTS = ['ideas', 'grids', 'songs', 'setlists', 'voice.takes', 'tuner.custom'] as const;
+export const SYNC_LISTS = ['ideas', 'grids', 'songs', 'setlists', 'voice.takes', 'tuner.custom', 'backing.mine'] as const;
 /** Single values synced as a whole (the most recent wins). */
 export const SYNC_VALUES = ['routine.steps', 'voice.range', 'grid.voicings'] as const;
 /** Device settings and bookkeeping that stay on each device. */
@@ -68,7 +68,7 @@ function pruneTombstones(t: Tombstones, now = Date.now()): Tombstones {
 
 /** Home board tile lit when a collection changes. */
 const TILE_OF: Record<(typeof SYNC_LISTS)[number], string> = {
-  ideas: 'carnet', grids: 'grilles', songs: 'morceaux', setlists: 'setlists', 'voice.takes': 'voix', 'tuner.custom': 'tuner',
+  ideas: 'carnet', grids: 'grilles', songs: 'morceaux', setlists: 'setlists', 'voice.takes': 'voix', 'tuner.custom': 'tuner', 'backing.mine': 'backing',
 };
 
 /** Install the stamping on every write (once, at start-up). */

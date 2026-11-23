@@ -301,7 +301,7 @@ function PedalCard() {
 }
 
 const LIST_NAMES: Record<string, string> = {
-  ideas: 'Idées', grids: 'Grilles', songs: 'Morceaux', setlists: 'Setlists', 'voice.takes': 'Prises vocales', 'tuner.custom': 'Accordages perso',
+  ideas: 'Idées', grids: 'Grilles', songs: 'Morceaux', setlists: 'Setlists', 'voice.takes': 'Prises vocales', 'tuner.custom': 'Accordages perso', 'backing.mine': 'Backing tracks perso',
 };
 const when = (iso: string | null) => (iso ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso)) : null);
 

@@ -24,7 +24,7 @@ export const PEDAL_SCREENS: { screen: string; does: Partial<Record<PedalAction, 
   { screen: 'Prompteur', does: { right: 'Page suivante, puis titre suivant', left: 'Page précédente, puis titre précédent', middle: 'Défilement auto' } },
   { screen: 'Métronome', does: { right: 'Lecture / arrêt', left: 'Tap tempo', middle: 'Lecture / arrêt' } },
   { screen: 'Grille', does: { right: 'Boucle lecture / arrêt', left: 'Section suivante', middle: 'Boucle lecture / arrêt' } },
-  { screen: 'Backing tracks', does: { right: 'Lecture / pause', left: 'Reprendre à la mesure 1', middle: 'Lecture / pause' } },
+  { screen: 'Backing tracks', does: { right: 'Lecture / pause', left: 'Reprendre au début', middle: 'Lecture / pause' } },
   { screen: 'Looper', does: { right: 'Enregistrer / superposer (ou annuler)', left: 'Annuler la dernière couche', middle: 'Lecture / arrêt' } },
   { screen: 'Routine', does: { right: 'Étape suivante', left: 'Go / pause', middle: 'Go / pause' } },
 ];
