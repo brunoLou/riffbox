@@ -26,8 +26,8 @@ test('measures the range and finds a key, applied on stage with a capo', async (
   const minuit = page.locator('.fit-card', { has: page.locator('.song-title', { hasText: /^Minuit Shuffle$/ }) });
   await expect(minuit.locator('.fit-key')).toHaveText('Fa');
   await minuit.locator('.fit-top').click();
-  await button(page, 'Appliquer sur scène').click();
-  await expect(minuit.locator('.voice-note')).toHaveText('Sur scène : accords en formes de Mi, capo 1. Ça sonnera en Fa.');
+  await button(page, 'Appliquer en live').click();
+  await expect(minuit.locator('.voice-note')).toHaveText('En live : accords en formes de Mi, capo 1. Ça sonnera en Fa.');
   await page.goto('#/scene/bar-du-port/play/2');
   await expect(page.locator('.stage-tag', { hasText: 'Capo' })).toHaveText('Capo 1');
   await expect(page.locator('.lyric-chord').first()).toHaveText(/^E7/);

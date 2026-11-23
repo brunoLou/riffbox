@@ -1,7 +1,7 @@
 # RIFFBOX
 
 La boîte à outils du guitariste : accordeur, métronome, carnet d’idées, grilles, gammes et accords,
-justesse vocale, tonalité d’un morceau à l’écoute, setlists et prompteur de scène. Application web installable (PWA), qui fonctionne
+justesse vocale, tonalité d’un morceau à l’écoute, setlists et prompteur live. Application web installable (PWA), qui fonctionne
 hors ligne ; toutes les données restent sur l’appareil (export et import dans Réglages).
 
 ## Lancer

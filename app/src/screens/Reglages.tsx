@@ -113,7 +113,7 @@ export default function Reglages() {
                 <button key={v} className={theme === v ? 'on' : ''} aria-pressed={theme === v} onClick={() => { setTheme(v); applyTheme(v); }}>{l}</button>
               ))}
             </div>
-            <span className="settings-help">Automatique suit le réglage du téléphone. Le prompteur de scène reste toujours sombre.</span>
+            <span className="settings-help">Automatique suit le réglage du téléphone. Le prompteur live reste toujours sombre.</span>
           </div>
           <button className="settings-row" onClick={() => setShowStreak(!showStreak)} aria-pressed={showStreak}>
             <span className="settings-label">Série de jours sur l’accueil</span>
@@ -121,7 +121,7 @@ export default function Reglages() {
           </button>
           <div className="settings-row col">
             <div className="settings-row-top">
-              <span className="settings-label">Taille des paroles sur scène</span>
+              <span className="settings-label">Taille des paroles en live</span>
               <div className="mini-stepper">
                 <button onClick={() => setFontSize(Math.max(SETTINGS.stageFontSize.min, fontSize - 2))} disabled={fontSize <= SETTINGS.stageFontSize.min} aria-label="Plus petit">−</button>
                 <span className="mono">{fontSize} px</span>

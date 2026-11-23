@@ -94,7 +94,7 @@ export default function DesignSystem() {
         ))}
         <p className="ds-note">
           Les éléments « physiques » (pédales, manche, diagrammes, bois de l’accordeur) restent sombres
-          dans les deux thèmes, comme le prompteur de scène.
+          dans les deux thèmes, comme le prompteur live.
         </p>
 
         <h2 className="ds-h">Typographies</h2>

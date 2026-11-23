@@ -225,10 +225,10 @@ export function Tonalite() {
                   <div className="grid-link-btns">
                     <button className="btn-outline" onClick={() => nav(`/outils/capo?key=${fit.key}&m=${c.minor ? 1 : 0}`)}>Capodastre ›</button>
                     {c.songId
-                      ? <button className="btn-outline" onClick={() => apply(c, fit)}>{applied === c.id ? 'Appliqué ✓' : 'Appliquer sur scène'}</button>
+                      ? <button className="btn-outline" onClick={() => apply(c, fit)}>{applied === c.id ? 'Appliqué ✓' : 'Appliquer en live'}</button>
                       : <button className="btn-outline" onClick={() => nav(`/voix/ex/${c.id}`)}>Chanter ›</button>}
                   </div>
-                  {applied === c.id && <span className="voice-note">Sur scène : accords en formes de {cap.label}, capo {cap.capo}. Ça sonnera en {KEY_FR[fit.key]}{c.minor ? ' m' : ''}.</span>}
+                  {applied === c.id && <span className="voice-note">En live : accords en formes de {cap.label}, capo {cap.capo}. Ça sonnera en {KEY_FR[fit.key]}{c.minor ? ' m' : ''}.</span>}
                 </div>
               )}
             </div>
