@@ -65,6 +65,11 @@ test('the sheets pass axe once open', async ({ page }) => {
   await page.getByRole('button', { name: 'Coller…' }).click();
   await audit(page, 'coller un morceau');
 
+  await page.goto('#/pratiquer/backing');
+  await page.getByRole('button', { name: 'Lire Blues en La' }).click();
+  await page.keyboard.press(' ');
+  await audit(page, 'lecteur de backing track');
+
   await page.goto('#/scene/morceau/s3');
   await page.locator('.mini-seg button', { hasText: 'Rimes' }).click();
   await audit(page, 'onglet rimes');

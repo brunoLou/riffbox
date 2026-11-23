@@ -69,3 +69,59 @@ test('my own backing tracks: added from a file, played in a loop at another spee
   await expect(page.locator('.track')).toHaveCount(0);
   await expect(page.locator('.my-empty')).toBeVisible();
 });
+
+test('each app track can get its own audio file: choose between it and the RIFFBOX sound, which stays as it was', async ({ page }) => {
+  await page.goto('#/pratiquer/backing');
+  await page.getByRole('button', { name: 'Lire Blues en La' }).click();
+  const player = page.getByRole('region', { name: 'Lecteur' });
+  const sound = player.getByRole('group', { name: 'Son de la backing track' });
+  // RIFFBOX by default: chords, grid, key and tempo as before.
+  await expect(sound.getByRole('button', { name: 'RIFFBOX' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(player.locator('.player-chord')).toHaveText('A7');
+  await expect(player.locator('.player-bars span')).toHaveCount(12);
+  await page.keyboard.press(' '); // pause
+
+  // Attach a file to « Blues en La »: it is chosen at once.
+  await page.getByLabel('Fichier audio de la backing track').setInputFiles({ name: 'Mon blues en La.wav', mimeType: 'audio/wav', buffer: wav() });
+  await expect(player.locator('.backup-msg')).toHaveText('« Mon blues en La » associé à Blues en La.');
+  await expect(sound.getByRole('button', { name: 'Mon fichier' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(player.locator('.sound-name')).toHaveText('♪ Mon blues en La · 0:12');
+  await expect(player.locator('.player-chord')).toHaveCount(0);
+  const row = page.locator('.track', { hasText: 'Blues en La' }).first();
+  await expect(row.locator('.track-form')).toHaveText('♪ Mon fichier · Mon blues en La');
+
+  // It plays the file (the position moves), slower if wanted.
+  await player.getByRole('button', { name: 'LECTURE' }).click();
+  await expect(player.locator('.player-kicker')).toContainText('En lecture');
+  await expect.poll(async () => Number(await player.getByLabel('Position').inputValue()), { timeout: 8000 }).toBeGreaterThan(0.5);
+  await player.getByRole('button', { name: 'Plus lent' }).click();
+  await expect(player.locator('.stepper .mono')).toHaveText('95 %');
+
+  // Back to the RIFFBOX sound: the file stops, chords, grid, key and tempo are back and still work.
+  await sound.getByRole('button', { name: 'RIFFBOX' }).click();
+  await expect(player.locator('.player-kicker')).toContainText('En pause');
+  await expect(player.locator('.player-chord')).toHaveText('A7');
+  await player.getByRole('button', { name: 'Accélérer' }).click();
+  await expect(player.locator('.stepper .mono').nth(1)).toHaveText('92');
+  await player.getByRole('button', { name: 'LECTURE' }).click();
+  await expect(player.locator('.player-kicker')).toContainText('En lecture');
+  await expect(row.locator('.track-form')).toHaveText('12 mesures · shuffle');
+
+  // The choice and the file are kept; the file does not show in « Mes fichiers ».
+  await page.reload();
+  await page.getByRole('button', { name: 'Lire Blues en La' }).click();
+  await page.keyboard.press(' ');
+  await expect(sound.getByRole('button', { name: 'RIFFBOX' })).toHaveAttribute('aria-pressed', 'true');
+  await sound.getByRole('button', { name: 'Mon fichier' }).click();
+  await expect(player.locator('.sound-name')).toHaveText('♪ Mon blues en La · 0:12');
+  await expect(player.locator('.stepper .mono')).toHaveText('95 %');
+
+  // Removed: back to RIFFBOX only.
+  await player.getByRole('button', { name: 'Retirer' }).click();
+  await player.getByRole('button', { name: 'Retirer' }).click();
+  await expect(player.locator('.backup-msg')).toHaveText('Fichier retiré : le son RIFFBOX est utilisé.');
+  await expect(sound.getByRole('button', { name: 'RIFFBOX' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(player.getByRole('button', { name: '+ Associer un fichier audio à Blues en La…' })).toBeVisible();
+  await page.getByRole('button', { name: 'Mes fichiers' }).click();
+  await expect(page.locator('.my-empty')).toBeVisible();
+});

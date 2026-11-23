@@ -28,7 +28,9 @@ const keyName = (t: MyTrack) => (t.key === undefined ? '' : `${KEY_FR[t.key]}${t
  * in a loop at the chosen speed (pitch kept). `onStart` stops whatever else is playing.
  */
 export function MyBackingPanel({ onStart, stopRef }: { onStart: () => void; stopRef: React.MutableRefObject<() => void> }) {
-  const [tracks, setTracks] = useStoredState<MyTrack[]>(MY_TRACKS_KEY, []);
+  const [all, setTracks] = useStoredState<MyTrack[]>(MY_TRACKS_KEY, []);
+  // Files attached to one of the app's tracks live with that track, not in this list.
+  const tracks = all.filter(t => !t.trackId);
   const [selId, setSelId] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
@@ -42,7 +44,7 @@ export function MyBackingPanel({ onStart, stopRef }: { onStart: () => void; stop
   const dlg = useDialog(() => setEditing(null));
 
   const sel = tracks.find(t => t.id === selId) ?? null;
-  const update = (id: string, patch: Partial<MyTrack>) => setTracks(all => all.map(t => (t.id === id ? { ...t, ...patch } : t)));
+  const update = (id: string, patch: Partial<MyTrack>) => setTracks(list => list.map(t => (t.id === id ? { ...t, ...patch } : t)));
 
   const release = () => {
     audio.current?.pause();
@@ -111,7 +113,7 @@ export function MyBackingPanel({ onStart, stopRef }: { onStart: () => void; stop
     }
     if (input.current) input.current.value = '';
     setBusy(false);
-    if (added.length) setTracks(all => [...added, ...all]);
+    if (added.length) setTracks(list => [...added, ...list]);
     const parts = [
       added.length ? `${added.length} fichier${added.length > 1 ? 's' : ''} ajouté${added.length > 1 ? 's' : ''}.` : '',
       refused.length ? `Non lu${refused.length > 1 ? 's' : ''} par ce navigateur : ${refused.join(', ')}.` : '',
@@ -122,7 +124,7 @@ export function MyBackingPanel({ onStart, stopRef }: { onStart: () => void; stop
 
   const remove = (id: string) => {
     if (selId === id) close();
-    setTracks(all => all.filter(t => t.id !== id));
+    setTracks(list => list.filter(t => t.id !== id));
     void deleteBlob(id);
     setEditing(null); setConfirmDelete(false);
   };

@@ -16,6 +16,10 @@ export interface MyTrack {
   speed?: number;
   /** Starts again at the end (on by default). */
   loop?: boolean;
+  /** The app's backing track this file is attached to (« Blues en La »); none for a file of its own. */
+  trackId?: string;
+  /** For an attached file: chosen instead of the app's sound (true), or kept aside (false). */
+  active?: boolean;
   updated?: number;
 }
 export const MY_TRACKS_KEY = 'backing.mine';
@@ -41,3 +45,6 @@ export const fmtTime = (s: number) => {
 };
 export const fmtSize = (n: number) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} Ko` : `${(n / 1024 / 1024).toFixed(1).replace('.', ',')} Mo`);
 export const clampSpeed = (v: number) => Math.round(Math.min(SPEED.max, Math.max(SPEED.min, v)) * 100) / 100;
+
+/** The file attached to one of the app's backing tracks, if any. */
+export const attachedTo = (list: MyTrack[], trackId: string) => list.find(t => t.trackId === trackId);

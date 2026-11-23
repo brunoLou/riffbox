@@ -17,10 +17,11 @@ Le micro (accordeur, voix, enregistrement) demande `localhost` ou une adresse en
 
 ## Backing tracks perso
 
-Pratiquer › Backing tracks › « Mes fichiers » : vos propres fichiers audio (MP3, M4A, WAV, OGG…), gardés sur
-l’appareil, joués en boucle, ralentis ou accélérés de 50 à 150 % sans changer de ton ; nom, tonalité et tempo
-modifiables. Ils suivent les sauvegardes et le transfert vers la tablette. « RIFFBOX » garde les backing tracks
-de l’app.
+Pratiquer › Backing tracks : dans le lecteur de chaque backing track (« Blues en La »…), « Son : RIFFBOX / Mon
+fichier ». On y associe un fichier audio (MP3, M4A, WAV, OGG…) et on choisit l’un ou l’autre ; le son RIFFBOX
+reste inchangé (suite d’accords, grille, ton, tempo). Le fichier se joue en boucle, ralenti ou accéléré de 50
+à 150 % sans changer de ton. « Mes fichiers » garde en plus des fichiers indépendants. Tout suit les sauvegardes
+et le transfert vers la tablette.
 
 ## Looper
 
@@ -132,7 +133,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/export-daw.spec.ts` | export pour logiciel de musique : vrai enregistrement au faux micro, WAV et ZIP relus en Python (format, tempo, tonique, hauteur du son) |
 | `tests/e2e/looper.spec.ts` | looper au faux micro : décompte, couches, pédalier, fusion des couches, pistes WAV d’exactement une boucle, carnet ; tempo d’une grille, retard |
 | `tests/e2e/import-pdf.spec.ts` | import d’un vrai PDF (recueil de deux morceaux imprimé par Chromium) et d’un texte collé |
-| `tests/e2e/backing-perso.spec.ts` | backing tracks perso : ajout d’un vrai fichier audio, lecture, vitesse, boucle, édition, conservation, suppression |
+| `tests/e2e/backing-perso.spec.ts` | backing tracks perso : fichier associé à une backing track et choix RIFFBOX / mon fichier (son RIFFBOX inchangé), fichiers indépendants, vitesse, boucle, conservation, suppression |
 | `tests/e2e/pwa.spec.ts` | installable, hors ligne, polices embarquées |
 
 ## Données
