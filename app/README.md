@@ -25,6 +25,15 @@ Un limiteur sur la sortie évite la saturation quel que soit le nombre de couche
 les couches audibles en une pour libérer la mémoire. La boucle va dans le carnet, ou s’exporte en pistes
 WAV (chaque couche et le mix) pour un logiciel de musique.
 
+## Importer des morceaux
+
+Live › Morceaux › « Importer… » : fichiers ChordPro, PDF (créés par ordinateur, pas scannés) et texte où
+les accords sont écrits au-dessus des paroles ; « Coller… » pour une grille copiée sur un site. Chaque accord
+est placé sur la syllabe sous laquelle il est écrit (par sa position, même en police proportionnelle) ; les
+noms français (Lam, Sol7) deviennent des lettres ; sections, capo, tempo, titre et artiste sont repris, la
+tonalité est déduite des accords ; un recueil PDF est découpé à chaque titre. Les PDF sont lus sur
+l’appareil avec pdf.js (Mozilla, licence Apache 2.0).
+
 ## Exporter vers un logiciel de musique
 
 Réglages › « Exporter pour un logiciel de musique » : tous les enregistrements (carnet, prises vocales) en
@@ -86,6 +95,7 @@ dans le dossier temporaire du système.
 | `tests/unit/stress.test.ts` | temps forts : accent des syllabes françaises, accords calés sur la syllabe accentuée |
 | `tests/unit/wav.test.ts` | WAV 24 bits (tempo, tonique, titre intégrés), ZIP, mono / stéréo |
 | `tests/unit/loop.test.ts` | looper : longueur exacte des boucles, capture au micro à l’échantillon près, mixage, mesure du retard par bips |
+| `tests/unit/chordSheet.test.ts` | grilles « accords au-dessus des paroles » (texte et PDF) → ChordPro : noms d’accords anglais et français, sections, capo, tonalité déduite, recueils |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
 | `tests/e2e/smoke.spec.ts` | chaque écran s’ouvre, navigation, anciennes adresses, micro refusé |
@@ -114,6 +124,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/voyants.spec.ts` | voyants de l’accueil : allumés par un vrai usage du jour, éteints le lendemain |
 | `tests/e2e/export-daw.spec.ts` | export pour logiciel de musique : vrai enregistrement au faux micro, WAV et ZIP relus en Python (format, tempo, tonique, hauteur du son) |
 | `tests/e2e/looper.spec.ts` | looper au faux micro : décompte, couches, pédalier, fusion des couches, pistes WAV d’exactement une boucle, carnet ; tempo d’une grille, retard |
+| `tests/e2e/import-pdf.spec.ts` | import d’un vrai PDF (recueil de deux morceaux imprimé par Chromium) et d’un texte collé |
 | `tests/e2e/pwa.spec.ts` | installable, hors ligne, polices embarquées |
 
 ## Données

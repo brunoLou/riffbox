@@ -45,8 +45,8 @@
 .pick-row.new-song { background: var(--surface-3); box-shadow: inset 0 0 0 1.5px var(--amber); }
 
 /* ChordPro import / export */
-.cp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.cp-btn { margin-top: 0; height: 44px; font-size: 14px; }
+.cp-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.cp-btn { margin-top: 0; height: 44px; font-size: 14px; padding: 0 6px; }
 .cp-msg { margin: 0; padding: 0 4px; font-size: 14px; line-height: 1.4; color: var(--led-text); }
 .cp-msg.error { color: var(--warn); }
 .cp-sheet { max-height: 88%; overflow-y: auto; scrollbar-width: none; }
@@ -56,3 +56,8 @@
 .cp-pick.on .cp-check { background: var(--amber); border-color: var(--amber); }
 .cp-dup { font-size: 12px; font-weight: 600; color: var(--warn); }
 .detect-link { grid-column: 1 / -1; order: 99; justify-self: start; min-height: 40px; color: var(--accent-text); font-weight: 700; font-size: 14px; }
+.cp-help { margin: -2px 4px 0; font-size: 12.5px; }
+.cp-paste { min-height: 220px; }
+.cp-preview-btn { align-self: flex-start; margin: -4px 0 2px 40px; }
+.cp-preview { padding: 10px 12px; border-radius: 12px; background: var(--surface-2); max-height: 260px; overflow-y: auto; }
+.cp-more { color: var(--muted-3); }

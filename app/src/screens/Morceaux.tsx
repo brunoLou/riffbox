@@ -14,6 +14,7 @@ import './Morceaux.css';
 import { LyricsHelp } from '../components/LyricsHelp';
 import { StressView } from '../components/StressView';
 import { useDialog } from '../lib/useDialog';
+import { looksLikeChordPro, textToChordPro } from '../lib/chordSheet';
 
 
 /** "Setlists | Morceaux" switch at the top of the Live tab. */
@@ -41,8 +42,13 @@ export function MorceauxScreen() {
   /** Songs found in the chosen files, waiting for confirmation. */
   const [found, setFound] = useState<{ song: ImportedSong; dup: boolean; on: boolean }[] | null>(null);
   const [msg, setMsg] = useState<{ text: string; error?: boolean } | null>(null);
+  const [reading, setReading] = useState(false);
+  /** Text being pasted (null: the sheet is closed). */
+  const [pasted, setPasted] = useState<string | null>(null);
+  const [preview, setPreview] = useState<number | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const dlgImport = useDialog(() => setFound(null));
+  const dlgPaste = useDialog(() => setPasted(null));
   const list = allSongs()
     .filter(s => !q.trim() || s.title.toLowerCase().includes(q.trim().toLowerCase()))
     .sort((a, b) => a.title.localeCompare(b.title, 'fr'));
@@ -53,23 +59,47 @@ export function MorceauxScreen() {
     nav(`/scene/morceau/${id}`, { state: { fresh: true } });
   };
 
+  /** Outside ChordPro, a song needs at least one chord recognised (else it is just some text). */
+  const withChords = (songs: ImportedSong[]) => songs.filter(s => /\[[^\]]+\]/.test(s.chordpro ?? ''));
+  /** Songs of a file or a pasted text, whatever its form: ChordPro, chords over lyrics, or a PDF. */
+  const songsFrom = async (f: File): Promise<ImportedSong[]> => {
+    const title = f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
+    if (/\.pdf$/i.test(f.name) || f.type === 'application/pdf') {
+      const { pdfLines, pdfToChordPro } = await import('../lib/pdfSheet');
+      return withChords(importChordPro(pdfToChordPro(await pdfLines(await f.arrayBuffer()), title), f.name));
+    }
+    const text = await f.text();
+    return looksLikeChordPro(text) ? importChordPro(text, f.name) : withChords(importChordPro(textToChordPro(text, title), f.name));
+  };
+  const offer = (songs: ImportedSong[]) => {
+    const titles = new Set(allSongs().map(s => s.title.trim().toLowerCase()));
+    // Only songs with something in them: lyrics or chords.
+    const out = songs.filter(s => s.chordpro?.trim()).map(song => {
+      const dup = titles.has(song.title.trim().toLowerCase());
+      return { song, dup, on: !dup };
+    });
+    if (!out.length) { setMsg({ text: 'Aucun morceau trouvé : pas d’accords reconnus (ni ChordPro, ni accords au-dessus des paroles).', error: true }); return; }
+    setFound(out);
+  };
   const pickFiles = async (files: FileList | null) => {
     if (!files?.length) return;
-    setMsg(null);
-    const titles = new Set(allSongs().map(s => s.title.trim().toLowerCase()));
-    const out: { song: ImportedSong; dup: boolean; on: boolean }[] = [];
+    setMsg(null); setReading(true);
+    const all: ImportedSong[] = [];
+    const failed: string[] = [];
     for (const f of Array.from(files)) {
-      const text = await f.text();
-      // Not ChordPro: no {directive} and no [chord] anywhere.
-      if (!/\{\s*[a-z_]+|\[[A-H][^\]\n]{0,10}\]/i.test(text)) continue;
-      for (const song of importChordPro(text, f.name)) {
-        const dup = titles.has(song.title.trim().toLowerCase());
-        out.push({ song, dup, on: !dup });
-      }
+      try { all.push(...await songsFrom(f)); } catch { failed.push(f.name); }
     }
+    setReading(false);
     if (fileInput.current) fileInput.current.value = '';
-    if (!out.length) { setMsg({ text: 'Aucun morceau ChordPro trouvé dans ce fichier.', error: true }); return; }
-    setFound(out);
+    if (failed.length && !all.length) { setMsg({ text: `Fichier illisible : ${failed.join(', ')}. Un PDF scanné (une image) ne contient pas de texte à lire.`, error: true }); return; }
+    offer(all);
+  };
+  const convertPasted = () => {
+    if (!pasted?.trim()) return;
+    setMsg(null);
+    const songs = looksLikeChordPro(pasted) ? importChordPro(pasted, 'Morceau collé') : withChords(importChordPro(textToChordPro(pasted), 'Morceau collé'));
+    setPasted(null);
+    offer(songs);
   };
   const confirmImport = () => {
     const chosen = (found ?? []).filter(x => x.on);
@@ -98,11 +128,13 @@ export function MorceauxScreen() {
         <SceneTabs active={1} />
         <input className="text-input search" type="search" placeholder="Rechercher un titre" value={q} onChange={e => setQ(e.target.value)} aria-label="Rechercher un titre" />
         <div className="cp-row">
-          <button className="btn-outline cp-btn" onClick={() => fileInput.current?.click()}>Importer ChordPro…</button>
+          <button className="btn-outline cp-btn" onClick={() => fileInput.current?.click()} disabled={reading}>{reading ? 'Lecture…' : 'Importer…'}</button>
+          <button className="btn-outline cp-btn" onClick={() => setPasted('')}>Coller…</button>
           <button className="btn-outline cp-btn" onClick={exportAll}>Tout exporter</button>
-          <input ref={fileInput} type="file" multiple hidden accept={CHORDPRO_EXT.join(',')} aria-label="Fichiers ChordPro" onChange={e => void pickFiles(e.target.files)} />
+          <input ref={fileInput} type="file" multiple hidden accept={[...CHORDPRO_EXT, '.pdf', 'application/pdf'].join(',')} aria-label="Fichiers de morceaux" onChange={e => void pickFiles(e.target.files)} />
         </div>
         {msg && <p className={'cp-msg' + (msg.error ? ' error' : '')} role="status">{msg.text}</p>}
+        <p className="help cp-help">Importer : fichiers ChordPro, PDF ou texte (accords au-dessus des paroles). Coller : le texte d’une grille copiée sur un site.</p>
 
         {list.map(s => {
           // What the stage will show, including a linked grid's chords.
@@ -139,15 +171,54 @@ export function MorceauxScreen() {
                   {x.dup && <span className="cp-dup">Un titre du même nom existe déjà</span>}
                 </div>
               </button>
-            ))}
+            )).flatMap((row, i) => [row,
+              <button key={'p' + i} className="btn-link cp-preview-btn" onClick={() => setPreview(preview === i ? null : i)} aria-expanded={preview === i}>
+                {preview === i ? 'Masquer l’aperçu' : `Aperçu de « ${found[i].song.title} »`}
+              </button>,
+              preview === i && <SongPreview key={'v' + i} chordpro={found[i].song.chordpro ?? ''} />,
+            ])}
             <button className="btn-primary" disabled={!found.some(x => x.on)} onClick={confirmImport}>
               {(() => { const n = found.filter(x => x.on).length; return n > 1 ? `Importer ${n} morceaux` : n === 1 ? 'Importer 1 morceau' : 'Rien à importer'; })()}
             </button>
           </div>
         </div>
       )}
+      {pasted !== null && (
+        <div className="sheet-backdrop" onClick={() => setPasted(null)}>
+          <div className="set-sheet cp-sheet" ref={dlgPaste} role="dialog" aria-label="Coller un morceau" onClick={e => e.stopPropagation()}>
+            <div className="set-sheet-head">
+              <span className="kicker sheet-kicker">Coller un morceau</span>
+              <button className="player-close" onClick={() => setPasted(null)} aria-label="Fermer">✕</button>
+            </div>
+            <p className="help">Collez une grille copiée sur un site ou dans un document : titre sur la première ligne, accords au-dessus des paroles (ou déjà en ChordPro).</p>
+            <textarea className="chordpro cp-paste" value={pasted} onChange={e => setPasted(e.target.value)} aria-label="Texte du morceau" spellCheck={false}
+              placeholder={'Le titre\n\nG          D         Em\nJ’ai pris la route avant le jour'} />
+            <button className="btn-primary" disabled={!pasted.trim()} onClick={convertPasted}>Convertir</button>
+          </div>
+        </div>
+      )}
       <TabBar active={3} />
     </Phone>
+  );
+}
+
+/** The first lines of a song as the stage shows them: chords above their syllables. */
+function SongPreview({ chordpro }: { chordpro: string }) {
+  const lines = parseChordPro(chordpro, 0).slice(0, 14);
+  return (
+    <div className="preview cp-preview">
+      {lines.map((l, i) => l.kind === 'section' ? <div key={i} className="lyric-section">{l.label}</div> : (
+        <div key={i} className={'lyric-line' + (l.segs.every(g => !g.text.trim()) ? ' chords-only' : '')}>
+          {l.segs.map((g, j) => (
+            <div key={j} className="lyric-seg">
+              <span className="lyric-chord" style={{ fontSize: 13 }}>{g.chord}</span>
+              <span className="lyric-text" style={{ fontSize: 15 }}>{g.text}</span>
+            </div>
+          ))}
+        </div>
+      ))}
+      {parseChordPro(chordpro, 0).length > 14 && <div className="cp-more">…</div>}
+    </div>
   );
 }
 

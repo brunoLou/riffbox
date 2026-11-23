@@ -39,7 +39,7 @@ export default defineConfig({
       includeManifestIcons: false,
       workbox: {
         // Everything the app needs is precached, so it works fully offline (fonts: woff2 only).
-        globPatterns: ['**/*.{js,css,html,png,svg,woff2}'], // the manifest is added by the plugin,
+        globPatterns: ['**/*.{js,mjs,css,html,png,svg,woff2}'], // the manifest is added by the plugin,
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
       },

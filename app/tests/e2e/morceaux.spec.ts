@@ -118,10 +118,10 @@ test('ChordPro: import files from another app, skipping a title already there', 
   await expect(page.locator('textarea')).toHaveValue(/^\{c:Couplet\}/);
 });
 
-test('ChordPro: a file that is not ChordPro is refused', async ({ page }) => {
+test('a file without any chord is refused', async ({ page }) => {
   await page.goto('#/scene/morceaux');
   await page.locator('input[type=file]').setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('juste une liste de courses') });
-  await expect(page.locator('.cp-msg.error')).toHaveText('Aucun morceau ChordPro trouvé dans ce fichier.');
+  await expect(page.locator('.cp-msg.error')).toHaveText('Aucun morceau trouvé : pas d’accords reconnus (ni ChordPro, ni accords au-dessus des paroles).');
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 

@@ -61,6 +61,10 @@ test('the sheets pass axe once open', async ({ page }) => {
   await page.getByText('+ Grille').click();
   await audit(page, 'nouvelle grille');
 
+  await page.goto('#/scene/morceaux');
+  await page.getByRole('button', { name: 'Coller…' }).click();
+  await audit(page, 'coller un morceau');
+
   await page.goto('#/scene/morceau/s3');
   await page.locator('.mini-seg button', { hasText: 'Rimes' }).click();
   await audit(page, 'onglet rimes');
