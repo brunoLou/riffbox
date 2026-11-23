@@ -8,6 +8,8 @@ import { readStored, useStoredState } from '../lib/store';
 import { usePedal } from '../lib/pedal';
 import { useWakeLock } from '../lib/wakeLock';
 import { useGuitarFollow } from './useGuitarFollow';
+import { followEvents } from '../lib/chordFollow';
+import { StageChords } from '../components/StageChords';
 import './Prompteur.css';
 import { useMarkUsed } from '../lib/usage';
 
@@ -39,6 +41,10 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
   const lines = useMemo(() => (song.chordpro ? parseChordPro(song.chordpro, trans) : []), [song, trans]);
   const fs = readStored(SETTINGS.stageFontSize.key, SETTINGS.stageFontSize.def);
   const gf = useGuitarFollow(lines, scrollRef, follow);
+  const [showChords, setShowChords] = useStoredState('stage.diagrams', true);
+  const events = useMemo(() => followEvents(lines), [lines]);
+  /** Reading position (no guitar following): the first chord whose line is at the top of the lyrics. */
+  const [readAt, setReadAt] = useState(0);
   const total = set.songIds.length;
   const hasPrev = index > 0, hasNext = index < total - 1;
 
@@ -46,7 +52,12 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
     const el = scrollRef.current;
     if (!el) return;
     setEdges({ top: el.scrollTop <= 1, bottom: el.scrollTop + el.clientHeight >= el.scrollHeight - 2 });
-  }, []);
+    const i = events.findIndex(e => {
+      const l = el.querySelector<HTMLElement>(`[data-line="${e.line}"]`);
+      return !!l && l.offsetTop - el.offsetTop + l.offsetHeight > el.scrollTop + 4;
+    });
+    setReadAt(i < 0 ? Math.max(0, events.length - 1) : i);
+  }, [events]);
   useLayoutEffect(measure, [measure, lines]);
 
   // Following the guitar and auto-scroll exclude each other.
@@ -89,6 +100,11 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
     middle: () => { if (lines.length) setPlaying(p => !p); },
   });
 
+  const cur = gf.current ?? events[readAt];
+  const curIdx = cur ? events.findIndex(e => e.line === cur.line && e.seg === cur.seg) : -1;
+  const nowChord = cur?.chord;
+  const nextChord = gf.current ? gf.next?.chord : events.slice(curIdx + 1).find(e => e.chord !== nowChord)?.chord;
+
   const prevLabel = edges.top ? '‹ Titre préc.' : '‹ Précédent';
   const nextLabel = edges.bottom ? 'Titre suivant ›' : 'Suivant ›';
   const prevOff = edges.top && !hasPrev, nextOff = edges.bottom && !hasNext;
@@ -113,6 +129,10 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
           <span className="stage-tag">{song.bpm} BPM · {song.feel}</span>
           <span className="stage-tag">Capo {song.capo}</span>
           <Link to={`/scene/morceau/${song.id}`} className="stage-tag stage-edit" aria-label="Modifier le morceau">✎</Link>
+          {events.length > 0 && (
+            <button className={'stage-tag stage-diag' + (showChords ? ' on' : '')} aria-pressed={showChords}
+              onClick={() => setShowChords(!showChords)}>Schémas</button>
+          )}
           {wake !== 'on' && (
             <span className="stage-tag stage-sleep" title={wake === 'unsupported'
               ? 'Ce navigateur ne sait pas empêcher la mise en veille : allongez le délai de veille du téléphone.'
@@ -150,6 +170,8 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
           <div className="up-next">À suivre · <b>{songById(set.songIds[index + 1])?.title}</b></div>
         )}
       </div>
+
+      {showChords && <StageChords now={nowChord} next={nextChord} />}
 
       <div className="stage-controls">
         <div className="stepper-row">

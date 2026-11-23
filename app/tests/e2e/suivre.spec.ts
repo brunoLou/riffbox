@@ -26,6 +26,12 @@ test('« Suivre ma guitare »: the chord played lights up and the lyrics follow'
   await expect(page.locator('.lyric-seg.next')).toHaveCount(1);
   // Never ahead of the music: the lit chord is one the microphone is playing.
   expect(changes).toContain((await page.locator('.lyric-seg.now .lyric-chord').textContent())!.trim());
+  // The diagram strip shows the chord lit in the lyrics (read together, the music keeps going).
+  const both = await page.evaluate(() => [
+    document.querySelector('.lyric-seg.now .lyric-chord b')?.textContent?.trim(),
+    document.querySelector('.stage-chords .sc-chord.now .sc-name')?.textContent?.trim(),
+  ]);
+  expect(both[1]).toBe(both[0]);
 });
 
 test('auto-scroll and following exclude each other; a song without chords cannot be followed', async ({ page }) => {

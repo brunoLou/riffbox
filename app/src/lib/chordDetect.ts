@@ -4,12 +4,12 @@
  * the song actually uses: recognising one chord among five or six is far more reliable than
  * naming any chord from scratch.
  */
-import { CHORD_TYPES } from './chords';
+import { CHORD_TYPES, chordType, type ChordType } from './chords';
 import { mod12 } from './music';
 
 const LETTER: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11, H: 11 };
 
-export interface ChordShape { name: string; root: number; pcs: number[]; bass: number }
+export interface ChordShape { name: string; root: number; pcs: number[]; bass: number; type: ChordType }
 
 /** "A7", "F#m", "Bbmaj7", "C/G", "Dsus4", "E7#9" → root, pitch classes and bass. Null if not a chord. */
 export function parseChordName(name: string): ChordShape | null {
@@ -23,11 +23,12 @@ export function parseChordName(name: string): ChordShape | null {
   const types = [...CHORD_TYPES].sort((a, b) => b.sym.length - a.sym.length);
   const type = types.find(t => norm(rest).startsWith(norm(t.sym))) ?? CHORD_TYPES[0];
   // "Amin" and "A-" are other ways to write A minor.
-  const ivs = /^(min|-)/.test(rest) ? [0, 3, 7] : type.ivs.map(([s]) => s);
+  const minor = /^(min|-)/.test(rest);
+  const ivs = minor ? [0, 3, 7] : type.ivs.map(([s]) => s);
   const pcs = [...new Set(ivs.map(i => mod12(root + i)))];
   const bass = m[4] ? mod12(LETTER[m[4]] + acc(m[5])) : root;
   if (!pcs.includes(bass)) pcs.push(bass);
-  return { name: name.trim(), root, pcs, bass };
+  return { name: name.trim(), root, pcs, bass, type: minor ? chordType('m') : type };
 }
 
 /**

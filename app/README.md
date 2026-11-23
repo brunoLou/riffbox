@@ -159,6 +159,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/accessibilite.spec.ts` | axe-core (WCAG 2.2 AA) sur les 30 écrans dans les deux thèmes et sur les feuilles ouvertes ; feuilles au clavier ; focus visible |
 | `tests/e2e/petits-ecrans.spec.ts` | téléphones de 640 à 780 px de haut : rien ne reste caché sous le bouton principal ou la barre d’onglets |
 | `tests/e2e/tablette.spec.ts` | tablette (iPad) : plein écran, colonne, prompteur large, manche entier, grille en deux colonnes |
+| `tests/e2e/schemas-live.spec.ts` | prompteur : schémas de l’accord en cours et du suivant, qui suivent la lecture ; masquables |
 | `tests/e2e/suivre.spec.ts` | « Suivre ma guitare » : faux micro jouant les accords de Minuit Shuffle, le texte suit |
 | `tests/e2e/tonalite-ecoute.spec.ts` | « Quel ton ? » : faux micro jouant un morceau en Ré majeur, gamme ouverte, tonalité appliquée au morceau |
 | `tests/e2e/drive.spec.ts` | Google Drive (simulé) : deux appareils connectés s’échangent leurs changements sans fichier, déconnexion |

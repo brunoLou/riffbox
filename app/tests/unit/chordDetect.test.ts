@@ -20,6 +20,11 @@ describe('chord names', () => {
     expect(shape('Bbmaj7').pcs).toEqual([10, 2, 5, 9]);
     expect(shape('C/G')).toMatchObject({ root: 0, bass: 7 });
     expect(shape('Amin').pcs).toEqual([9, 0, 4]);
+    // The chord type, for drawing its diagram.
+    expect(shape('Amin')!.type.id).toBe('m');
+    expect(shape('Bbmaj7')!.type.id).toBe('maj7');
+    expect(shape('D/F#')!.type.id).toBe('maj');
+    expect(shape('Em7b5')!.type.id).toBe('m7b5');
     expect(shape('E7#9').pcs).toEqual([4, 8, 11, 2]);
     expect(parseChordName('N.C.')).toBeNull();
   });

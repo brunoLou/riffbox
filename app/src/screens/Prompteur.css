@@ -57,3 +57,5 @@
 .lyric-chord > b { font-weight: inherit; }
 .lyric-seg.now .lyric-chord > b { background: var(--amber); color: var(--ink); border-radius: 6px; padding: 0 4px; margin-left: -4px; }
 .lyric-seg.next .lyric-chord > b { text-decoration: underline dotted var(--amber); text-underline-offset: 5px; }
+.stage-diag { color: var(--muted-2); border: 1.5px solid transparent; }
+.stage-diag.on { color: var(--amber-hi); border-color: var(--amber); background: transparent; }
