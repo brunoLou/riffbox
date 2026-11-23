@@ -222,3 +222,31 @@ test('a generated grid in the key of my voice, once the range is measured', asyn
   await expect(page.locator('.hub-key')).toHaveText(key);
   await expect(page.locator('.grid-title')).toHaveText(`FOLK EN ${key.toUpperCase()}`);
 });
+
+test('while the grid loops, the diagram of the chord being played follows the bars, with the next one', async ({ page }) => {
+  await page.goto('#/composer/grille/g-minuit'); // Couplet: A D A E
+  await expect(page.locator('.live-chords')).toHaveCount(0);
+  await page.getByRole('button', { name: /Boucle/ }).click();
+  const live = page.locator('.live-chords');
+  await expect(live).toBeVisible();
+  // Always the chord lit in the grid, and the one after it.
+  const seen = new Set<string>();
+  for (let k = 0; k < 30 && seen.size < 3; k++) { // a bar lasts 2.6 s at 92 BPM
+    const on = (await page.locator('.slot.on .slot-name').textContent({ timeout: 3000 }).catch(() => null))?.trim();
+    const shown = (await live.locator('.live-now .live-name').textContent())!.trim();
+    if (on && on === shown) {
+      seen.add(shown);
+      const order = ['A', 'D', 'A', 'E'];
+      const bar = Number((await live.locator('.live-now .live-kicker').textContent())!.match(/(\d)\/4/)![1]);
+      expect(order[bar - 1]).toBe(shown);
+      await expect(live.locator('.live-next .live-name')).toHaveText(order[bar % 4]);
+    }
+    await page.waitForTimeout(500);
+  }
+  expect([...seen].sort()).toEqual(['A', 'D', 'E']);
+  await expect(live.locator('.live-now .chord-svg')).toBeVisible();
+  await expect(live.locator('.live-next .chord-svg')).toBeVisible();
+
+  await page.getByRole('button', { name: /Arrêter/ }).click();
+  await expect(page.locator('.live-chords')).toHaveCount(0);
+});

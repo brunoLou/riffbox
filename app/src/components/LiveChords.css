@@ -1,0 +1,11 @@
+.live-chords { display: grid; grid-template-columns: 1.35fr 1fr; gap: 10px; padding: 12px; border-radius: 18px; background: linear-gradient(var(--wood-1), var(--wood-2)); border: 1px solid var(--wood-border); }
+.live-now, .live-next { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+.live-kicker { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-2); white-space: nowrap; }
+.live-name { font-family: var(--f-mono); font-weight: 700; font-size: 26px; color: var(--amber-hi); line-height: 1.1; }
+.live-name.small { font-size: 18px; color: var(--cream); }
+.live-diagram { width: 100%; display: flex; justify-content: center; }
+.live-diagram .chord-svg { width: 100%; max-width: 120px; height: auto; }
+.live-diagram.big .chord-svg { max-width: 168px; animation: live-in .18s ease-out; }
+.live-next .live-diagram { opacity: .75; }
+@keyframes live-in { from { opacity: .3; transform: scale(.96); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .live-diagram.big .chord-svg { animation: none; } }

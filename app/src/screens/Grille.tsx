@@ -13,6 +13,7 @@ import { IN_N, KFR, OUT_N, OUT_PC, chordName, chordTypeId, degreeOf, mod12, type
 import { romanOf } from '../lib/suggest';
 import { ROLES, regenerateSection, seeded, styleDef } from '../lib/generate';
 import { SuggestPanel } from '../components/SuggestPanel';
+import { LiveChords } from '../components/LiveChords';
 import { fmtDate, sortSets, titlesLabel, type Setlist } from '../lib/setlists';
 import { GridChordSheet } from '../components/GridChordSheet';
 import { usePedal } from '../lib/pedal';
@@ -205,6 +206,8 @@ function Grille({ id }: { id: string }) {
             <button className="slot-add" onClick={() => setMode('add')} aria-label="Ajouter un accord">+</button>
           )}
         </div>
+
+        {playing && <LiveChords chords={chords} bar={pos.bar} />}
 
         <SuggestPanel gridKey={g.key} chords={chords} bpm={g.bpm} room={GRID_MAX_CHORDS - chords.length}
           onAdd={add => updateSection(p => [...p, ...add].slice(0, GRID_MAX_CHORDS))} />
