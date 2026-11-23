@@ -32,6 +32,7 @@ export const TILES: Tile[] = [
   { id: 'tonalite', name: 'Tonalité', sub: 'Trouver ma tonalité', bg: '#2c2825', fg: '#efe6d2', a: 15, b: 95, to: '/voix/tonalite', extra: true },
   { id: 'detect', name: 'Quel ton ?', sub: 'Tonalité à l’écoute', bg: '#4a3020', fg: '#efe6d2', a: -35, b: 75, to: '/outils/ton', extra: true },
   { id: 'looper', name: 'Looper', sub: 'Boucles et couches', bg: '#2c2825', fg: '#efe6d2', a: 60, b: -90, to: '/pratiquer/looper', extra: true },
+  { id: 'coach', name: 'Coach', sub: 'Programme à mon niveau', bg: '#4a3020', fg: '#efe6d2', a: 25, b: 110, to: '/pratiquer/coach', extra: true },
   { id: 'reglages', name: 'Réglages', sub: 'Données et sauvegarde', bg: '#2c2825', fg: '#efe6d2', a: -120, b: 10, to: '/reglages', extra: true },
 ];
 

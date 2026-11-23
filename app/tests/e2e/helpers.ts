@@ -60,8 +60,10 @@ export function sungNote(name: string, hz: number, cents = 0): string {
  * A guitar strumming a chord sequence: each chord (MIDI notes, low to high) lasts `secs`, strummed
  * at its start and again halfway, strings 15 ms apart, with harmonics and a natural decay.
  */
-export function strummedChords(name: string, chords: number[][], secs = 1.6): string {
+export function strummedChords(name: string, chords: number[][], secs = 1.6, pick = false): string {
   const freqs = chords.map(c => c.map(m => 440 * 2 ** ((m - 69) / 12)));
+  // A pick's attack: a short burst of noise on each string, as a real strum has (optional).
+  const noise = (t: number) => (Math.sin(t * 91234.567) * 43758.5453) % 1;
   return writeWav(name, Math.ceil(chords.length * secs) + 1, t => {
     const i = Math.min(chords.length - 1, Math.floor(t / secs));
     const local = t - i * secs;
@@ -71,6 +73,7 @@ export function strummedChords(name: string, chords: number[][], secs = 1.6): st
       const dt = since - s * 0.015;
       if (dt < 0) return;
       for (let k = 1; k <= 6; k++) v += (1 / k ** 1.3) * Math.exp(-dt * (1.2 + k * 0.4)) * Math.sin(2 * Math.PI * f * k * dt);
+      if (pick && dt < 0.008) v += noise(t + s) * 1.5 * (1 - dt / 0.008);
     });
     return v * 0.12;
   });

@@ -2,7 +2,7 @@ import { expect, test } from './helpers';
 
 const ROUTES = ['/', '/accordeur', '/metronome', '/composer', '/composer/grille/g-minuit', '/pratiquer', '/pratiquer/routine',
   '/pratiquer/routine/modifier', '/pratiquer/gammes', '/pratiquer/accords', '/pratiquer/backing', '/voix', '/voix/exercices',
-  '/voix/tessiture', '/voix/tonalite', '/voix/ex/gamme5', '/outils/capo', '/outils/ton', '/pratiquer/looper', '/scene', '/scene/bar-du-port', '/scene/morceaux',
+  '/voix/tessiture', '/voix/tonalite', '/voix/ex/gamme5', '/outils/capo', '/outils/ton', '/pratiquer/looper', '/pratiquer/coach', '/scene', '/scene/bar-du-port', '/scene/morceaux',
   '/scene/morceau/s3', '/reglages'];
 /** Controls fixed at the bottom of a screen. */
 const BARS = '.cta, .grid-actions, .carnet-actions, .rtransport, .tabbar, .player';

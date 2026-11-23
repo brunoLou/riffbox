@@ -1,11 +1,20 @@
 import { useNavigate } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import { usePedal } from '../lib/pedal';
-import { doneSeconds, mmss, routine, useRoutine, routineMin, routineSteps } from '../lib/routine';
+import { doneSeconds, mmss, routine, useRoutine, routineMin, routineSteps, type RoutineStep } from '../lib/routine';
+import { writeStored } from '../lib/store';
+import { useEffect } from 'react';
+import { refreshCoachRoutine } from '../lib/coachRoutine';
 import './Routine.css';
 
 export default function Routine() {
   const nav = useNavigate();
+  useEffect(() => refreshCoachRoutine(), []);
+  /** Opens a step's tool, set up for the exercise (tempo, scale, backing track…). */
+  const openLink = (l: NonNullable<RoutineStep['link']>) => {
+    for (const [k, v] of Object.entries(l.set ?? {})) writeStored(k, v);
+    nav(l.to);
+  };
   const r = useRoutine();
   const step = routineSteps()[r.step];
   const len = step.min * 60;
@@ -45,7 +54,7 @@ export default function Routine() {
 
         <div className="rdetail">
           <p>{r.done ? `${routineSteps().length > 1 ? `Les ${routineSteps().length} étapes sont faites` : 'L’étape est faite'}. À demain pour la suite de la série !` : step.detail}</p>
-          {!r.done && step.link && <button className="rlink" onClick={() => nav(step.link!.to)}>{step.link.label} ›</button>}
+          {!r.done && step.link && <button className="rlink" onClick={() => openLink(step.link!)}>{step.link.label} ›</button>}
         </div>
 
         <div className="rlist">

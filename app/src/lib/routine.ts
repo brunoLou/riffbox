@@ -2,7 +2,11 @@ import { useSyncExternalStore } from 'react';
 import { readStored, writeStored } from './store';
 import { markUsed } from './usage';
 
-export interface RoutineStep { id: string; name: string; short: string; detail: string; min: number; link?: { label: string; to: string } }
+export interface RoutineStep {
+  id: string; name: string; short: string; detail: string; min: number;
+  /** A tool to open; `set` adjusts it first (tempo, scale, backing track…) for the coach's exercises. */
+  link?: { label: string; to: string; set?: Record<string, unknown> };
+}
 
 /** The routine on first launch (and after « Rétablir »). */
 export const DEFAULT_ROUTINE: RoutineStep[] = [

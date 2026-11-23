@@ -7,6 +7,9 @@ import { KEY_FR } from '../lib/music';
 import { doneSeconds, fmtHM, routine, streak, useRoutine, week, routineMin, routineSteps } from '../lib/routine';
 import { readStored } from '../lib/store';
 import './Pratiquer.css';
+import { useEffect } from 'react';
+import { PROFILE_KEY, type Profile } from '../lib/coach';
+import { coachActive, refreshCoachRoutine } from '../lib/coachRoutine';
 
 const CHART_H = 112;
 
@@ -48,6 +51,8 @@ function WeekChart({ days }: { days: ReturnType<typeof week> }) {
 export default function Pratiquer() {
   const nav = useNavigate();
   const r = useRoutine();
+  const coached = !!readStored<Profile | null>(PROFILE_KEY, null);
+  useEffect(() => refreshCoachRoutine(), []);
   const doneMin = Math.floor(doneSeconds(r) / 60);
   const streakDays = streak(r).days;
   const started = doneSeconds(r) > 0;
@@ -69,9 +74,14 @@ export default function Pratiquer() {
           <span className="prat-streak mono"><span />{streakDays} {streakDays > 1 ? 'jours' : 'jour'}</span>
         </div>
 
+        <button className="coach-card" onClick={() => nav('/pratiquer/coach')}>
+          <span className="coach-card-name">Coach</span>
+          <span className="coach-card-sub">{coached ? 'Votre programme : niveaux et routine du jour ›' : 'Un programme adapté à votre niveau : faites le bilan (5 min) ›'}</span>
+        </button>
+
         <div className="routine-card">
           <div className="routine-card-head">
-            <span className="routine-kicker">Routine du jour</span>
+            <span className="routine-kicker">Routine du jour{coachActive() ? ' · coach' : ''}</span>
             <span className="routine-head-r">
               <span className="mono routine-total">{doneMin}/{routineMin()} min</span>
               <button className="routine-edit" onClick={() => nav('/pratiquer/routine/modifier')}>Modifier</button>
