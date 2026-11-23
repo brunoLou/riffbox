@@ -207,8 +207,8 @@ h1 { margin: 0; font-weight: inherit; }
   .phone-wide .rec-sheet { left: max(0px, calc(50% - 360px)); right: max(0px, calc(50% - 360px)); }
 
   /* Stage on a music stand: bigger lyrics and title, roomier controls. */
-  .phone-wide .lyrics { --stage-scale: 1.45; padding-left: 40px; padding-right: 40px; }
-  .phone-wide .stage-head { padding-left: 40px; padding-right: 40px; }
+  .phone-wide .lyrics { --stage-scale: 1.45; padding-left: max(40px, calc(50% - 360px)); padding-right: max(40px, calc(50% - 360px)); }
+  .phone-wide .stage-head { padding-left: max(40px, calc(50% - 360px)); padding-right: max(40px, calc(50% - 360px)); }
   .phone-wide .stage-title { font-size: 60px; }
   .phone-wide .stage-controls { padding-left: max(18px, calc(50% - 360px)); padding-right: max(18px, calc(50% - 360px)); }
 
@@ -281,8 +281,8 @@ h1 { margin: 0; font-weight: inherit; }
   .phone .pedal-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
   /* Stage, neck and grid: as on a tablet in landscape. */
-  .phone-wide .lyrics { --stage-scale: 1.45; padding-left: 48px; padding-right: 48px; }
-  .phone-wide .stage-head { padding-left: 48px; padding-right: 48px; }
+  .phone-wide .lyrics { --stage-scale: 1.45; padding-left: max(48px, calc(50% - 360px)); padding-right: max(48px, calc(50% - 360px)); }
+  .phone-wide .stage-head { padding-left: max(48px, calc(50% - 360px)); padding-right: max(48px, calc(50% - 360px)); }
   .phone-wide .stage-title { font-size: 60px; }
   .phone-wide .stage-controls { padding-left: max(18px, calc(50% - 360px)); padding-right: max(18px, calc(50% - 360px)); }
   .phone-wide .neck-screen > * { width: 100%; max-width: var(--col); margin-left: auto; margin-right: auto; }
