@@ -39,7 +39,8 @@ describe('key profiles', () => {
   });
 });
 
-describe('listening to chord progressions in every key', () => {
+// Each test synthesises and analyses 12 songs: several seconds of computation.
+describe('listening to chord progressions in every key', { timeout: 60_000 }, () => {
   for (const [name, chords] of MAJOR_SONGS) {
     it(`${name}, 12 major keys`, () => {
       const wrong: string[] = [];
