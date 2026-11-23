@@ -113,6 +113,7 @@ dans le dossier temporaire du système.
 | `tests/unit/loop.test.ts` | looper : longueur exacte des boucles, capture au micro à l’échantillon près, mixage, mesure du retard par bips |
 | `tests/unit/chordSheet.test.ts` | grilles « accords au-dessus des paroles » (texte et PDF) → ChordPro : noms d’accords anglais et français, sections, capo, tonalité déduite, recueils |
 | `tests/unit/coach.test.ts` | coach : niveaux à partir des tests, changements d’accords comptés, régularité au clic (indépendante du retard de l’appareil), attaques détectées, routine du jour adaptée |
+| `tests/unit/pedals.test.ts` | pédales de l’accueil toutes différentes : couleur, dessin, commandes et footswitch |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises, backing tracks perso avec leur son |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
 | `tests/e2e/smoke.spec.ts` | chaque écran s’ouvre, navigation, anciennes adresses, micro refusé |
