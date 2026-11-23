@@ -17,6 +17,7 @@ import { backupReminder, daysAgo, markBackedUp, snoozeReminder } from '../lib/re
 import './Accueil.css';
 import { useDialog } from '../lib/useDialog';
 import { useUsedToday } from '../lib/usage';
+import { syncNow, useDriveState } from '../lib/autoSync';
 
 function todayLabel() {
   const s = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'short' }).format(new Date());
@@ -121,6 +122,7 @@ export default function Accueil() {
         </div>
 
         {!edit && <BackupReminder />}
+        {!edit && <DriveChip />}
 
         {edit ? (
           <p className="edit-hint">Glissez une pédale par sa poignée ⠿ pour la déplacer. ↔ change sa taille, − la retire.</p>
@@ -238,4 +240,11 @@ function BackupReminder() {
       </div>
     </div>
   );
+}
+
+/** When Google asks to sign in again (it cannot happen without a tap), one tap here resumes the sync. */
+function DriveChip() {
+  const st = useDriveState();
+  if (!st.connected || st.status !== 'needsTap') return null;
+  return <button className="drive-chip" onClick={() => void syncNow(true)}>↻ Synchroniser avec Google Drive</button>;
 }

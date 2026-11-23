@@ -28,10 +28,12 @@ import DetecteurTon from './screens/DetecteurTon';
 import Looper from './screens/Looper';
 import Coach from './screens/Coach';
 import { FileDrop } from './components/FileDrop';
+import { installAutoSync } from './lib/autoSync';
 import Backing from './screens/Backing';
 import Reglages from './screens/Reglages';
 
 installSync();
+installAutoSync();
 requestPersistence();
 initTheme();
 

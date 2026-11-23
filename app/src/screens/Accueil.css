@@ -107,3 +107,4 @@
 .backup-nudge-done { margin: 0; padding: 10px 14px; border-radius: 14px; background: var(--surface-2); font-size: 14px; color: var(--led-text); }
 .led-legend { margin: 2px 0 0; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted-2); }
 .led-legend .led { width: 8px; height: 8px; flex: none; }
+.drive-chip { align-self: flex-start; margin: 0 0 12px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--amber, #e8a33d); background: transparent; color: var(--cream); font: inherit; font-size: 14px; cursor: pointer; }

@@ -50,6 +50,7 @@ export function writeStored<T>(key: string, value: T) {
     localStorage.setItem(PREFIX + key, JSON.stringify(ser ? ser(value) : value));
   } catch { /* quota or private mode: keep in memory */ }
   subs.get(key)?.forEach(fn => fn(value));
+  if (!hooksOff) anyWrite.forEach(fn => fn(key));
 }
 
 const SERIALIZERS: Record<string, (v: unknown) => unknown> = {};
@@ -123,5 +124,11 @@ export function allStored(): Record<string, unknown> {
       try { out[k.slice(PREFIX.length)] = JSON.parse(localStorage.getItem(k) ?? 'null'); } catch { /* skip corrupt value */ }
     }
   } catch { /* storage blocked */ }
+  // Values only in memory (storage blocked or full) count too, as they would be saved.
+  for (const [k, v] of mem) if (!(k in out)) out[k] = serialized(k, v);
   return out;
 }
+
+/** Told of every write (any key): the automatic sync waits for a quiet moment, then sends. */
+const anyWrite = new Set<(key: string) => void>();
+export function onAnyWrite(fn: (key: string) => void) { anyWrite.add(fn); return () => { anyWrite.delete(fn); }; }

@@ -5,7 +5,7 @@ import { INITIAL_GRIDS } from './grids';
 import { INITIAL_IDEAS, type Idea } from './ideas';
 import { INITIAL_SETLISTS, INITIAL_SONGS } from './setlists';
 import { allStored, clearAllStored, readStored, withoutWriteHooks, writeStored } from './store';
-import { planMerge, type MergePlan, type MergeStats } from './sync';
+import { LOCAL_KEYS, planMerge, type MergePlan, type MergeStats } from './sync';
 
 export const BACKUP_APP = 'riffbox';
 export const BACKUP_VERSION = 1;
@@ -31,6 +31,16 @@ const toDataUrl = (b: Blob) => new Promise<string>((resolve, reject) => {
   r.readAsDataURL(b);
 });
 const fromDataUrl = async (u: string) => (await fetch(u)).blob();
+
+/** Everything the other devices share (device settings and the sync's own state left out). */
+export function syncSnapshot(): Record<string, unknown> {
+  const data = allStored();
+  for (const [k, def] of Object.entries(DEFAULTS)) if (!(k in data)) data[k] = readStored(k, def);
+  if (Array.isArray(data.ideas)) data.ideas = (data.ideas as Idea[]).map(({ audioUrl: _u, ...rest }) => rest);
+  for (const k of LOCAL_KEYS) delete data[k];
+  return data;
+}
+export const SNAPSHOT_DEFAULTS = DEFAULTS;
 
 export async function buildBackup(): Promise<BackupFile> {
   const data = allStored();

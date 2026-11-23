@@ -58,6 +58,19 @@ chaque fichier donne la date, le titre, le tempo et la tonalité ; le fichier co
 et la tonique (bloc « acid », lu par Ableton Live et FL Studio) et le titre (LIST/INFO, lu par Reaper).
 Un enregistrement seul : « WAV ↓ » dans le carnet.
 
+## Synchronisation Google Drive
+
+Réglages → Synchronisation → « Connecter Google Drive », sur chaque appareil. Les données (idées,
+grilles, morceaux, setlists, enregistrements, backing tracks perso…) se synchronisent ensuite toutes
+seules : au démarrage, au retour sur l’app, 15 s après un changement et toutes les 5 minutes. Elles
+vont dans le dossier caché de l’app dans le Drive du joueur (`drive.appdata` : le reste du Drive
+n’est jamais lu). Fusion : la version la plus récente de chaque élément gagne, les suppressions
+voyagent. Quand Google redemande la connexion (environ toutes les heures), un bouton
+« ↻ Synchroniser » apparaît sur l’accueil.
+
+Il faut l’identifiant OAuth Google de l’app dans `GOOGLE_CLIENT_ID` (`src/lib/googleDrive.ts`) ;
+sans lui, la carte l’explique et le transfert par fichier reste disponible.
+
 ## Ordinateur
 
 Sur un écran d’au moins 900 px avec une souris, l’app quitte son cadre de téléphone : les onglets
@@ -123,6 +136,7 @@ dans le dossier temporaire du système.
 | `tests/unit/chordSheet.test.ts` | grilles « accords au-dessus des paroles » (texte et PDF) → ChordPro : noms d’accords anglais et français, sections, capo, tonalité déduite, recueils |
 | `tests/unit/coach.test.ts` | coach : niveaux à partir des tests, changements d’accords comptés, régularité au clic (indépendante du retard de l’appareil), attaques détectées, routine du jour adaptée |
 | `tests/unit/pedals.test.ts` | pédales de l’accueil toutes différentes : couleur, dessin, commandes et footswitch |
+| `tests/unit/cloudSync.test.ts` | synchronisation par un stockage distant : échange entre deux appareils, rien de renvoyé sans changement, suppressions, enregistrements manquants |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises, backing tracks perso avec leur son |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
 | `tests/e2e/smoke.spec.ts` | chaque écran s’ouvre, navigation, anciennes adresses, micro refusé |
@@ -147,6 +161,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/tablette.spec.ts` | tablette (iPad) : plein écran, colonne, prompteur large, manche entier, grille en deux colonnes |
 | `tests/e2e/suivre.spec.ts` | « Suivre ma guitare » : faux micro jouant les accords de Minuit Shuffle, le texte suit |
 | `tests/e2e/tonalite-ecoute.spec.ts` | « Quel ton ? » : faux micro jouant un morceau en Ré majeur, gamme ouverte, tonalité appliquée au morceau |
+| `tests/e2e/drive.spec.ts` | Google Drive (simulé) : deux appareils connectés s’échangent leurs changements sans fichier, déconnexion |
 | `tests/e2e/transfert.spec.ts` | téléphone ⇄ tablette : deux appareils simulés s’échangent leurs données dans les deux sens |
 | `tests/e2e/voyants.spec.ts` | voyants de l’accueil : allumés par un vrai usage du jour, éteints le lendemain |
 | `tests/e2e/export-daw.spec.ts` | export pour logiciel de musique : vrai enregistrement au faux micro, WAV et ZIP relus en Python (format, tempo, tonique, hauteur du son) |

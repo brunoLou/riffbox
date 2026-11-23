@@ -77,3 +77,4 @@
 .settings-link { text-decoration: none; color: inherit; }
 .settings-chev { font-size: 13px; color: var(--muted-3); }
 .transfer-dates { font-size: 13px; }
+.drive-status { margin: 2px 0 0; font-size: 14px; line-height: 1.4; color: var(--cream); }

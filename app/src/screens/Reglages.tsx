@@ -1,4 +1,5 @@
 import { exportForDaw, listRecordings } from '../lib/dawExport';
+import { connectDrive, disconnectDrive, syncAvailable, syncNow, useDriveState } from '../lib/autoSync';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
@@ -150,6 +151,9 @@ export default function Reglages() {
           </dl>
           <p className="settings-note">Tout reste sur ce téléphone : rien n’est envoyé sur internet.</p>
         </div>
+
+        <span className="kicker settings-section">Synchronisation</span>
+        <DriveCard />
 
         <span className="kicker settings-section">Téléphone ⇄ tablette</span>
         <TransferCard />
@@ -546,6 +550,69 @@ function DawCard() {
           {busy ?? (count ? `Exporter ${plural(count, 'enregistrement', 'enregistrements')} (.zip)` : 'Aucun enregistrement à exporter')}
         </button>
         {msg && <p className={'backup-msg' + (msg.error ? ' error' : '')} role="status">{msg.text}</p>}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Synchronisation Google Drive ---------- */
+
+const ago = (t: number) => {
+  const m = Math.round((Date.now() - t) / 60000);
+  return m < 1 ? 'à l’instant' : m < 60 ? `il y a ${m} min` : new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(t);
+};
+
+function DriveCard() {
+  const st = useDriveState();
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [confirmOff, setConfirmOff] = useState(false);
+  const act = async (fn: () => Promise<void>) => { setErr(null); setBusy(true); try { await fn(); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); } };
+  const r = st.lastResult;
+  const got = r ? r.received.added + r.received.updated + r.received.removed : 0;
+
+  if (!syncAvailable()) {
+    return (
+      <div className="settings-card">
+        <div className="settings-action">
+          <span className="settings-label">Google Drive</span>
+          <span className="settings-help">La synchronisation automatique par votre Google Drive arrive : l’identifiant Google de l’app reste à configurer. En attendant, utilisez « Envoyer » et « Recevoir » ci-dessous.</span>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="settings-card">
+      <div className="settings-action">
+        <span className="settings-label">Google Drive</span>
+        <span className="settings-help">
+          Vos idées, grilles, morceaux, setlists, enregistrements et réglages partagés se synchronisent tout seuls entre vos appareils
+          (téléphone, tablette, ordinateur) par votre propre Google Drive, dans un dossier caché réservé à RIFFBOX. Le reste de votre Drive n’est jamais lu.
+        </span>
+        {st.connected ? (
+          <>
+            <p className="drive-status" role="status">
+              {st.status === 'syncing' ? 'Synchronisation…'
+                : st.status === 'needsTap' ? 'Google demande de vous reconnecter : touchez « Synchroniser ».'
+                : st.status === 'error' ? `Dernière tentative échouée : ${st.error}`
+                : st.lastSync ? `Synchronisé ${ago(st.lastSync)}${r ? ` · ${got ? `${got} changement${got > 1 ? 's' : ''} reçu${got > 1 ? 's' : ''}` : 'rien de nouveau'}${r.audioUp + r.audioDown ? ` · ${r.audioUp + r.audioDown} enregistrement${r.audioUp + r.audioDown > 1 ? 's' : ''} échangé${r.audioUp + r.audioDown > 1 ? 's' : ''}` : ''}` : ''}.`
+                : 'Connecté.'}
+            </p>
+            <button className="btn-primary" disabled={busy || st.status === 'syncing'} onClick={() => void act(() => syncNow(true))}>Synchroniser maintenant</button>
+            {confirmOff ? (
+              <div className="confirm-row">
+                <button className="btn-outline" onClick={() => setConfirmOff(false)}>Annuler</button>
+                <button className="btn-danger" onClick={() => void act(async () => { await disconnectDrive(); setConfirmOff(false); })}>Déconnecter</button>
+              </div>
+            ) : (
+              <button className="btn-link" onClick={() => setConfirmOff(true)}>Déconnecter cet appareil…</button>
+            )}
+          </>
+        ) : (
+          <button className="btn-primary" disabled={busy} onClick={() => void act(connectDrive)}>Connecter Google Drive</button>
+        )}
+        {err && <p className="backup-msg error" role="alert">{err}</p>}
+        <span className="settings-help">Faites-le sur chaque appareil. Vos données restent aussi sur l’appareil : sans réseau, tout fonctionne, et la synchronisation reprend au retour du réseau.</span>
       </div>
     </div>
   );

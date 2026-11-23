@@ -1,0 +1,83 @@
+import type { Page } from '@playwright/test';
+import { button, expect, test } from './helpers';
+
+/** A shared « Google Drive » kept here, in the test, that both devices talk to. */
+function fakeDrive() {
+  let data: unknown = null;
+  const audio = new Map<string, string>();
+  return {
+    puts: 0,
+    async attach(page: Page) {
+      await page.exposeFunction('__drvGet', () => data);
+      await page.exposeFunction('__drvPut', (d: unknown) => { data = d; this.puts++; });
+      await page.exposeFunction('__drvIds', () => [...audio.keys()]);
+      await page.exposeFunction('__drvGetAudio', (id: string) => audio.get(id) ?? null);
+      await page.exposeFunction('__drvPutAudio', (id: string, b64: string) => { audio.set(id, b64); });
+      await page.addInitScript(() => {
+        const w = window as unknown as Record<string, (...a: unknown[]) => Promise<unknown>> & { __riffboxFakeDrive?: unknown };
+        const toB64 = async (b: Blob) => { let s = ''; new Uint8Array(await b.arrayBuffer()).forEach(c => (s += String.fromCharCode(c))); return btoa(s); };
+        w.__riffboxFakeDrive = {
+          getData: () => w.__drvGet(),
+          putData: (d: unknown) => w.__drvPut(d),
+          audioIds: async () => new Set(await w.__drvIds() as string[]),
+          getAudio: async (id: string) => {
+            const s = await w.__drvGetAudio(id) as string | null;
+            return s ? new Blob([Uint8Array.from(atob(s), c => c.charCodeAt(0))]) : null;
+          },
+          putAudio: async (id: string, b: Blob) => w.__drvPutAudio(id, await toB64(b)),
+        };
+      });
+    },
+  };
+}
+
+test('Google Drive: connect two devices, changes travel both ways on their own', async ({ page: phone, browser }) => {
+  const drive = fakeDrive();
+  await drive.attach(phone);
+  await phone.goto('#/reglages');
+  const card = phone.locator('.settings-card', { hasText: 'Google Drive' });
+  await card.getByRole('button', { name: 'Connecter Google Drive' }).click();
+  await expect(card.locator('.drive-status')).toContainText('Synchronisé à l’instant');
+  expect(drive.puts).toBe(1);
+
+  // A change on the phone, sent at once with « Synchroniser maintenant ».
+  await phone.goto('#/scene/morceau/s3');
+  await phone.locator('.chordpro').fill('{c:Couplet}\n[A7]Version synchronisée');
+  await phone.goto('#/reglages');
+  await card.getByRole('button', { name: 'Synchroniser maintenant' }).click();
+  await expect(card.locator('.drive-status')).toContainText('Synchronisé');
+  expect(drive.puts).toBe(2);
+
+  // The tablet connects: it gets the phone's song and sends its own setlist.
+  const ctx = await browser.newContext({ viewport: { width: 520, height: 960 }, reducedMotion: 'reduce', serviceWorkers: 'block' });
+  const tablet = await ctx.newPage();
+  await drive.attach(tablet);
+  await tablet.goto('/#/scene');
+  await tablet.getByText('+ Nouvelle setlist').click();
+  await tablet.locator('.set-title-input').fill('Set tablette');
+  await button(tablet, 'Terminé').click();
+  await tablet.goto('/#/reglages');
+  const tcard = tablet.locator('.settings-card', { hasText: 'Google Drive' });
+  await tcard.getByRole('button', { name: 'Connecter Google Drive' }).click();
+  await expect(tcard.locator('.drive-status')).toContainText('1 changement reçu');
+  await tablet.goto('/#/scene/morceau/s3');
+  await expect(tablet.locator('.chordpro')).toHaveValue(/Version synchronisée/);
+
+  // Back on the phone: coming back to the app is enough to receive the setlist.
+  await phone.reload();
+  await phone.goto('#/scene');
+  await expect(phone.getByText('Set tablette')).toBeVisible();
+
+  // Disconnect: no more syncing from this device.
+  await phone.goto('#/reglages');
+  await card.getByRole('button', { name: 'Déconnecter cet appareil…' }).click();
+  await card.getByRole('button', { name: 'Déconnecter', exact: true }).click();
+  await expect(card.getByRole('button', { name: 'Connecter Google Drive' })).toBeVisible();
+  await ctx.close();
+});
+
+test('without the Google identifier the card explains, and the file transfer stays', async ({ page }) => {
+  await page.goto('#/reglages');
+  await expect(page.locator('.settings-card', { hasText: 'Google Drive' })).toContainText('reste à configurer');
+  await expect(page.getByRole('button', { name: 'Connecter Google Drive' })).toHaveCount(0);
+});
