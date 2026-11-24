@@ -33,6 +33,7 @@ const fmtBytes = (n: number) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n /
 const plural = (n: number, one: string, many: string) => `${n} ${n > 1 ? many : one}`;
 
 export default function Reglages() {
+  const drive = useDriveState();
   const [showStreak, setShowStreak] = useStoredState(SETTINGS.showStreak.key, SETTINGS.showStreak.def);
   const [fontSize, setFontSize] = useStoredState(SETTINGS.stageFontSize.key, SETTINGS.stageFontSize.def);
   const [theme, setTheme] = useStoredState<ThemePref>(THEME_KEY, 'dark');
@@ -149,7 +150,9 @@ export default function Reglages() {
             <div><dt>Espace utilisé</dt><dd>{fmtBytes(storedBytes() + audioBytes)}</dd></div>
             <div><dt>Protection</dt><dd>{persisted ? 'Stockage protégé' : 'Peut être effacé par le navigateur si l’espace manque'}</dd></div>
           </dl>
-          <p className="settings-note">Tout reste sur ce téléphone : rien n’est envoyé sur internet.</p>
+          <p className="settings-note">{drive.connected
+            ? 'Tout est gardé sur cet appareil, et une copie va dans votre Google Drive pour vos autres appareils. Rien d’autre ne part sur internet.'
+            : 'Tout reste sur cet appareil : rien n’est envoyé sur internet.'}</p>
         </div>
 
         <span className="kicker settings-section">Synchronisation</span>
