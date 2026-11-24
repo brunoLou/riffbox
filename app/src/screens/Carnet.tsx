@@ -14,6 +14,8 @@ import { useStoredState } from '../lib/store';
 import { useGrids, useSetlists } from '../lib/hooks';
 import { Wave } from '../components/Wave';
 import { IdeaEditor } from './IdeaEditor';
+import { TabEditor, TabView } from '../components/TabEditor';
+import { isEmptyTab } from '../lib/tab';
 import './Carnet.css';
 import { useDialog } from '../lib/useDialog';
 
@@ -71,6 +73,8 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
   const [fTempo, setFTempo] = useStoredState('carnet.tempo', '');
   /** Idea being named / tagged (`isNew`: just recorded or written, offer « Plus tard »). */
   const [editing, setEditing] = useState<{ idea: Idea; isNew: boolean } | null>(null);
+  /** The idea whose tab is being written (`isNew`: a new riff, kept only once saved). */
+  const [tabbing, setTabbing] = useState<{ idea: Idea; isNew: boolean } | null>(null);
   const [open, setOpen] = useState<string | null>(null);
 
   // Playback
@@ -159,6 +163,11 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
     setIdeas(list => (list.some(x => x.id === i.id) ? list.map(x => (x.id === i.id ? i : x)) : [i, ...list]));
     setEditing(null);
     setOpen(i.id);
+  };
+  const newTab = () => {
+    stopPlayback();
+    clearFilters();
+    setTabbing({ idea: { id: 'tab' + Date.now(), kind: 'riff', title: 'Nouveau riff', created: Date.now(), bpm: 90 }, isNew: true });
   };
   const newText = () => {
     stopPlayback();
@@ -303,6 +312,7 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
               {i.wave && <Wave bars={i.wave} progress={isPlaying ? progress : undefined} />}
               {i.chords && <div className="idea-chords">{i.chords.map((c, j) => <span key={j}>{c}</span>)}</div>}
               {i.text && <div className={'idea-text' + (isOpen ? '' : ' clamp')}>{i.text}</div>}
+              {!isEmptyTab(i.tab) && <TabView tab={i.tab!} bpm={i.bpm} />}
 
               {(i.key != null || i.bpm || i.style || i.mood) && (
                 <div className="idea-tags">
@@ -327,6 +337,7 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
                     ? <button className="idea-action primary" onClick={() => nav(`/composer/grille/${i.grid!.id}`)}>Ouvrir la grille ›</button>
                     : (i.kind === 'riff' || i.kind === 'memo') && <button className="idea-action primary" onClick={() => setLinking(i)}>Ajouter à une grille ›</button>}
                   {!i.grid && <button className="idea-action" onClick={() => setEditing({ idea: i, isNew: false })}>Modifier</button>}
+                  {!i.grid && <button className="idea-action" onClick={() => setTabbing({ idea: i, isNew: false })}>{isEmptyTab(i.tab) ? '+ Tablature' : 'Tablature'}</button>}
                   {!i.grid && i.hasAudio && (
                     <button className="idea-action" onClick={() => void exportWav(i)} aria-label={`Exporter « ${i.title} » en WAV`}>WAV ↓</button>
                   )}
@@ -349,12 +360,15 @@ export default function Carnet({ initialKind }: { initialKind?: IdeaKind }) {
         <div className="carnet-actions">
           <button className="cta rec-cta" onClick={startRec}><span className="rec-dot" />Enregistrer</button>
           <button className="grid-to-set" onClick={newText}>+ Texte</button>
+          <button className="grid-to-set" onClick={newTab}>+ Tab</button>
           <button className="grid-to-set" onClick={() => setNewSheet(true)}>+ Grille</button>
         </div>
       )}
 
       {newSheet && <NewGridSheet onClose={() => setNewSheet(false)} onEmpty={() => newGrid()} onGenerate={generated} />}
 
+      {tabbing && <TabEditor tab={tabbing.idea.tab} bpm={tabbing.idea.bpm} title={tabbing.idea.title} onClose={() => setTabbing(null)}
+        onSave={tab => { const i = { ...tabbing.idea, tab }; setTabbing(null); if (tabbing.isNew) setEditing({ idea: i, isNew: true }); else saveIdea(i); }} />}
       {editing && <IdeaEditor idea={editing.idea} isNew={editing.isNew} onSave={saveIdea} onClose={() => setEditing(null)} />}
 
       {linking && (

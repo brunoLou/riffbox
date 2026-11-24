@@ -1,5 +1,6 @@
 import { KEY_FR } from './music';
 import { registerSerializer } from './store';
+import type { Tab } from './tab';
 
 registerSerializer<Idea[]>('ideas', list => list.map(({ audioUrl: _url, ...rest }) => rest));
 
@@ -27,6 +28,8 @@ export interface Idea {
   audioUrl?: string;
   /** MIDI notes of a synthesized example phrase (8th notes). */
   lick?: number[];
+  /** A riff written in tablature. */
+  tab?: Tab;
   /** Screen opened by "Ouvrir". */
   to?: string;
 }

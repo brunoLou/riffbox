@@ -48,6 +48,13 @@ sans changer la vitesse (`pitchShift.ts` : deux têtes de lecture dans une court
 relayées en fondu, en AudioWorklet). Forme d’onde pour se repérer ; espace, flèches, A et B au clavier.
 Le fichier reste sur l’appareil, avec sa vitesse, sa boucle et sa transposition.
 
+## Tablatures dans le carnet
+
+Carnet → « + Tab » (nouveau riff) ou « Tablature » sur une idée : une grille six cordes × temps
+(croches) à toucher, un pavé de cases (0–12, +12 pour 13–24, × étouffée, effacer), le curseur avance
+tout seul. La tab s’affiche en texte (Mi aigu en haut, à copier), s’écoute au tempo de l’idée et se
+synchronise avec l’idée (`Idea.tab`).
+
 ## Progrès
 
 Pratiquer → Voir mes progrès (ou depuis le Coach) : minutes de pratique par semaine sur douze
@@ -201,6 +208,7 @@ dans le dossier temporaire du système.
 | `tests/unit/pitchShift.test.ts` | transposition sans changer la vitesse : la note entendue est la note transposée (−5 à +7 demi-tons), le niveau reste |
 | `tests/unit/ear.test.ts` | oreille : questions du niveau, jamais deux fois la même, accord à jouer reconnu, scores et réponse à revoir |
 | `tests/unit/progressStats.test.ts` | progrès : minutes par semaine (lundi–dimanche), tempos séance après séance |
+| `tests/unit/tab.test.ts` | tablatures : cases, texte (Mi aigu en haut), notes jouées par colonne, colonnes vides retirées |
 | `tests/unit/piano.test.ts` | piano : position de pianiste, notes exactes de la guitare, nom de l’accord touché au clavier, notes écrites selon l’accord |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises, backing tracks perso avec leur son |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
@@ -228,6 +236,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/metronome-entraineur.spec.ts` | entraîneur : le tempo monte mesure après mesure puis revient ; les mesures muettes ne font vraiment aucun son |
 | `tests/e2e/oreille.spec.ts` | oreille : intervalles et accords avec la réponse montrée, scores gardés ; accord demandé joué au micro (simulé) |
 | `tests/e2e/progres.spec.ts` | progrès : douze semaines (graphique et tableau), courbes de tempo, bilans, oreille ; écran vide qui explique |
+| `tests/e2e/tablature.spec.ts` | riff en tab : saisie case par case, nommé, affiché, écouté, modifié, gardé |
 | `tests/e2e/relever.spec.ts` | relever : forme d’onde, vitesse, boucle A–B respectée, transposition, tout retrouvé au retour |
 | `tests/e2e/schemas-live.spec.ts` | prompteur : schémas de l’accord en cours et du suivant, qui suivent la lecture ; masquables |
 | `tests/e2e/suivre.spec.ts` | « Suivre ma guitare » : faux micro jouant les accords de Minuit Shuffle, le texte suit |

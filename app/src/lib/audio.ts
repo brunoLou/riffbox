@@ -170,3 +170,39 @@ export function playPiano(notes: number[], spread = 0): Playback {
   });
   return { stop: () => master.disconnect() };
 }
+
+/**
+ * A tab played column by column in eighth notes at `bpm`: each column's notes plucked together
+ * (a slight strum). `onStep` tells which column sounds.
+ */
+export function playSteps(cols: number[][], bpm: number, onEnd: () => void, onStep?: (i: number) => void): Playback {
+  const ac = ctx();
+  const step = 30 / bpm;
+  const t0 = ac.currentTime + 0.05;
+  const master = ac.createGain();
+  master.gain.value = 0.3;
+  master.connect(ac.destination);
+  const timers: number[] = [];
+  cols.forEach((notes, i) => {
+    const t = t0 + i * step;
+    if (onStep) timers.push(window.setTimeout(() => onStep(i), (t - ac.currentTime) * 1000));
+    notes.forEach((m, k) => {
+      const tt = t + k * 0.012;
+      const o = ac.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.value = 440 * 2 ** ((m - 69) / 12);
+      const f = ac.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.setValueAtTime(2800, tt);
+      f.frequency.exponentialRampToValueAtTime(500, tt + 0.35);
+      const g = ac.createGain();
+      g.gain.setValueAtTime(0.0001, tt);
+      g.gain.exponentialRampToValueAtTime(0.7 / Math.max(1, notes.length * 0.6), tt + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, tt + Math.max(0.3, step * 1.8));
+      o.connect(f); f.connect(g); g.connect(master);
+      o.start(tt); o.stop(tt + step * 2 + 0.3);
+    });
+  });
+  timers.push(window.setTimeout(onEnd, (cols.length * step + 0.2) * 1000));
+  return { stop: () => { timers.forEach(clearTimeout); master.disconnect(); } };
+}
