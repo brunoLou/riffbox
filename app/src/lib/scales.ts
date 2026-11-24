@@ -106,6 +106,41 @@ function cagedBoxes(def: ScaleDef, key: number): Position[] {
 export const positions = (def: ScaleDef, key: number): Position[] =>
   def.group === 'penta' ? pentaBoxes(def, key) : cagedBoxes(def, key);
 
+/** The three treble strings (G, B, high e): string index and open-string pitch (MIDI). */
+export const TREBLE: [number, number][] = [[3, 55], [4, 59], [5, 64]];
+
+/** A sliding form: its box on the three treble strings, and its six notes from low to high. */
+export interface SlideForm extends Position { notes: number[] }
+
+/**
+ * Pentatonic « sliding » forms on the three treble strings: two notes per string, climbing
+ * diagonally along the neck (six consecutive notes of the scale, starting from each degree).
+ * The blues scale uses its minor pentatonic (the blue note shows in between).
+ */
+export function slideForms(def: ScaleDef, key: number): SlideForm[] {
+  if (def.group !== 'penta') return [];
+  const iv = def.id === 'blues' ? P_MIN : def.iv;
+  const inScale = (p: number) => iv.includes(mod12(p - key));
+  const forms: SlideForm[] = [];
+  for (const d of iv) {
+    // The lowest start on the G string whose six notes fit on the neck.
+    for (let p0 = 55; p0 <= 55 + LAST; p0++) {
+      if (mod12(p0 - key) !== d) continue;
+      const notes = [p0];
+      for (let p = p0 + 1; notes.length < 6; p++) if (inScale(p)) notes.push(p);
+      const frets = notes.map((p, i) => p - TREBLE[i >> 1][1]);
+      if (frets.some(f => f < 0 || f > LAST)) continue;
+      const box: Box = {};
+      TREBLE.forEach(([si], k) => { box[si] = [frets[2 * k], frets[2 * k + 1]]; });
+      forms.push({ label: '', box, notes });
+      break;
+    }
+  }
+  return forms
+    .sort((a, b) => a.box[3][0] - b.box[3][0])
+    .map((f, i) => ({ ...f, label: `↗${i + 1}` }));
+}
+
 /** One octave up and back down from a comfortable root, for listening. */
 export function listenNotes(def: ScaleDef, key: number, blue: boolean): number[] {
   const root = 48 + mod12(key - 0); // C3–B3

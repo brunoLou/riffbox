@@ -33,12 +33,12 @@ test('scale library: modes with CAGED positions, blues, arpeggios', async ({ pag
   await chip('Lydien').click();
   await expect(page.locator('.neck .dot', { hasText: '♯4' }).first()).toBeVisible();
   await chip('Blues').click();
-  await expect(page.locator('.blue-btn')).toHaveCount(0);
+  await expect(page.locator('.blue-btn:not(.treble-btn)')).toHaveCount(0);
   await expect(page.locator('.neck .dot.blue')).toHaveCount(8);
   await chip('Arp. m7').click();
   await expect(page.locator('.scale-title')).toContainText('Am7');
   await chip('Penta min').click();
-  await page.locator('.blue-btn').click();
+  await page.locator('.blue-btn:not(.treble-btn)').click();
   await expect(page.locator('.neck .dot.blue').first()).toBeVisible();
   await page.getByLabel('Écouter la gamme').click();
   await page.locator('.lib-tabs a', { hasText: 'Accords' }).click();
@@ -82,4 +82,37 @@ test('fingers on the diagram, and the inversions of a chord on each string group
   await expect(button(page, 'Renversements')).toBeDisabled();
   await expect(page.locator('.inv-help')).toBeVisible();
   await expect(page.locator('.shape-label')).toHaveText(/^Forme de/);
+});
+
+test('scales: « 3 cordes aiguës » dims the low strings, and pentatonics get sliding forms', async ({ page }) => {
+  await page.goto('#/pratiquer/gammes');
+  await page.getByRole('button', { name: 'Penta min', exact: true }).click();
+  await page.getByRole('button', { name: 'La', exact: true }).click();
+  const toggle = page.getByRole('button', { name: '3 cordes aiguës' });
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('[data-string="0"] .dot.lit').first()).toBeVisible(); // position 1 uses the low E
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  // Only the G, B and high e strings stay lit.
+  for (const si of [0, 1, 2]) await expect(page.locator(`[data-string="${si}"] .dot.lit`)).toHaveCount(0);
+  await expect(page.locator('[data-string="5"] .dot.lit').first()).toBeVisible();
+
+  // Sliding forms: two notes per string, climbing.
+  const forms = page.getByRole('group', { name: 'Formes glissées' }).getByRole('button');
+  await expect(forms).toHaveText(['↗1', '↗2', '↗3', '↗4', '↗5']);
+  await forms.nth(1).click();
+  await expect(forms.nth(1)).toHaveAttribute('aria-pressed', 'true');
+  for (const [si, notes] of [[3, ['A', 'C']], [4, ['D', 'E']], [5, ['G', 'A']]] as const) {
+    await expect(page.locator(`[data-string="${si}"] .dot.lit`)).toHaveText([...notes]);
+  }
+  // Remembered.
+  await page.reload();
+  await expect(page.getByRole('button', { name: '3 cordes aiguës' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.dot.lit')).toHaveCount(6);
+
+  // Other scales: the option stays, without sliding forms.
+  await page.getByRole('button', { name: 'Dorien', exact: true }).click();
+  await expect(page.getByRole('group', { name: 'Formes glissées' })).toHaveCount(0);
+  for (const si of [0, 1, 2]) await expect(page.locator(`[data-string="${si}"] .dot.lit`)).toHaveCount(0);
+  await expect(page.locator('[data-string="4"] .dot.lit').first()).toBeVisible();
 });
