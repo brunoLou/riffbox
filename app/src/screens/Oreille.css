@@ -1,0 +1,22 @@
+.ear-start, .ear-q { display: flex; flex-direction: column; gap: 12px; }
+.ear-listen { align-self: center; width: 84px; height: 84px; border-radius: 50%; background: var(--amber); color: var(--ink); font-size: 30px; font-weight: 900; box-shadow: 0 0 0 5px var(--line); }
+.ear-q > .help { text-align: center; }
+.ear-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.ear-choice { min-height: 48px; padding: 6px 10px; border-radius: 14px; background: var(--surface-2); border: 1.5px solid var(--line); color: var(--cream); font-weight: 700; font-size: 15px; }
+.ear-choice.right { background: #1f4a35; border-color: #3fae6a; color: #eafff2; }
+.ear-choice.wrong { background: #5a2018; border-color: #e07a5f; color: #ffeae4; }
+.ear-choice:disabled { opacity: 1; }
+.ear-result { margin: 0; text-align: center; font-weight: 700; font-size: 16px; }
+.ear-result.ok { color: var(--led-text, #7bd389); }
+.ear-result.ko { color: #e07a5f; }
+.ear-stats { margin: 0; font-size: 14px; color: var(--muted-3); }
+.ear-stats b { color: var(--cream); }
+.ear-opt { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--cream); }
+.ear-opt select { flex: 1; height: 40px; border-radius: 10px; background: var(--surface-2); color: var(--cream); border: 1px solid var(--line); padding: 0 8px; font: inherit; }
+.ear-target { text-align: center; font-size: 30px; }
+.ear-target b { color: var(--amber-hi); }
+.ear-target .mono { font-size: 18px; color: var(--muted-2); }
+.ear-shape { display: flex; justify-content: center; }
+.ear-shape .chord-svg { width: 150px; height: auto; }
+.ear-heard { margin: 0; text-align: center; color: var(--muted-3); }
+.ear-heard b { color: var(--cream); }

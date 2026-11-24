@@ -28,6 +28,7 @@ const MOTIFS: Record<Motif, ReactNode> = {
   loop: <><path d="M24 30 A20 18 0 1 1 50 46" /><path d="M44 40 L50 46 L42 50" /><circle cx="76" cy="30" r="8" className="fill" /></>,
   target: <><circle cx="50" cy="30" r="24" /><circle cx="50" cy="30" r="14" /><circle cx="50" cy="30" r="4" className="fill" /><path d="M74 6 L56 24" /></>,
   slow: <><path d="M4 34 Q10 14 16 34 T28 34 T40 34 T52 34 T64 34 T76 34 T88 34 T96 34" /><path d="M30 8 L30 56" className="thick" /><path d="M70 8 L70 56" className="thick" /><path d="M30 10 L38 10 M70 10 L62 10" /></>,
+  quiz: <><circle cx="30" cy="40" r="7" className="fill" /><path d="M37 40 L37 10 L52 16" /><circle cx="66" cy="44" r="7" className="fill" /><path d="M73 44 L73 14" /><path d="M84 18 Q84 8 92 8 Q99 8 98 16 Q97 22 91 25 L91 31" /><circle cx="91" cy="38" r="2" className="fill" /></>,
   gear: <><circle cx="50" cy="30" r="10" />{Array.from({ length: 8 }, (_, i) => { const a = (i * Math.PI) / 4; return <path key={i} d={`M${50 + 14 * Math.cos(a)} ${30 + 14 * Math.sin(a)} L${50 + 22 * Math.cos(a)} ${30 + 22 * Math.sin(a)}`} className="thick" />; })}</>,
 };
 

@@ -48,6 +48,14 @@ sans changer la vitesse (`pitchShift.ts` : deux têtes de lecture dans une court
 relayées en fondu, en AudioWorklet). Forme d’onde pour se repérer ; espace, flèches, A et B au clavier.
 Le fichier reste sur l’appareil, avec sa vitesse, sa boucle et sa transposition.
 
+## Oreille
+
+Pratiquer → Oreille, trois exercices à trois niveaux : **Intervalles** (deux notes au piano, l’une
+après l’autre ou ensemble : quarte, quinte, octave, puis tierces, puis tous), **Accords** (un accord
+gratté : majeur/mineur, puis 7, maj7, m7, puis sus4, diminué, augmenté) et **Jouer l’accord** (l’app
+nomme un accord, au hasard ou choisi ; le micro le reconnaît parmi ceux du niveau). La bonne réponse
+s’affiche après chaque essai ; réussite par exercice et réponse « à revoir » gardées (`ear.stats`).
+
 ## Looper
 
 Pratiquer › Looper : une boucle de 1 à 8 mesures au tempo choisi, enregistrée après une mesure de
@@ -177,6 +185,7 @@ dans le dossier temporaire du système.
 | `tests/unit/pageSong.test.ts` | page entière copiée (type Ultimate Guitar) : la chanson seule, avec titre, artiste, tonalité et capo ; une grille seule garde l’import habituel |
 | `tests/unit/coachProgress.test.ts` | coach dans la durée : tempos selon le ressenti, une réponse par jour, routine aux tempos atteints, bilan de la semaine, test du mois |
 | `tests/unit/pitchShift.test.ts` | transposition sans changer la vitesse : la note entendue est la note transposée (−5 à +7 demi-tons), le niveau reste |
+| `tests/unit/ear.test.ts` | oreille : questions du niveau, jamais deux fois la même, accord à jouer reconnu, scores et réponse à revoir |
 | `tests/unit/piano.test.ts` | piano : position de pianiste, notes exactes de la guitare, nom de l’accord touché au clavier, notes écrites selon l’accord |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises, backing tracks perso avec leur son |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
@@ -201,6 +210,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/petits-ecrans.spec.ts` | téléphones de 640 à 780 px de haut : rien ne reste caché sous le bouton principal ou la barre d’onglets |
 | `tests/e2e/tablette.spec.ts` | tablette (iPad) : plein écran, colonne, prompteur large, manche entier, grille en deux colonnes |
 | `tests/e2e/piano.spec.ts` | clavier de piano : bibliothèque d’accords (pianiste ou notes de la guitare), du piano à la guitare, grilles et prompteur |
+| `tests/e2e/oreille.spec.ts` | oreille : intervalles et accords avec la réponse montrée, scores gardés ; accord demandé joué au micro (simulé) |
 | `tests/e2e/relever.spec.ts` | relever : forme d’onde, vitesse, boucle A–B respectée, transposition, tout retrouvé au retour |
 | `tests/e2e/schemas-live.spec.ts` | prompteur : schémas de l’accord en cours et du suivant, qui suivent la lecture ; masquables |
 | `tests/e2e/suivre.spec.ts` | « Suivre ma guitare » : faux micro jouant les accords de Minuit Shuffle, le texte suit |
