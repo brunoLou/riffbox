@@ -16,7 +16,7 @@ test('chord library: shapes, intervals, positions on the neck', async ({ page })
   await expect.poll(() => page.locator('.neck .dot').evaluateAll(ds => ds.filter(d => (d as HTMLElement).style.opacity === '1').length)).toBe(6);
   await page.locator('.label-seg button', { hasText: 'Intervalles' }).click();
   await expect(page.locator('.string-notes span')).toHaveText(['1', '3', '5', '1', '3', '♭7']);
-  await page.getByLabel(/^Écouter/).click();
+  await page.getByLabel('Écouter C7', { exact: true }).click();
   await page.locator('.type-chip', { hasText: /^m7♭5$/ }).click();
   await expect(page.locator('.thumb')).toHaveCount(3);
 });
