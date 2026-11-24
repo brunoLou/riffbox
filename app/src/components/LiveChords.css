@@ -9,3 +9,5 @@
 .live-next .live-diagram { opacity: .75; }
 @keyframes live-in { from { opacity: .3; transform: scale(.96); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .live-diagram.big .chord-svg { animation: none; } }
+.live-piano { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.live-piano .piano-chord { width: 100%; }

@@ -146,6 +146,7 @@ dans le dossier temporaire du système.
 | `tests/unit/pedals.test.ts` | pédales de l’accueil toutes différentes : couleur, dessin, commandes et footswitch |
 | `tests/unit/cloudSync.test.ts` | synchronisation par un stockage distant : échange entre deux appareils, rien de renvoyé sans changement, suppressions, enregistrements manquants |
 | `tests/unit/driveToken.test.ts` | fonction Vercel de connexion durable : échange du code, cookie illisible par la page, renouvellement, refus des autres sites |
+| `tests/unit/piano.test.ts` | piano : position de pianiste, notes exactes de la guitare, nom de l’accord touché au clavier, notes écrites selon l’accord |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises, backing tracks perso avec leur son |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
 | `tests/e2e/smoke.spec.ts` | chaque écran s’ouvre, navigation, anciennes adresses, micro refusé |
@@ -168,6 +169,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/accessibilite.spec.ts` | axe-core (WCAG 2.2 AA) sur les 30 écrans dans les deux thèmes et sur les feuilles ouvertes ; feuilles au clavier ; focus visible |
 | `tests/e2e/petits-ecrans.spec.ts` | téléphones de 640 à 780 px de haut : rien ne reste caché sous le bouton principal ou la barre d’onglets |
 | `tests/e2e/tablette.spec.ts` | tablette (iPad) : plein écran, colonne, prompteur large, manche entier, grille en deux colonnes |
+| `tests/e2e/piano.spec.ts` | clavier de piano : bibliothèque d’accords (pianiste ou notes de la guitare), du piano à la guitare, grilles et prompteur |
 | `tests/e2e/schemas-live.spec.ts` | prompteur : schémas de l’accord en cours et du suivant, qui suivent la lecture ; masquables |
 | `tests/e2e/suivre.spec.ts` | « Suivre ma guitare » : faux micro jouant les accords de Minuit Shuffle, le texte suit |
 | `tests/e2e/tonalite-ecoute.spec.ts` | « Quel ton ? » : faux micro jouant un morceau en Ré majeur, gamme ouverte, tonalité appliquée au morceau |

@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import { ChordDiagram } from '../components/ChordDiagram';
+import { PianoChord } from '../components/PianoChord';
+import { PianoFinder } from '../components/PianoFinder';
 import { strum, type Playback } from '../lib/audio';
 import {
   CHORD_TYPES, INV_NAMES, LETTERS, OPEN_MIDI, SHAPE_FR, capPos, chordSymbol, chordType, fingering, hasInversions, intervalOf, inversions,
@@ -47,6 +49,7 @@ export default function Accords() {
   const v = list[Math.min(idx, list.length - 1)];
   const player = useRef<Playback | null>(null);
   const neck = useRef<HTMLDivElement>(null);
+  const scroller = useRef<HTMLDivElement>(null);
   // On a phone the neck scrolls; on a tablet the frets widen to show it whole.
   const FRET_W = useFretWidth(neck, OPEN_W, LAST, MIN_FRET_W);
   const fretX = (f: number) => (f === 0 ? 0 : OPEN_W + (f - 1) * FRET_W);
@@ -76,7 +79,7 @@ export default function Accords() {
   return (
     <Phone label="06b Accords" wide>
       <StatusBar />
-      <div className="chords-scroll neck-screen">
+      <div className="chords-scroll neck-screen" ref={scroller}>
         <div className="head">
           <div className="head-l">
             <BackButton fallback="/pratiquer" />
@@ -150,6 +153,8 @@ export default function Accords() {
           </div>
         )}
 
+        <PianoChord root={root} type={type} voicing={v} />
+
         <span className="kicker" style={{ padding: '0 4px' }}>{showInv ? 'Renversements' : list.length === 5 ? 'Les 5 formes CAGED' : 'Positions'}</span>
         <div className="hscroll thumbs" data-theme="dark">
           {list.map((x, i) => (
@@ -197,6 +202,12 @@ export default function Accords() {
             </div>
           </div>
         </div>
+
+        <span className="kicker" style={{ padding: '0 4px' }}>Du piano à la guitare</span>
+        <PianoFinder onPick={(r, t) => {
+          setRoot(r); setTypeId(t.id); setMode('positions');
+          scroller.current?.querySelector('.chord-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }} />
       </div>
       <TabBar active={2} />
     </Phone>

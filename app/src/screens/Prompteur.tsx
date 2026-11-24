@@ -42,6 +42,8 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
   const fs = readStored(SETTINGS.stageFontSize.key, SETTINGS.stageFontSize.def);
   const gf = useGuitarFollow(lines, scrollRef, follow);
   const [showChords, setShowChords] = useStoredState('stage.diagrams', true);
+  // On stage the lyrics come first: the keyboard only when asked for.
+  const [showPiano, setShowPiano] = useStoredState('stage.piano', false);
   const events = useMemo(() => followEvents(lines), [lines]);
   /** Reading position (no guitar following): the first chord whose line is at the top of the lyrics. */
   const [readAt, setReadAt] = useState(0);
@@ -143,6 +145,10 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
             <button className={'stage-tag stage-diag' + (showChords ? ' on' : '')} aria-pressed={showChords}
               onClick={() => setShowChords(!showChords)}>Schémas</button>
           )}
+          {events.length > 0 && (
+            <button className={'stage-tag stage-diag' + (showPiano ? ' on' : '')} aria-pressed={showPiano}
+              onClick={() => setShowPiano(!showPiano)}>Piano</button>
+          )}
           {wake !== 'on' && (
             <span className="stage-tag stage-sleep" title={wake === 'unsupported'
               ? 'Ce navigateur ne sait pas empêcher la mise en veille : allongez le délai de veille du téléphone.'
@@ -181,7 +187,7 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
         )}
       </div>
 
-      {showChords && <StageChords now={nowChord} next={nextChord} />}
+      <StageChords now={nowChord} next={nextChord} diagrams={showChords} piano={showPiano} />
 
       <div className="stage-controls">
         <div className="stepper-row">

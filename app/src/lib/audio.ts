@@ -137,3 +137,36 @@ export function strum(notes: number[]): Playback {
   });
   return { stop: () => master.disconnect() };
 }
+
+/**
+ * A piano-like chord (or one note): a struck tone that fades, partials a little brighter at the
+ * start. `spread`: seconds between notes (0: all together).
+ */
+export function playPiano(notes: number[], spread = 0): Playback {
+  const ac = ctx();
+  const t0 = ac.currentTime + 0.02;
+  const master = ac.createGain();
+  master.gain.value = Math.min(0.3, 0.9 / Math.max(1, notes.length));
+  master.connect(ac.destination);
+  notes.forEach((m, i) => {
+    const t = t0 + i * spread;
+    const hz = 440 * 2 ** ((m - 69) / 12);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(1, t + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.35, t + 0.25);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 2.4);
+    g.connect(master);
+    ([[1, 'triangle', 1], [2, 'sine', 0.35], [3, 'sine', 0.12]] as const).forEach(([k, type, level]) => {
+      const o = ac.createOscillator();
+      o.type = type;
+      o.frequency.value = hz * k;
+      const og = ac.createGain();
+      og.gain.setValueAtTime(level, t);
+      og.gain.exponentialRampToValueAtTime(level * 0.2, t + 0.8);
+      o.connect(og); og.connect(g);
+      o.start(t); o.stop(t + 2.5);
+    });
+  });
+  return { stop: () => master.disconnect() };
+}

@@ -1,0 +1,27 @@
+.piano-keys { display: block; width: 100%; height: auto; max-width: 560px; margin: 0 auto; user-select: none; -webkit-user-select: none; }
+.piano-keys .pk-white rect { fill: #f3ece0; stroke: #2b2622; stroke-width: 1; }
+.piano-keys .pk-black rect { fill: #1b1816; stroke: #000; stroke-width: .8; }
+.piano-keys .pk-white.lit rect { fill: #fbe2b5; }
+.piano-keys .pk-white.root rect { fill: #f6c46e; }
+.piano-keys .pk-black.lit rect, .piano-keys .pk-black.root rect { fill: #5a4325; }
+.piano-keys .pk-dot { fill: var(--cream, #f5ecdc); stroke: #1a1816; stroke-width: 1; }
+.piano-keys .root .pk-dot { fill: var(--amber, #e9a23b); }
+.piano-keys .pk-txt { font: 700 8px var(--f-mono, monospace); fill: #1a1816; pointer-events: none; }
+.piano-keys .pk-black .pk-txt { font-size: 6px; }
+.piano-keys .pk-c { font: 600 7px var(--f-mono, monospace); fill: #8a8073; pointer-events: none; }
+.piano-keys.playable g { cursor: pointer; }
+.piano-keys.playable g:focus-visible rect { stroke: var(--amber, #e9a23b); stroke-width: 2.5; outline: none; }
+
+.piano-chord { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 18px; background: linear-gradient(var(--wood-1), var(--wood-2)); border: 1px solid var(--wood-border); }
+.piano-chord.compact { padding: 6px 8px; gap: 0; border-radius: 12px; }
+.piano-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.piano-head .kicker { margin-right: auto; }
+.piano-play { width: 40px; height: 40px; border-radius: 50%; background: var(--amber); color: var(--ink); font-size: 15px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex: none; }
+.piano-help { margin: 0; font-size: 13px; line-height: 1.35; color: var(--muted-2); }
+.finder-result { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-height: 40px; }
+.finder-chip { display: inline-flex; gap: 8px; align-items: baseline; }
+.finder-chip b { font-family: var(--f-mono); font-size: 17px; }
+.finder-chip span { font-size: 12px; opacity: .8; }
+.btn-link.small { height: 32px; font-size: 13px; }
+.piano-toggle { height: 26px; padding: 0 10px; border-radius: 13px; border: 1.5px solid var(--line-2); color: var(--muted-2); font-size: 12px; font-weight: 700; }
+.piano-toggle.on { border-color: var(--amber); color: var(--amber-hi); }

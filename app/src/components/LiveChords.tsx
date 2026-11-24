@@ -2,6 +2,7 @@ import { voicings } from '../lib/chords';
 import { chordName, type Chord } from '../lib/music';
 import { useStoredState } from '../lib/store';
 import { ChordDiagram } from './ChordDiagram';
+import { PIANO_SHOW_KEY, PianoChord, PianoToggle } from './PianoChord';
 import { VOICING_PREF_KEY, chordOf } from './GridChordSheet';
 import './LiveChords.css';
 
@@ -13,12 +14,20 @@ function Diagram({ c, prefs, size }: { c: Chord; prefs: Record<string, number>; 
   return v ? <ChordDiagram v={v} root={root} type={type} labels="fingers" size={size} /> : null;
 }
 
+/** The chord being played, on the piano (compact keyboard). */
+function NowPiano({ c, prefs }: { c: Chord; prefs: Record<string, number> }) {
+  const { root, type } = chordOf(c);
+  const list = voicings(root, type);
+  return <PianoChord root={root} type={type} voicing={list[Math.min(prefs[chordName(c)] ?? 0, list.length - 1)]} compact />;
+}
+
 /**
  * While the grid loops: the diagram of the chord being played, changing with the bars, and the
  * next one (smaller) to get the hand ready.
  */
 export function LiveChords({ chords, bar }: { chords: Chord[]; bar: number }) {
   const [prefs] = useStoredState<Record<string, number>>(VOICING_PREF_KEY, {});
+  const [piano, setPiano] = useStoredState(PIANO_SHOW_KEY, true);
   if (!chords.length) return null;
   const i = ((bar % chords.length) + chords.length) % chords.length;
   const now = chords[i], next = chords[(i + 1) % chords.length];
@@ -33,6 +42,10 @@ export function LiveChords({ chords, bar }: { chords: Chord[]; bar: number }) {
         <span className="live-kicker">Ensuite</span>
         <span className="live-name small">{chordName(next)}</span>
         <div className="live-diagram"><Diagram c={next} prefs={prefs} size="big" /></div>
+      </div>
+      <div className="live-piano">
+        <PianoToggle show={piano} onChange={setPiano} />
+        {piano && <NowPiano c={now} prefs={prefs} />}
       </div>
     </div>
   );
