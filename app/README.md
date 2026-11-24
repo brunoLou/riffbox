@@ -72,7 +72,7 @@ L’identifiant OAuth Google de l’app est dans `GOOGLE_CLIENT_ID` (`src/lib/go
 sans lui, la carte l’explique et le transfert par fichier reste disponible.
 
 **Connexion durable.** Google ne donne à une app web qu’une autorisation d’une heure. La petite
-fonction Vercel `api/drive-token.ts` garde l’autorisation longue (« refresh token ») dans un cookie
+fonction Vercel `app/api/drive-token.ts` garde l’autorisation longue (« refresh token ») dans un cookie
 `HttpOnly` et redonne une autorisation à la demande : la synchronisation continue sans rien demander.
 Elle a besoin du secret du client OAuth dans les variables d’environnement Vercel
 (`GOOGLE_CLIENT_SECRET`) ; sans lui, l’app garde la reconnexion d’une heure. En mode « Test » chez

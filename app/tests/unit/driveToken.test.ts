@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { GET, POST } from '../../../api/drive-token';
+import { GET, POST } from '../../api/drive-token';
 
 const SITE = 'https://riffbox.vercel.app';
 const req = (body: object, cookie = '', origin = SITE) =>
