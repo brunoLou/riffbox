@@ -29,6 +29,12 @@ describe('the lasting Google connection (Vercel function)', () => {
     expect(JSON.stringify(j)).not.toContain('valeur');
   });
 
+  it('also takes the secret under the name it was saved with in Vercel', () => {
+    vi.stubEnv('GOOGLE_CLIENT_SECRET', '');
+    vi.stubEnv('GOOGLE_KEY_SECRET', 'secret');
+    return GET().json().then(j => expect(j).toEqual({ ready: true }));
+  });
+
   it('exchanges Google’s code, keeps the lasting authorization in a cookie the page cannot read, then renews', async () => {
     vi.stubEnv('GOOGLE_CLIENT_SECRET', 'secret');
     expect(await GET().json()).toEqual({ ready: true });

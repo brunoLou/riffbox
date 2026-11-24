@@ -16,7 +16,8 @@ const CLIENT_ID = '391513495591-86boohtji5tht41ca7dbnsoqk2vb455t.apps.googleuser
 const COOKIE = 'rb_drive_rt';
 const YEAR = 365 * 86400;
 
-const secret = () => process.env.GOOGLE_CLIENT_SECRET ?? '';
+// GOOGLE_KEY_SECRET: the name it was first saved under in Vercel.
+const secret = () => process.env.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_KEY_SECRET || '';
 const clientId = () => process.env.GOOGLE_CLIENT_ID || CLIENT_ID;
 
 const json = (body: unknown, status = 200, cookie?: string) => {
