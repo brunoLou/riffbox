@@ -202,7 +202,7 @@ export default function Reglages() {
           </Link>
         </div>
 
-        <p className="settings-foot mono">RIFFBOX 0.1 · fonctionne hors ligne</p>
+        <p className="settings-foot mono">RIFFBOX 0.1 · version du {new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(__BUILD_TIME__))} · fonctionne hors ligne</p>
       </div>
       <TabBar active={0} />
     </Phone>

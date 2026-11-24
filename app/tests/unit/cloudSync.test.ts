@@ -109,6 +109,23 @@ describe('sync through the Drive', () => {
     expect(readStored<{ id: string }[]>('home.layout', []).map(s => s.id)).toEqual(['tuner', 'looper', 'coach']);
   });
 
+  it('boards set up before they were synced (no date): the one with more pedals ends up everywhere', async () => {
+    const { remote } = memRemote();
+    const board = (ids: string[]) => ids.map(id => ({ id, wide: false }));
+    // Computer first, with the starting board; then the phone, where pedals were added long ago.
+    withoutWriteHooks(() => writeStored('home.layout', board(['tuner', 'metro'])));
+    await syncOnce(remote, memAudio().a);
+    clearAllStored();
+    withoutWriteHooks(() => writeStored('home.layout', board(['tuner', 'metro', 'looper', 'coach'])));
+    await syncOnce(remote, memAudio().a);
+    expect(readStored<{ id: string }[]>('home.layout', []).map(s => s.id)).toEqual(['tuner', 'metro', 'looper', 'coach']);
+    // Back on the computer: it gets the phone's board.
+    clearAllStored();
+    withoutWriteHooks(() => writeStored('home.layout', board(['tuner', 'metro'])));
+    await syncOnce(remote, memAudio().a);
+    expect(readStored<{ id: string }[]>('home.layout', []).map(s => s.id)).toEqual(['tuner', 'metro', 'looper', 'coach']);
+  });
+
   it('device settings stay on each device', async () => {
     const { r, remote } = memRemote();
     writeStored('settings.theme', 'light');

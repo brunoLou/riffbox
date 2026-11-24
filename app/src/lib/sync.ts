@@ -160,7 +160,12 @@ export function planMerge(
   for (const key of SYNC_VALUES) {
     if (!(key in theirs)) continue;
     const mineSet = mine(key) !== undefined;
-    if (!mineSet || (theirTimes[key] ?? 0) > (myTimes[key] ?? 0)) {
+    // Home boards set up before they were synced carry no date: the one with more pedals (the ones
+    // the player added) wins, so every device ends up with it.
+    const undated = !theirTimes[key] && !myTimes[key];
+    const biggerBoard = key === 'home.layout' && undated && Array.isArray(theirs[key]) && Array.isArray(mine(key))
+      && (theirs[key] as unknown[]).length > (mine(key) as unknown[]).length;
+    if (!mineSet || biggerBoard || (theirTimes[key] ?? 0) > (myTimes[key] ?? 0)) {
       if (JSON.stringify(mine(key)) !== JSON.stringify(theirs[key])) { writes[key] = theirs[key]; stats.updated++; }
       times[key] = Math.max(theirTimes[key] ?? 0, myTimes[key] ?? 0);
     }
