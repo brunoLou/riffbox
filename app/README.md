@@ -48,6 +48,13 @@ sans changer la vitesse (`pitchShift.ts` : deux têtes de lecture dans une court
 relayées en fondu, en AudioWorklet). Forme d’onde pour se repérer ; espace, flèches, A et B au clavier.
 Le fichier reste sur l’appareil, avec sa vitesse, sa boucle et sa transposition.
 
+## Métronome entraîneur
+
+Métronome → Entraîneur : **tempo qui monte** (+N BPM toutes les N mesures jusqu’au tempo visé, puis
+retour au tempo de départ à l’arrêt) et **mesures muettes** (jouer N mesures, couper M : on garde le
+tempo seul). Le moteur compte les mesures qu’il programme (`hooks.onBar`, `hooks.muted`) : tempo et
+silences changent pile au début d’une mesure.
+
 ## Oreille
 
 Pratiquer → Oreille, trois exercices à trois niveaux : **Intervalles** (deux notes au piano, l’une
@@ -210,6 +217,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/petits-ecrans.spec.ts` | téléphones de 640 à 780 px de haut : rien ne reste caché sous le bouton principal ou la barre d’onglets |
 | `tests/e2e/tablette.spec.ts` | tablette (iPad) : plein écran, colonne, prompteur large, manche entier, grille en deux colonnes |
 | `tests/e2e/piano.spec.ts` | clavier de piano : bibliothèque d’accords (pianiste ou notes de la guitare), du piano à la guitare, grilles et prompteur |
+| `tests/e2e/metronome-entraineur.spec.ts` | entraîneur : le tempo monte mesure après mesure puis revient ; les mesures muettes ne font vraiment aucun son |
 | `tests/e2e/oreille.spec.ts` | oreille : intervalles et accords avec la réponse montrée, scores gardés ; accord demandé joué au micro (simulé) |
 | `tests/e2e/relever.spec.ts` | relever : forme d’onde, vitesse, boucle A–B respectée, transposition, tout retrouvé au retour |
 | `tests/e2e/schemas-live.spec.ts` | prompteur : schémas de l’accord en cours et du suivant, qui suivent la lecture ; masquables |

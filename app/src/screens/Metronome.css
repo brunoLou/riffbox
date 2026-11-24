@@ -44,3 +44,12 @@
 .groove-led { position: absolute; top: 9px; right: 10px; width: 8px; height: 8px; }
 .groove-name { font-family: var(--f-display); font-weight: 900; font-size: 20px; line-height: 1; text-transform: uppercase; }
 .groove-sub { font-size: 12px; font-weight: 500; opacity: .75; }
+
+.trainer { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 16px; background: var(--surface-2); border: 1px solid var(--line); }
+.trainer-row { display: flex; align-items: center; gap: 10px; min-height: 36px; }
+.trainer-row input { width: 20px; height: 20px; accent-color: var(--amber); }
+.trainer-name { font-weight: 700; color: var(--cream); }
+.trainer-set { margin: 0 0 4px 30px; font-size: 14px; line-height: 2; color: var(--muted-3); }
+.trainer-set select { height: 32px; margin: 0 4px; border-radius: 8px; background: var(--surface-3); color: var(--cream); border: 1px solid var(--line); font: inherit; font-weight: 700; padding: 0 4px; }
+.trainer-now { margin: 0; font-weight: 700; color: var(--amber-hi); }
+.trainer-now.silent { color: #e07a5f; }

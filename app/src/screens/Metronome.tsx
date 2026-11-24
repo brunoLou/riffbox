@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import { TempoKnob } from '../components/TempoKnob';
 import {
-  GROOVES, MetronomeEngine, SIGNATURES, SUBDIVISIONS, buildPattern, defaultAccents,
-  type GrooveId, type Signature,
+  DEFAULT_GAP, DEFAULT_SPEED, GROOVES, MetronomeEngine, SIGNATURES, SUBDIVISIONS, buildPattern, defaultAccents, isSilentBar, trainerBpm,
+  type GapTrainer, type GrooveId, type Signature, type SpeedTrainer,
 } from '../lib/metronome';
 import { usePedal } from '../lib/pedal';
 import { useStoredState } from '../lib/store';
@@ -23,15 +23,50 @@ export default function Metronome() {
   const [tapFlash, setTapFlash] = useState(false);
   const taps = useRef<number[]>([]);
 
+  const [speedT, setSpeedT] = useStoredState<SpeedTrainer>('metro.trainer', DEFAULT_SPEED);
+  const [gapT, setGapT] = useStoredState<GapTrainer>('metro.gap', DEFAULT_GAP);
+  /** The bar being heard (from 1), and whether it is a silent one. */
+  const [barNow, setBarNow] = useState<{ n: number; silent: boolean } | null>(null);
+
   // The engine reads the latest settings on every step, so changes apply live.
   const settings = useRef({ bpm, sig, sub, accents, groove });
   settings.current = { bpm, sig, sub, accents, groove };
+  /** `sched`: the tempo the speed trainer set for the bar being scheduled (null: the knob's). */
+  const trainers = useRef<{ speedT: SpeedTrainer; gapT: GapTrainer; start: number; sched: number | null }>({ speedT, gapT, start: bpm, sched: null });
+  trainers.current = { ...trainers.current, speedT, gapT };
   const engine = useRef<MetronomeEngine | null>(null);
-  if (!engine.current) engine.current = new MetronomeEngine(() => buildPattern(settings.current), setBeat);
+  if (!engine.current) {
+    engine.current = new MetronomeEngine(() => {
+      const t = trainers.current;
+      return buildPattern(t.speedT.on && t.sched !== null ? { ...settings.current, bpm: t.sched } : settings.current);
+    }, (b, _bar, count) => {
+      setBeat(b);
+      if (b === 0) setBarNow({ n: count, silent: isSilentBar(trainers.current.gapT, count) });
+    }, {
+      // The speed trainer sets each bar's tempo as it is scheduled.
+      onBar: count => {
+        const t = trainers.current;
+        t.sched = t.speedT.on ? trainerBpm(t.start, t.speedT, count) : null;
+      },
+      muted: count => isSilentBar(trainers.current.gapT, count),
+    });
+  }
   useEffect(() => () => engine.current?.dispose(), []);
+  // The tempo reached shows on the knob while the trainer runs.
+  useEffect(() => {
+    if (playing && speedT.on && barNow) setBpm(trainerBpm(trainers.current.start, speedT, barNow.n));
+  }, [barNow?.n]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggle = () => {
-    if (playing) { engine.current!.stop(); setBeat(null); } else { engine.current!.start(); markUsed('metro'); }
+    if (playing) {
+      engine.current!.stop(); setBeat(null); setBarNow(null);
+      // Back to the starting tempo, ready for the next run.
+      if (speedT.on) setBpm(trainers.current.start);
+    } else {
+      trainers.current.start = bpm;
+      trainers.current.sched = null;
+      engine.current!.start(); markUsed('metro');
+    }
     setPlaying(!playing);
   };
 
@@ -110,6 +145,9 @@ export default function Metronome() {
             </button>
           ))}
         </div>
+
+        <Trainer speed={speedT} gap={gapT} bpm={playing && speedT.on ? trainers.current.start : bpm}
+          onSpeed={setSpeedT} onGap={setGapT} running={playing} bar={barNow} />
       </div>
 
       <button className={'cta' + (playing ? ' on' : '')} onClick={toggle}>
@@ -117,5 +155,49 @@ export default function Metronome() {
       </button>
       <TabBar active={0} />
     </Phone>
+  );
+}
+
+const pick = (label: string, value: number, options: number[], set: (v: number) => void, unit = '') => (
+  <select aria-label={label} value={value} onChange={e => set(Number(e.target.value))}>
+    {options.map(o => <option key={o} value={o}>{o}{unit}</option>)}
+  </select>
+);
+
+/** Speed trainer (the tempo rises bar after bar) and silent bars (keep the tempo alone). */
+function Trainer({ speed, gap, bpm, onSpeed, onGap, running, bar }: {
+  speed: SpeedTrainer; gap: GapTrainer; bpm: number; running: boolean; bar: { n: number; silent: boolean } | null;
+  onSpeed: (t: SpeedTrainer) => void; onGap: (g: GapTrainer) => void;
+}) {
+  return (
+    <section className="trainer" aria-label="Entraîneur">
+      <span className="kicker">Entraîneur</span>
+      <label className="trainer-row">
+        <input type="checkbox" checked={speed.on} onChange={e => onSpeed({ ...speed, on: e.target.checked, to: Math.max(speed.to, bpm + speed.step) })} />
+        <span className="trainer-name">Tempo qui monte</span>
+      </label>
+      {speed.on && (
+        <p className="trainer-set">
+          +{pick('Hausse du tempo', speed.step, [1, 2, 4, 5, 10], v => onSpeed({ ...speed, step: v }), ' BPM')} toutes les
+          {' '}{pick('Toutes les combien de mesures', speed.every, [1, 2, 4, 8, 16], v => onSpeed({ ...speed, every: v }))} mesures, de {bpm} jusqu’à
+          {' '}{pick('Tempo à atteindre', speed.to, Array.from({ length: 41 }, (_, i) => 40 + i * 5).filter(v => v > bpm), v => onSpeed({ ...speed, to: v }), ' BPM')}
+        </p>
+      )}
+      <label className="trainer-row">
+        <input type="checkbox" checked={gap.on} onChange={e => onGap({ ...gap, on: e.target.checked })} />
+        <span className="trainer-name">Mesures muettes</span>
+      </label>
+      {gap.on && (
+        <p className="trainer-set">
+          Jouer {pick('Mesures jouées', gap.play, [1, 2, 4, 8], v => onGap({ ...gap, play: v }))} mesures, puis couper
+          {' '}{pick('Nombre de mesures muettes', gap.mute, [1, 2, 4], v => onGap({ ...gap, mute: v }))} : gardez le tempo seul, le clic doit retomber juste.
+        </p>
+      )}
+      {running && bar && (speed.on || gap.on) && (
+        <p className={'trainer-now' + (bar.silent ? ' silent' : '')} role="status">
+          Mesure {bar.n}{bar.silent ? ' · silence, tenez le tempo !' : ''}
+        </p>
+      )}
+    </section>
   );
 }

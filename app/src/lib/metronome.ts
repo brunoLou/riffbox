@@ -16,8 +16,16 @@ export class MetronomeEngine {
   private timer: number | null = null;
   private next = 0;
   private i = 0;
+  /** Bars scheduled since the start (1 = the first one). */
+  private bars = 0;
+  private mutedBar = false;
 
-  constructor(private getPattern: () => Pattern, private onBeat: (beat: number, bar: number) => void) {}
+  /**
+   * `hooks.onBar` is called as each new bar is scheduled (before it sounds: change the tempo there);
+   * `hooks.muted` silences a whole bar (the beat lamps keep going).
+   */
+  constructor(private getPattern: () => Pattern, private onBeat: (beat: number, bar: number, count: number) => void,
+    private hooks: { onBar?: (count: number) => void; muted?: (count: number) => boolean } = {}) {}
 
   /** Restart from the first step on the next tick (e.g. after changing the track). */
   rewind() { this.i = 0; }
@@ -36,6 +44,8 @@ export class MetronomeEngine {
       for (let k = 0; k < len; k++) d[k] = Math.random() * 2 - 1;
     }
     this.i = 0;
+    this.bars = 0;
+    this.mutedBar = false;
     this.next = this.ctx.currentTime + 0.06;
     this.timer = window.setInterval(() => this.tick(), LOOKAHEAD_MS);
     this.tick();
@@ -55,13 +65,20 @@ export class MetronomeEngine {
   private tick() {
     const ctx = this.ctx!;
     while (this.next < ctx.currentTime + SCHEDULE_AHEAD) {
-      const p = this.getPattern();
-      const step = p.steps[this.i % p.steps.length];
-      for (const h of step.hits) this.play(h, this.next);
+      let p = this.getPattern();
+      let step = p.steps[this.i % p.steps.length];
+      if (step.beat === 0) {
+        this.bars++;
+        this.hooks.onBar?.(this.bars);
+        this.mutedBar = this.hooks.muted?.(this.bars) ?? false;
+        p = this.getPattern(); // the tempo may have just changed
+        step = p.steps[this.i % p.steps.length];
+      }
+      if (!this.mutedBar) for (const h of step.hits) this.play(h, this.next);
       if (step.beat !== null) {
-        const beat = step.beat, bar = step.bar ?? 0;
+        const beat = step.beat, bar = step.bar ?? 0, count = this.bars;
         const delay = Math.max(0, (this.next - ctx.currentTime) * 1000);
-        window.setTimeout(() => this.running && this.onBeat(beat, bar), delay);
+        window.setTimeout(() => this.running && this.onBeat(beat, bar, count), delay);
       }
       this.next += p.stepDur;
       this.i = (this.i + 1) % p.steps.length;
@@ -207,4 +224,25 @@ export function buildPattern(o: { bpm: number; sig: Signature; sub: number; acce
     for (let s = 0; s < o.sub; s++) steps.push(s === 0 ? { beat: b, hits: [a ? 'accent' : 'beat'] } : { beat: null, hits: ['sub'] });
   });
   return { steps, stepDur: beatDur / o.sub };
+}
+
+/* ---------- Trainer ---------- */
+
+/** The tempo rises by `step` every `every` bars, up to `to`. */
+export interface SpeedTrainer { on: boolean; step: number; every: number; to: number }
+/** Bars played then bars left silent, again and again (to check one's own tempo). */
+export interface GapTrainer { on: boolean; play: number; mute: number }
+export const DEFAULT_SPEED: SpeedTrainer = { on: false, step: 4, every: 4, to: 140 };
+export const DEFAULT_GAP: GapTrainer = { on: false, play: 2, mute: 2 };
+
+/** Tempo of bar `bar` (1 = first) when the run started at `start`. */
+export function trainerBpm(start: number, t: SpeedTrainer, bar: number): number {
+  if (!t.on) return start;
+  const top = Math.max(start, t.to);
+  return Math.min(top, start + Math.floor((Math.max(1, bar) - 1) / Math.max(1, t.every)) * t.step);
+}
+/** Is bar `bar` (1 = first) a silent one? The first bars always sound. */
+export function isSilentBar(g: GapTrainer, bar: number): boolean {
+  if (!g.on || g.mute <= 0) return false;
+  return (Math.max(1, bar) - 1) % (g.play + g.mute) >= g.play;
 }
