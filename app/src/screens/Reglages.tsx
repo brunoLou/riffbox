@@ -610,7 +610,10 @@ function DriveCard() {
             )}
           </>
         ) : (
-          <button className="btn-primary" disabled={busy} onClick={() => void act(connectDrive)}>Connecter Google Drive</button>
+          <>
+            <button className="btn-primary" disabled={busy} onClick={() => void act(connectDrive)}>Connecter Google Drive</button>
+            {st.status === 'error' && st.error && <p className="backup-msg error" role="alert">{st.error}</p>}
+          </>
         )}
         {err && <p className="backup-msg error" role="alert">{err}</p>}
         <span className="settings-help">Faites-le sur chaque appareil. Vos données restent aussi sur l’appareil : sans réseau, tout fonctionne, et la synchronisation reprend au retour du réseau.</span>

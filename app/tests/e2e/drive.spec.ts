@@ -85,3 +85,39 @@ test('with the app\u2019s Google identifier, the card offers to connect (Google 
   await expect(card).toContainText('dossier caché réservé à RIFFBOX');
   expect(google).toEqual([]);
 });
+
+test.describe('on a phone: sign-in through Google’s page and back', () => {
+  test.use({ hasTouch: true, isMobile: true });
+
+  test('« Connecter » goes to Google, which brings the player back to the app, connected', async ({ page }) => {
+    let asked: URL | null = null;
+    await page.route('https://accounts.google.com/gsi/**', r => r.fulfill({ contentType: 'text/javascript', body: '' }));
+    await page.route('https://accounts.google.com/o/oauth2/**', r => { asked = new URL(r.request().url()); return r.fulfill({ contentType: 'text/html', body: '<p>Google</p>' }); });
+    await page.goto('#/reglages');
+    await page.getByRole('button', { name: 'Connecter Google Drive' }).click();
+    await expect.poll(() => asked?.pathname).toBe('/o/oauth2/v2/auth');
+    const q = asked!.searchParams;
+    expect(q.get('response_type')).toBe('token');
+    expect(q.get('scope')).toBe('https://www.googleapis.com/auth/drive.appdata');
+    expect(q.get('prompt')).toBe('consent');
+    expect(q.get('redirect_uri')).toMatch(/^http:\/\/localhost:\d+\/$/);
+    const state = q.get('state')!;
+
+    // Google sends the player back with the token in the address (the Drive is simulated here).
+    const drive = fakeDrive();
+    await drive.attach(page);
+    await page.goto(`/#access_token=jeton&token_type=Bearer&expires_in=3599&scope=${encodeURIComponent(q.get('scope')!)}&state=${state}`);
+    await expect(page).toHaveURL(/#\/reglages$/);
+    const card = page.locator('.settings-card', { hasText: 'Google Drive' });
+    await expect(card.locator('.drive-status')).toContainText('Synchronisé à l’instant');
+    expect(drive.puts).toBe(1);
+  });
+
+  test('an answer that is not the one asked for is refused', async ({ page }) => {
+    await page.goto('/#access_token=vol&expires_in=3599&state=inconnu');
+    await expect(page).toHaveURL(/#\/$/);
+    await page.goto('#/reglages');
+    await expect(page.locator('.settings-card', { hasText: 'Google Drive' })).toContainText('Réponse de Google inattendue');
+    await expect(page.getByRole('button', { name: 'Connecter Google Drive' })).toBeVisible();
+  });
+});

@@ -5,7 +5,7 @@
  */
 import { useSyncExternalStore } from 'react';
 import { syncOnce, type SyncRemote, type SyncResult } from './cloudSync';
-import { DriveAuthError, driveConfigured, driveRemote, signIn, signOut, tokenValid } from './googleDrive';
+import { consumeRedirect, DriveAuthError, driveConfigured, driveRemote, signIn, signOut, tokenValid } from './googleDrive';
 export { preloadGoogle } from './googleDrive';
 import { onAnyWrite } from './store';
 
@@ -42,7 +42,7 @@ export function syncNow(interactive = false): Promise<void> {
       const remote = fake();
       if (!remote && !tokenValid()) {
         if (!interactive) { set({ status: 'needsTap' }); return; }
-        await signIn(false);
+        await signIn(false, 'sync');
       }
       set({ status: 'syncing', error: undefined });
       const r = await syncOnce(remote ?? driveRemote());
@@ -57,19 +57,23 @@ export function syncNow(interactive = false): Promise<void> {
 
 /** First connection (after a tap): Google asks for the permission, then a first sync. */
 export async function connectDrive() {
-  if (!fake()) await signIn(true);
+  if (!fake()) await signIn(true, 'connect');
   set({ connected: true, status: 'idle', error: undefined });
   await syncNow(true);
 }
 export async function disconnectDrive() {
   if (!fake()) await signOut();
-  set({ connected: false, status: 'idle', lastResult: undefined });
+  set({ connected: false, status: 'idle', lastResult: undefined, error: undefined });
 }
 
 let installed = false;
 export function installAutoSync() {
   if (installed) return;
   installed = true;
+  // Back from Google's page (sign-in by redirect on phones).
+  const back = consumeRedirect();
+  if (back?.error) set({ status: 'error', error: back.error });
+  else if (back) set({ connected: true, status: 'idle', error: undefined });
   let timer = 0;
   // Writes made by the sync itself skip the hooks and are not reported here.
   onAnyWrite(() => { clearTimeout(timer); timer = window.setTimeout(() => void syncNow(), 15_000); });

@@ -41,22 +41,83 @@ function loadGis(): Promise<Gis> {
 /** Loads Google's sign-in ahead of the tap, so its window opens right on the tap (no pop-up blocker). */
 export const preloadGoogle = () => { if (driveConfigured()) loadGis().catch(() => { /* offline: retried on the tap */ }); };
 
+const storeToken = (access_token: string, expiresIn: number) =>
+  localStorage.setItem(TOKEN_KEY, JSON.stringify({ access_token, expires_at: Date.now() + expiresIn * 1000 }));
+
 /**
- * A token, asking Google when needed. `prompt: 'consent'` the first time; afterwards Google answers
- * without asking again (a window may flash). Must follow a tap or a click (browsers block pop-ups).
+ * On a phone (or the installed app), Google's small window is often blocked or never answers: the
+ * app goes to Google's page instead, and Google brings the player back with the token.
  */
-export async function signIn(firstTime = false): Promise<void> {
+const REDIRECT_KEY = 'riffbox-drive-redirect';
+export type SignInIntent = 'connect' | 'sync';
+export const prefersRedirect = () => {
+  try { return matchMedia('(pointer: coarse)').matches || matchMedia('(display-mode: standalone)').matches; } catch { return false; }
+};
+/** The address Google sends the player back to (declared in the Google console). */
+export const redirectUri = () => location.origin + '/';
+
+export function authUrl(state: string, firstTime: boolean) {
+  const q = new URLSearchParams({
+    client_id: GOOGLE_CLIENT_ID, redirect_uri: redirectUri(), response_type: 'token', scope: SCOPE,
+    include_granted_scopes: 'true', state,
+  });
+  if (firstTime) q.set('prompt', 'consent');
+  return 'https://accounts.google.com/o/oauth2/v2/auth?' + q.toString();
+}
+
+function redirectSignIn(firstTime: boolean, intent: SignInIntent): Promise<void> {
+  const state = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
+  localStorage.setItem(REDIRECT_KEY, JSON.stringify({ state, intent, back: location.hash || '#/' }));
+  location.assign(authUrl(state, firstTime));
+  return new Promise(() => { /* the page leaves for Google */ });
+}
+
+export interface RedirectAnswer { intent: SignInIntent; error?: string }
+/**
+ * At start-up, before the screens: Google's answer in the address after a sign-in by redirect.
+ * Keeps the token, puts back the screen the player was on, and says what was asked.
+ */
+export function consumeRedirect(): RedirectAnswer | null {
+  if (!/^#(.*&)?(access_token|error)=/.test(location.hash)) return null;
+  const p = new URLSearchParams(location.hash.slice(1));
+  let saved: { state: string; intent: SignInIntent; back: string } | null = null;
+  try { saved = JSON.parse(localStorage.getItem(REDIRECT_KEY) ?? 'null'); } catch { /* none */ }
+  localStorage.removeItem(REDIRECT_KEY);
+  history.replaceState(null, '', location.pathname + location.search + (saved?.back ?? '#/'));
+  if (!saved || p.get('state') !== saved.state) return { intent: 'sync', error: 'Réponse de Google inattendue : réessayez.' };
+  const err = p.get('error');
+  if (err) return { intent: saved.intent, error: err === 'access_denied' ? 'Accès refusé.' : `Connexion impossible (${err}).` };
+  const token = p.get('access_token');
+  if (!token) return { intent: saved.intent, error: 'Connexion impossible.' };
+  if (!(p.get('scope') ?? SCOPE).includes('drive.appdata')) {
+    return { intent: saved.intent, error: 'Autorisez l’accès au dossier de RIFFBOX dans votre Drive (case à cocher chez Google).' };
+  }
+  storeToken(token, Number(p.get('expires_in')) || 3600);
+  return { intent: saved.intent };
+}
+
+/**
+ * A token, asking Google when needed. `firstTime`: Google asks for the permission; afterwards it
+ * answers without asking again. Must follow a tap or a click.
+ */
+export async function signIn(firstTime = false, intent: SignInIntent = 'sync'): Promise<void> {
+  if (prefersRedirect()) return redirectSignIn(firstTime, intent);
   const gis = await loadGis();
   await new Promise<void>((resolve, reject) => {
+    // Never stuck: without an answer from Google's window, give up (the button works again).
+    const timer = setTimeout(() => reject(new Error('Google ne répond pas : réessayez.')), 120_000);
+    const done = (fn: () => void) => { clearTimeout(timer); fn(); };
     const client = gis.accounts.oauth2.initTokenClient({
       client_id: GOOGLE_CLIENT_ID,
       scope: SCOPE,
-      callback: (r: { access_token?: string; expires_in?: number; error?: string }) => {
+      callback: (r: { access_token?: string; expires_in?: number; error?: string }) => done(() => {
         if (!r.access_token) { reject(new Error(r.error === 'access_denied' ? 'Accès refusé.' : 'Connexion impossible.')); return; }
-        localStorage.setItem(TOKEN_KEY, JSON.stringify({ access_token: r.access_token, expires_at: Date.now() + (r.expires_in ?? 3600) * 1000 }));
+        storeToken(r.access_token, r.expires_in ?? 3600);
         resolve();
-      },
-      error_callback: () => reject(new Error('Fenêtre de connexion fermée ou bloquée.')),
+      }),
+      error_callback: (e: { type?: string }) => done(() => reject(new Error(e?.type === 'popup_failed_to_open'
+        ? 'La fenêtre Google a été bloquée : autorisez les fenêtres pop-up pour ce site.'
+        : 'Fenêtre de connexion fermée.'))),
     });
     client.requestAccessToken({ prompt: firstTime ? 'consent' : '' });
   });
