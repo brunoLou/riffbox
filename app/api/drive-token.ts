@@ -41,7 +41,10 @@ async function google(params: Record<string, string>) {
 }
 
 export function GET() {
-  return json({ ready: !!secret() });
+  if (secret()) return json({ ready: true });
+  // To help setting it up: the names (never the values) of variables that look like the one expected.
+  const near = Object.keys(process.env).filter(k => /google|secret|client/i.test(k) && !/^VERCEL|^NEXT|^npm_/i.test(k));
+  return json({ ready: false, expected: 'GOOGLE_CLIENT_SECRET', near, env: process.env.VERCEL_ENV ?? null });
 }
 
 export async function POST(req: Request) {

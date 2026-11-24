@@ -20,8 +20,13 @@ afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 describe('the lasting Google connection (Vercel function)', () => {
   it('says it is not ready without the client secret, and refuses to work', async () => {
     vi.stubEnv('GOOGLE_CLIENT_SECRET', '');
-    expect(await GET().json()).toEqual({ ready: false });
+    expect(await GET().json()).toMatchObject({ ready: false, expected: 'GOOGLE_CLIENT_SECRET' });
     expect((await POST(req({ action: 'refresh' }))).status).toBe(501);
+    // A misspelt name is pointed out (its value never).
+    vi.stubEnv('GOOGLE_CLIENT_SECRET ', 'valeur');
+    const j = await GET().json();
+    expect(j.near).toContain('GOOGLE_CLIENT_SECRET ');
+    expect(JSON.stringify(j)).not.toContain('valeur');
   });
 
   it('exchanges Google’s code, keeps the lasting authorization in a cookie the page cannot read, then renews', async () => {
