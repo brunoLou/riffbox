@@ -27,6 +27,7 @@ const MOTIFS: Record<Motif, ReactNode> = {
   ear: <><path d="M36 50 Q20 46 22 28 Q24 10 42 10 Q58 12 56 30 Q54 40 46 42 Q42 46 44 52" /><path d="M66 18 Q74 30 66 42" /><path d="M76 10 Q90 30 76 50" /></>,
   loop: <><path d="M24 30 A20 18 0 1 1 50 46" /><path d="M44 40 L50 46 L42 50" /><circle cx="76" cy="30" r="8" className="fill" /></>,
   target: <><circle cx="50" cy="30" r="24" /><circle cx="50" cy="30" r="14" /><circle cx="50" cy="30" r="4" className="fill" /><path d="M74 6 L56 24" /></>,
+  slow: <><path d="M4 34 Q10 14 16 34 T28 34 T40 34 T52 34 T64 34 T76 34 T88 34 T96 34" /><path d="M30 8 L30 56" className="thick" /><path d="M70 8 L70 56" className="thick" /><path d="M30 10 L38 10 M70 10 L62 10" /></>,
   gear: <><circle cx="50" cy="30" r="10" />{Array.from({ length: 8 }, (_, i) => { const a = (i * Math.PI) / 4; return <path key={i} d={`M${50 + 14 * Math.cos(a)} ${30 + 14 * Math.sin(a)} L${50 + 22 * Math.cos(a)} ${30 + 22 * Math.sin(a)}`} className="thick" />; })}</>,
 };
 

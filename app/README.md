@@ -40,6 +40,14 @@ jours joués, tempos gagnés, un conseil) et propose le **test du mois** quatre 
 dernier bilan : les trois tests, comparés au précédent et au bilan de départ (`coach.progress`,
 `coach.tests`, synchronisés).
 
+## Relever un morceau
+
+Pratiquer → Relever : un enregistrement (MP3, WAV, M4A…) ralenti sans changer sa hauteur (50 à 100 %),
+un passage bouclé de A à B (vérifié à chaque image, pour une boucle serrée), transposé par demi-tons
+sans changer la vitesse (`pitchShift.ts` : deux têtes de lecture dans une courte ligne à retard,
+relayées en fondu, en AudioWorklet). Forme d’onde pour se repérer ; espace, flèches, A et B au clavier.
+Le fichier reste sur l’appareil, avec sa vitesse, sa boucle et sa transposition.
+
 ## Looper
 
 Pratiquer › Looper : une boucle de 1 à 8 mesures au tempo choisi, enregistrée après une mesure de
@@ -168,6 +176,7 @@ dans le dossier temporaire du système.
 | `tests/unit/driveToken.test.ts` | fonction Vercel de connexion durable : échange du code, cookie illisible par la page, renouvellement, refus des autres sites |
 | `tests/unit/pageSong.test.ts` | page entière copiée (type Ultimate Guitar) : la chanson seule, avec titre, artiste, tonalité et capo ; une grille seule garde l’import habituel |
 | `tests/unit/coachProgress.test.ts` | coach dans la durée : tempos selon le ressenti, une réponse par jour, routine aux tempos atteints, bilan de la semaine, test du mois |
+| `tests/unit/pitchShift.test.ts` | transposition sans changer la vitesse : la note entendue est la note transposée (−5 à +7 demi-tons), le niveau reste |
 | `tests/unit/piano.test.ts` | piano : position de pianiste, notes exactes de la guitare, nom de l’accord touché au clavier, notes écrites selon l’accord |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises, backing tracks perso avec leur son |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
@@ -192,6 +201,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/petits-ecrans.spec.ts` | téléphones de 640 à 780 px de haut : rien ne reste caché sous le bouton principal ou la barre d’onglets |
 | `tests/e2e/tablette.spec.ts` | tablette (iPad) : plein écran, colonne, prompteur large, manche entier, grille en deux colonnes |
 | `tests/e2e/piano.spec.ts` | clavier de piano : bibliothèque d’accords (pianiste ou notes de la guitare), du piano à la guitare, grilles et prompteur |
+| `tests/e2e/relever.spec.ts` | relever : forme d’onde, vitesse, boucle A–B respectée, transposition, tout retrouvé au retour |
 | `tests/e2e/schemas-live.spec.ts` | prompteur : schémas de l’accord en cours et du suivant, qui suivent la lecture ; masquables |
 | `tests/e2e/suivre.spec.ts` | « Suivre ma guitare » : faux micro jouant les accords de Minuit Shuffle, le texte suit |
 | `tests/e2e/tonalite-ecoute.spec.ts` | « Quel ton ? » : faux micro jouant un morceau en Ré majeur, gamme ouverte, tonalité appliquée au morceau |

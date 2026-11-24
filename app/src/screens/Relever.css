@@ -1,0 +1,14 @@
+.relever:focus { outline: none; }
+.rv-title { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.rv-title b { font-size: 17px; color: var(--cream); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rv-wave { position: relative; height: 96px; border-radius: 14px; background: #171513; border: 1px solid var(--line); overflow: hidden; cursor: pointer; touch-action: none; }
+.rv-bars { position: absolute; inset: 8px 4px; display: flex; align-items: center; gap: 1px; }
+.rv-bars span { flex: 1; background: #8b7a62; border-radius: 1px; }
+.rv-loop { position: absolute; top: 0; bottom: 0; background: rgba(233, 162, 59, .22); }
+.rv-mark { position: absolute; top: 0; bottom: 0; border-left: 2px solid var(--amber); font: 700 11px var(--f-mono); color: var(--amber-hi); padding-left: 3px; }
+.rv-head { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--cream); }
+.rv-transport { display: flex; align-items: center; justify-content: space-between; }
+.rv-box { display: flex; flex-direction: column; gap: 8px; }
+.rv-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; }
+.rv-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.rv-chips .chip { height: 44px; min-width: 60px; padding: 0 12px; border-radius: 22px; }

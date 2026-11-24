@@ -49,9 +49,9 @@ test('the catalog adds tiles, the layout persists and can be reset', async ({ pa
   await page.goto('#/');
   await button(page, 'Modifier').click();
   await page.getByText('+ Ajouter une pédale').click();
-  await expect(page.locator('.catalog-list .song-title')).toHaveText(['Accords', 'Morceaux', 'Tonalité', 'Quel ton ?', 'Looper', 'Coach', 'Réglages']);
+  await expect(page.locator('.catalog-list .song-title')).toHaveText(['Accords', 'Morceaux', 'Tonalité', 'Quel ton ?', 'Looper', 'Relever', 'Coach', 'Réglages']);
   await page.locator('.catalog-list .pick-row', { has: page.locator('.song-title', { hasText: /^Accords$/ }) }).click();
-  await expect(page.locator('.catalog-list .song-title')).toHaveText(['Morceaux', 'Tonalité', 'Quel ton ?', 'Looper', 'Coach', 'Réglages']);
+  await expect(page.locator('.catalog-list .song-title')).toHaveText(['Morceaux', 'Tonalité', 'Quel ton ?', 'Looper', 'Relever', 'Coach', 'Réglages']);
   await page.getByLabel('Fermer').click();
   await button(page, 'Terminé').click();
   await expect(page.locator('.pedal-name').last()).toHaveText('Accords');
