@@ -27,6 +27,9 @@ function load<T>(key: string): { found: boolean; value?: T } {
  * transfer between devices). They receive the previous value, if any.
  */
 const WRITE_HOOKS: Record<string, (prev: unknown, next: unknown) => unknown> = {};
+/** For every other key (the sync dates any synced preference). */
+let fallbackHook: ((key: string, prev: unknown, next: unknown) => unknown) | null = null;
+export function registerFallbackWriteHook(fn: (key: string, prev: unknown, next: unknown) => unknown) { fallbackHook = fn; }
 export function registerWriteHook<T>(key: string, fn: (prev: T | undefined, next: T) => T) {
   WRITE_HOOKS[key] = fn as (prev: unknown, next: unknown) => unknown;
 }
@@ -39,7 +42,7 @@ export function withoutWriteHooks<R>(fn: () => R): R {
 
 /** Write a value now (memory + disk). Per-key serializers can strip fields that must not be saved. */
 export function writeStored<T>(key: string, value: T) {
-  const hook = WRITE_HOOKS[key];
+  const hook = WRITE_HOOKS[key] ?? (fallbackHook ? (p: unknown, n: unknown) => fallbackHook!(key, p, n) : undefined);
   if (hook && !hooksOff) {
     const prev = load<T>(key);
     value = hook(prev.found ? prev.value : undefined, value) as T;

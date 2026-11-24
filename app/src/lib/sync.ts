@@ -3,20 +3,31 @@
  * changed, deletions are remembered too, and receiving a file keeps, item by item, the most recent
  * version. Nothing is overwritten by an older copy, and nothing deleted comes back.
  */
-import { readStored, registerWriteHook, serialized, writeStored } from './store';
+import { readStored, registerFallbackWriteHook, registerWriteHook, serialized, writeStored } from './store';
 import { markUsed } from './usage';
 
 /** Collections of items with an `id`, synced item by item. */
 export const SYNC_LISTS = ['ideas', 'grids', 'songs', 'setlists', 'voice.takes', 'tuner.custom', 'backing.mine'] as const;
-/** Single values synced as a whole (the most recent wins). */
+/**
+ * Single values synced as a whole, the most recent wins: these, and every other saved value that is
+ * neither a list above nor local to the device (preferences: tempo, lyrics size, a song's
+ * transposition…), see `isSyncedValue`.
+ */
 export const SYNC_VALUES = ['routine.steps', 'voice.range', 'grid.voicings', 'coach.profile', 'home.layout'] as const;
 /** Device settings and bookkeeping that stay on each device. */
-export const LOCAL_KEYS = ['settings.theme', 'pedal.keys', 'routine', 'practice.seeded', 'backup.last', 'backup.since',
+export const LOCAL_KEYS = ['settings.theme', 'pedal.keys', 'looper.latencyMs', 'tuner.string', 'coach.testScale', 'home.removed', 'routine', 'practice.seeded', 'backup.last', 'backup.since',
   'backup.snooze', 'backup.remind', 'sync.lastSent', 'sync.lastReceived', 'stage.follow', 'usage.today',
   'coach.active', 'coach.day', 'coach.ownRoutine'];
 
 export const DELETED_KEY = 'sync.deleted';
 export const VALUE_TIMES_KEY = 'sync.valueTimes';
+const PRACTICE_LOG = 'practice.log';
+
+/** A value synced as a whole, the most recently changed winning. */
+export function isSyncedValue(key: string) {
+  return !(SYNC_LISTS as readonly string[]).includes(key) && !LOCAL_KEYS.includes(key)
+    && key !== VALUE_TIMES_KEY && key !== DELETED_KEY && key !== PRACTICE_LOG;
+}
 /** Deletions older than this are forgotten. */
 const TOMBSTONE_DAYS = 365;
 
@@ -85,14 +96,13 @@ export function installSync() {
       return out;
     });
   }
-  for (const key of SYNC_VALUES) {
-    registerWriteHook<unknown>(key, (prev, next) => {
-      if (JSON.stringify(prev) !== JSON.stringify(next)) {
-        writeStored(VALUE_TIMES_KEY, { ...readStored<Record<string, number>>(VALUE_TIMES_KEY, {}), [key]: Date.now() });
-      }
-      return next;
-    });
-  }
+  // Every synced value remembers when it last changed.
+  registerFallbackWriteHook((key, prev, next) => {
+    if (isSyncedValue(key) && JSON.stringify(prev) !== JSON.stringify(next)) {
+      writeStored(VALUE_TIMES_KEY, { ...readStored<Record<string, number>>(VALUE_TIMES_KEY, {}), [key]: Date.now() });
+    }
+    return next;
+  });
 }
 
 /* ---------- Merge ---------- */
@@ -157,8 +167,8 @@ export function planMerge(
   const myTimes = (mine(VALUE_TIMES_KEY) as Record<string, number> | undefined) ?? {};
   const theirTimes = (theirs[VALUE_TIMES_KEY] as Record<string, number> | undefined) ?? {};
   const times = { ...myTimes };
-  for (const key of SYNC_VALUES) {
-    if (!(key in theirs)) continue;
+  for (const key of Object.keys(theirs)) {
+    if (!isSyncedValue(key)) continue;
     const mineSet = mine(key) !== undefined;
     // Home boards set up before they were synced carry no date: the one with more pedals (the ones
     // the player added) wins, so every device ends up with it.
@@ -166,7 +176,11 @@ export function planMerge(
     const biggerBoard = key === 'home.layout' && undated && Array.isArray(theirs[key]) && Array.isArray(mine(key))
       && (theirs[key] as unknown[]).length > (mine(key) as unknown[]).length;
     if (!mineSet || biggerBoard || (theirTimes[key] ?? 0) > (myTimes[key] ?? 0)) {
-      if (JSON.stringify(mine(key)) !== JSON.stringify(theirs[key])) { writes[key] = theirs[key]; stats.updated++; }
+      if (JSON.stringify(mine(key)) !== JSON.stringify(theirs[key])) {
+        writes[key] = theirs[key];
+        // Small preferences follow silently; only the player's content counts as « changes ».
+        if ((SYNC_VALUES as readonly string[]).includes(key)) stats.updated++;
+      }
       times[key] = Math.max(theirTimes[key] ?? 0, myTimes[key] ?? 0);
     }
   }
@@ -186,10 +200,6 @@ export function planMerge(
   for (const [k, at] of Object.entries(theirTombs)) if (typeof at === 'number') tombs[k] = Math.max(tombs[k] ?? 0, at);
   const pruned = pruneTombstones(tombs, now);
   if (JSON.stringify(pruned) !== JSON.stringify(myTombs)) writes[DELETED_KEY] = pruned;
-
-  // Anything else (preferences of features not used here yet) only fills a gap.
-  const handled = new Set<string>([...SYNC_LISTS, ...SYNC_VALUES, VALUE_TIMES_KEY, DELETED_KEY, 'practice.log', ...LOCAL_KEYS]);
-  for (const [k, v] of Object.entries(theirs)) if (!handled.has(k) && mine(k) === undefined && !(k in defaults)) writes[k] = v;
 
   return { writes, audioIds, stats, byList };
 }

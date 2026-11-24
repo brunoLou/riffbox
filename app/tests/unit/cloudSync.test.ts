@@ -126,6 +126,33 @@ describe('sync through the Drive', () => {
     expect(readStored<{ id: string }[]>('home.layout', []).map(s => s.id)).toEqual(['tuner', 'metro', 'looper', 'coach']);
   });
 
+  it('preferences (tempo, a song\u2019s transposition, lyrics size) follow the latest change, on every device', async () => {
+    const { r, remote } = memRemote();
+    // Phone: its own settings, sent.
+    writeStored('metro.bpm', 92);
+    writeStored('stage.trans.s3', 0);
+    writeStored('settings.stageFontSize', 26);
+    await syncOnce(remote, memAudio().a);
+    const phone = JSON.parse(JSON.stringify(r.data));
+
+    // Computer, later: different settings, changed after the phone's.
+    clearAllStored();
+    await new Promise(res => setTimeout(res, 5));
+    writeStored('metro.bpm', 120);
+    writeStored('stage.trans.s3', -2);
+    writeStored('settings.stageFontSize', 32);
+    await syncOnce(remote, memAudio().a);
+    expect(readStored('metro.bpm', 0)).toBe(120); // its own, more recent, stays
+
+    // Back on the phone (its earlier values): it takes the computer's.
+    clearAllStored();
+    withoutWriteHooks(() => { for (const [k, v] of Object.entries(phone)) writeStored(k, v); });
+    await syncOnce(remote, memAudio().a);
+    expect(readStored('metro.bpm', 0)).toBe(120);
+    expect(readStored('stage.trans.s3', 0)).toBe(-2);
+    expect(readStored('settings.stageFontSize', 0)).toBe(32);
+  });
+
   it('device settings stay on each device', async () => {
     const { r, remote } = memRemote();
     writeStored('settings.theme', 'light');
