@@ -99,3 +99,70 @@ test('the coach without the tests: the player says where they stand', async ({ p
   await page.reload();
   await expect(button(page, 'Utiliser cette routine aujourd’hui')).toBeVisible();
 });
+
+const DAY = 86400000;
+/** A player who took the check-up a month ago (modest results), and uses the coach. */
+const monthAgo = (page: import('@playwright/test').Page) => page.addInitScript(() => {
+  if (sessionStorage.getItem('prepared')) return;
+  sessionStorage.setItem('prepared', '1');
+  const set = (k: string, v: unknown) => localStorage.setItem('riffbox:v1:' + k, JSON.stringify(v));
+  const then = Date.now() - 30 * 86400000;
+  set('coach.profile', { goals: ['rhythm', 'solo'], styles: ['blues'], minutes: 20, measures: { changes: 10, pair: 'Do ↔ Sol', scaleBpm: 60, rhythmMs: 60 }, declared: {}, date: then });
+  set('coach.testScale', 0.25);
+});
+
+test('coach over time: « facile » raises the tempo of the next routine, the week is reviewed', async ({ page }) => {
+  await monthAgo(page);
+  await page.goto('#/pratiquer/coach');
+  await button(page, 'Utiliser cette routine aujourd’hui').click();
+  // The rhythm step, at its starting tempo.
+  const rhythm = page.locator('.rlist-row', { hasText: 'Rythme' });
+  await rhythm.click();
+  const feel = page.getByRole('group', { name: /^Rythme à \d+ BPM : comment c’était/ });
+  const played = Number((await feel.getAttribute('aria-label'))!.match(/(\d+) BPM/)![1]);
+  await feel.getByRole('button', { name: 'Facile' }).click();
+  await expect(feel.getByRole('button', { name: 'Facile' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.coach-feel-next')).toHaveText(`Prochaine fois : ${played + 4} BPM (+4).`);
+  // Changing one's mind the same day replaces the answer.
+  await feel.getByRole('button', { name: 'Difficile' }).click();
+  await expect(page.locator('.coach-feel-next')).toHaveText(`Prochaine fois : ${played - 4} BPM, pour jouer propre.`);
+  await feel.getByRole('button', { name: 'Facile' }).click();
+
+  // The coach's programme now uses the new tempo, and the week shows it.
+  await page.goto('#/pratiquer/coach');
+  await expect(page.locator('.coach-step-detail', { hasText: `${played + 4} BPM` })).toHaveCount(1);
+  const week = page.getByRole('region', { name: 'Bilan de la semaine' });
+  await expect(week.locator('.coach-tempos li')).toContainText([`Rythme${played} → ${played + 4} BPM+4`]);
+  await expect(week.locator('.coach-advice')).not.toBeEmpty();
+});
+
+test('coach over time: a month later, the three tests again, compared with the first check-up', async ({ page }) => {
+  test.setTimeout(120_000);
+  await monthAgo(page);
+  await page.goto('#/pratiquer/coach');
+  const month = page.getByRole('region', { name: 'Test du mois' });
+  await month.getByRole('button', { name: 'Passer le test du mois' }).click();
+  await expect(page.locator('.kicker').first()).toHaveText('Test du mois · 1/3');
+  await button(page, 'Commencer (1 minute)').click();
+  await expect(page.locator('.coach-meter')).toContainText('changements par minute', { timeout: 30_000 });
+  await button(page, 'Suivant ›').click();
+  await button(page, 'Commencer à 60 BPM').click();
+  await button(page, 'Propre ✓ (plus vite)').click(); // 60 clean
+  await button(page, 'Propre ✓ (plus vite)').click(); // 70 clean
+  await button(page, 'Trop dur ✗').click(); // 80 too hard → 70
+  await button(page, 'Suivant ›').click();
+  await page.getByRole('button', { name: /^Commencer \(/ }).click();
+  await expect(page.locator('.coach-meter')).toContainText('ms autour du clic', { timeout: 30_000 });
+  await button(page, 'Voir mes progrès ›').click();
+
+  const changes = page.locator('.coach-changes li');
+  await expect(changes).toHaveCount(3);
+  await expect(changes.nth(0)).toContainText('Accords10 →');
+  await expect(changes.nth(1)).toContainText('60 → 70 BPM▲');
+  await expect(changes.nth(2)).toContainText('60 →');
+  for (let i = 0; i < 3; i++) await expect(changes.nth(i).locator('b')).toHaveText('▲');
+  await button(page, 'Terminer').click();
+  // The next test in four weeks; the progress since the start stays on the coach screen.
+  await expect(month).toContainText('Prochain test dans 28 jours');
+  await expect(month.locator('.coach-changes li')).toHaveCount(3);
+});

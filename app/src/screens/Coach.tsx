@@ -12,6 +12,9 @@ import { applyCoachRoutine, coachActive, leaveCoach, ownRoutine } from '../lib/c
 import { captureMic, type MicCapture } from '../lib/micCapture';
 import { detectOnsets } from '../lib/onsets';
 import { readStored, useStoredState } from '../lib/store';
+import { EX_FR, PROGRESS_KEY, TESTS_KEY, compareCheckups, monthlyDue, weekReview, type Checkup, type Progress } from '../lib/coachProgress';
+import { dayNumber } from '../lib/coach';
+import { fmtHM, useRoutine, week } from '../lib/routine';
 import { markUsed } from '../lib/usage';
 import './Coach.css';
 
@@ -34,6 +37,9 @@ export default function Coach() {
   const [setup, setSetup] = useState<Step | null>(profile ? null : 0);
   const [draft, setDraft] = useState<Profile>(() => profile ?? { goals: [], styles: [], minutes: 20, measures: {}, declared: {}, date: Date.now() });
   const [, refresh] = useState(0);
+  const [checkups, setCheckups] = useStoredState<Checkup[]>(TESTS_KEY, []);
+  /** The monthly test (the three tests again, compared with the previous check-ups). */
+  const [monthly, setMonthly] = useState(false);
   useEffect(() => markUsed('coach'), []);
 
   const patch = (p: Partial<Profile>) => setDraft(d => ({ ...d, ...p }));
@@ -47,7 +53,15 @@ export default function Coach() {
       if (skill === 'rhythm') delete measures.rhythmMs;
       return { ...d, measures, declared: { ...d.declared, [skill]: lv } };
     });
-  const finish = () => { const p = { ...draft, date: Date.now() }; setProfile(p); setDraft(p); setSetup(5); };
+  const finish = () => {
+    const p = { ...draft, date: Date.now() };
+    // The first check-up of a player who started before the history was kept counts as the start.
+    const past = checkups.length ? checkups : profile ? [{ date: profile.date, measures: profile.measures }] : [];
+    setCheckups([...past, { date: p.date, measures: p.measures }]);
+    setProfile(p); setDraft(p); setSetup(5);
+  };
+  // Fresh tests: last month's results are not shown again (they stay in the history to compare).
+  const startMonthly = () => { if (profile) { setDraft({ ...profile, measures: {} }); setMonthly(true); setSetup(2); } };
   const use = () => { applyCoachRoutine(profile ?? draft); nav('/pratiquer/routine'); };
 
   if (setup !== null) {
@@ -62,12 +76,12 @@ export default function Coach() {
             <div className="head-l">
               <BackButton fallback="/pratiquer" />
               <div className="head-titles">
-                <span className="kicker">Coach · {step < 5 ? `étape ${step + 1}/5` : 'bilan'}</span>
+                <span className="kicker">{monthly ? `Test du mois · ${step < 5 ? `${step - 1}/3` : 'résultats'}` : `Coach · ${step < 5 ? `étape ${step + 1}/5` : 'bilan'}`}</span>
                 <h1 className="display" style={{ fontSize: 26 }}>{STEP_TITLES[step].toUpperCase()}</h1>
               </div>
             </div>
           </div>
-          {step < 5 && <div className="coach-dots" aria-hidden>{[0, 1, 2, 3, 4].map(i => <span key={i} className={i <= step ? 'on' : ''} />)}</div>}
+          {step < 5 && !monthly && <div className="coach-dots" aria-hidden>{[0, 1, 2, 3, 4].map(i => <span key={i} className={i <= step ? 'on' : ''} />)}</div>}
 
           {step === 0 && (
             <>
@@ -106,14 +120,15 @@ export default function Coach() {
           {step === 3 && <ScaleTest draft={draft} onResult={bpm => measure({ scaleBpm: bpm }, 'technique')} onDeclare={lv => declare('technique', lv)} />}
           {step === 4 && <RhythmTest draft={draft} onResult={ms => measure({ rhythmMs: ms }, 'rhythm')} onDeclare={lv => declare('rhythm', lv)} />}
 
+          {step === 5 && monthly && checkups.length > 1 && <Changes from={checkups[checkups.length - 2]} to={checkups[checkups.length - 1]} title="Depuis le dernier test" />}
           {step === 5 && profile && <Summary p={profile} />}
 
           <div className="coach-nav">
-            {step > 0 && step < 5 && <button className="btn-outline" onClick={() => setSetup((step - 1) as Step)}>‹ Retour</button>}
+            {step > 0 && step < 5 && <button className="btn-outline" onClick={() => (monthly && step === 2 ? (setMonthly(false), setSetup(null)) : setSetup((step - 1) as Step))}>‹ Retour</button>}
             {step < 4 && <button className="btn-primary" disabled={!canNext} onClick={next}>Suivant ›</button>}
-            {step === 4 && <button className="btn-primary" onClick={finish}>Voir mon programme ›</button>}
+            {step === 4 && <button className="btn-primary" onClick={finish}>{monthly ? 'Voir mes progrès ›' : 'Voir mon programme ›'}</button>}
             {step === 5 && <button className="btn-primary" onClick={use}>Utiliser cette routine aujourd’hui</button>}
-            {step === 5 && <button className="btn-outline" onClick={() => setSetup(null)}>Plus tard</button>}
+            {step === 5 && <button className="btn-outline" onClick={() => { setMonthly(false); setSetup(null); }}>{monthly ? 'Terminer' : 'Plus tard'}</button>}
           </div>
         </div>
         <TabBar active={2} />
@@ -136,6 +151,8 @@ export default function Coach() {
             </div>
           </div>
         </div>
+        <WeekCard />
+        <MonthCard p={p} checkups={checkups} onStart={startMonthly} />
         <Summary p={p} />
         <div className="coach-nav">
           {active
@@ -160,7 +177,7 @@ function Summary({ p }: { p: Profile }) {
     technique: m.scaleBpm !== undefined ? `penta en croches à ${m.scaleBpm} BPM` : 'niveau indiqué',
     rhythm: m.rhythmMs !== undefined ? `± ${m.rhythmMs} ms autour du clic` : 'niveau indiqué',
   };
-  const steps = coachRoutine(p);
+  const steps = coachRoutine(p, dayNumber(), readStored<Progress>(PROGRESS_KEY, {}));
   return (
     <>
       <div className="coach-levels" role="list" aria-label="Vos niveaux">
@@ -342,6 +359,64 @@ function RhythmTest({ draft, onResult, onDeclare }: { draft: Profile; onResult: 
       {phase === 'idle' && <button className="btn-primary" onClick={() => void start()}>{done ? 'Refaire le test' : `Commencer (${Math.round((beats * 60) / RHYTHM.bpm)} s)`}</button>}
       {err && <p className="backup-msg error" role="alert">{err}</p>}
       <Declare skill="rhythm" draft={draft} onDeclare={onDeclare} />
+    </div>
+  );
+}
+
+/** The last seven days: minutes, days played, tempos gained, and a piece of advice. */
+function WeekCard() {
+  const r = useRoutine();
+  const [progress] = useStoredState<Progress>(PROGRESS_KEY, {});
+  const w = weekReview(progress, week(r).map(d => d.min), dayNumber());
+  return (
+    <section className="coach-panel" aria-label="Bilan de la semaine">
+      <span className="kicker">Bilan de la semaine</span>
+      <div className="coach-week-nums">
+        <div><b className="mono">{fmtHM(w.minutes)}</b><span>de pratique</span></div>
+        <div><b className="mono">{w.days}/7</b><span>jours joués</span></div>
+      </div>
+      {w.tempos.length > 0 && (
+        <ul className="coach-tempos">
+          {w.tempos.map(t => (
+            <li key={t.ex}><span>{EX_FR[t.ex]}</span><span className="mono">{t.from} → {t.to} BPM</span>
+              <b className={t.to > t.from ? 'up' : t.to < t.from ? 'down' : ''}>{t.to > t.from ? `+${t.to - t.from}` : t.to < t.from ? `${t.to - t.from}` : '='}</b></li>
+          ))}
+        </ul>
+      )}
+      <p className="coach-advice">{w.advice}</p>
+    </section>
+  );
+}
+
+/** The monthly test: when it is due, and what changed since the first check-up. */
+function MonthCard({ p, checkups, onStart }: { p: Profile; checkups: Checkup[]; onStart: () => void }) {
+  const last = checkups[checkups.length - 1]?.date ?? p.date;
+  const { due, inDays } = monthlyDue(last);
+  return (
+    <section className="coach-panel" aria-label="Test du mois">
+      <span className="kicker">Test du mois</span>
+      {due
+        ? <><p className="coach-help">Quatre semaines ont passé : refaites les 3 tests (5 minutes) pour mesurer vos progrès. Le coach adaptera vos niveaux.</p>
+            <button className="btn-primary" onClick={onStart}>Passer le test du mois</button></>
+        : <p className="coach-help">Prochain test dans {inDays} jour{inDays > 1 ? 's' : ''}. <button className="btn-link small inline" onClick={onStart}>Le passer maintenant</button></p>}
+      {checkups.length > 1 && <Changes from={checkups[0]} to={checkups[checkups.length - 1]} title="Depuis le bilan de départ" />}
+    </section>
+  );
+}
+
+const fmtDay = (t: number) => new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(t);
+function Changes({ from, to, title }: { from: Checkup; to: Checkup; title: string }) {
+  const list = compareCheckups(from.measures, to.measures);
+  if (!list.length) return null;
+  return (
+    <div className="coach-changes">
+      <span className="coach-skill">{title} <span className="mono">({fmtDay(from.date)} → {fmtDay(to.date)})</span></span>
+      <ul>
+        {list.map(c => (
+          <li key={c.skill}><span>{c.label}</span><span className="mono">{c.from} → {c.to} {c.unit}</span>
+            <b className={c.better ? 'up' : c.from === c.to ? '' : 'down'}>{c.better ? '▲' : c.from === c.to ? '=' : '▼'}</b></li>
+        ))}
+      </ul>
     </div>
   );
 }

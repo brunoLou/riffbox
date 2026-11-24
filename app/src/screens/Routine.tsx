@@ -2,7 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import { usePedal } from '../lib/pedal';
 import { doneSeconds, mmss, routine, useRoutine, routineMin, routineSteps, type RoutineStep } from '../lib/routine';
-import { writeStored } from '../lib/store';
+import { useStoredState, writeStored } from '../lib/store';
+import { dayNumber } from '../lib/coach';
+import { EX_FR, FEEL_FR, PROGRESS_KEY, exOfStep, feelToday, recordFeel, type Feel, type Progress } from '../lib/coachProgress';
 import { useEffect } from 'react';
 import { refreshCoachRoutine } from '../lib/coachRoutine';
 import './Routine.css';
@@ -56,6 +58,7 @@ export default function Routine() {
           <p>{r.done ? `${routineSteps().length > 1 ? `Les ${routineSteps().length} étapes sont faites` : 'L’étape est faite'}. À demain pour la suite de la série !` : step.detail}</p>
           {!r.done && step.link && <button className="rlink" onClick={() => openLink(step.link!)}>{step.link.label} ›</button>}
         </div>
+        {!r.done && <CoachFeel step={step} />}
 
         <div className="rlist">
           {routineSteps().map((s, i) => {
@@ -81,5 +84,35 @@ export default function Routine() {
       </div>
       <TabBar active={2} />
     </Phone>
+  );
+}
+
+/**
+ * After a coach exercise with a tempo: how it went. The coach raises the tempo when it is easy,
+ * keeps it when it is « juste », lowers it when it is hard.
+ */
+function CoachFeel({ step }: { step: RoutineStep }) {
+  const [progress, setProgress] = useStoredState<Progress>(PROGRESS_KEY, {});
+  const ex = exOfStep(step.id);
+  const played = Number(step.link?.set?.['metro.bpm']);
+  if (!ex || !played) return null;
+  const day = dayNumber();
+  const today = feelToday(progress, ex, day);
+  const next = progress[ex]?.bpm;
+  return (
+    <div className="coach-feel" role="group" aria-label={`${EX_FR[ex]} à ${played} BPM : comment c’était ?`}>
+      <span className="coach-feel-q">À {played} BPM, c’était :</span>
+      <div className="seg" style={{ gridTemplateColumns: 'repeat(3,minmax(0,1fr))' }}>
+        {(['easy', 'ok', 'hard'] as Feel[]).map(f => (
+          <button key={f} className={today === f ? 'on' : ''} aria-pressed={today === f}
+            onClick={() => setProgress(recordFeel(progress, ex, played, f, day))}>{FEEL_FR[f]}</button>
+        ))}
+      </div>
+      {today && next !== undefined && (
+        <span className="coach-feel-next" role="status">
+          {next > played ? `Prochaine fois : ${next} BPM (+${next - played}).` : next < played ? `Prochaine fois : ${next} BPM, pour jouer propre.` : `Prochaine fois : toujours ${next} BPM.`}
+        </span>
+      )}
+    </div>
   );
 }

@@ -47,3 +47,6 @@
 .redit-warn { margin: 0; padding: 0 4px; font-size: 14px; color: var(--warn); }
 .redit-note { margin: 0; padding: 0 4px; text-align: center; font-size: 13px; color: var(--muted-2); }
 .edit-btn:disabled { opacity: .4; cursor: default; }
+.coach-feel { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 16px; background: var(--surface-2, #221f1c); }
+.coach-feel-q { font-size: 14px; font-weight: 600; color: var(--muted-3); }
+.coach-feel-next { font-size: 13px; color: var(--amber-hi); }

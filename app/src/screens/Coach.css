@@ -33,3 +33,17 @@
 .coach-step-name { font-weight: 700; font-size: 15px; color: var(--cream); }
 .coach-step-name .mono { font-weight: 400; font-size: 12px; color: var(--muted-2); }
 .coach-step-detail { font-size: 13px; line-height: 1.4; color: var(--muted-3); }
+
+.coach-panel { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 18px; background: var(--surface-2, #221f1c); border: 1px solid var(--line); }
+.coach-week-nums { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.coach-week-nums div { display: flex; flex-direction: column; gap: 2px; }
+.coach-week-nums b { font-size: 24px; color: var(--cream); }
+.coach-week-nums span { font-size: 13px; color: var(--muted-2); }
+.coach-tempos, .coach-changes ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.coach-tempos li, .coach-changes li { display: grid; grid-template-columns: 1fr auto 44px; gap: 8px; align-items: center; font-size: 14px; }
+.coach-tempos b, .coach-changes b { text-align: right; color: var(--muted-2); }
+.coach-tempos b.up, .coach-changes b.up { color: var(--led-text, #7bd389); }
+.coach-tempos b.down, .coach-changes b.down { color: #e07a5f; }
+.coach-advice { margin: 0; font-size: 14px; line-height: 1.4; color: var(--cream); }
+.coach-changes { display: flex; flex-direction: column; gap: 6px; }
+.btn-link.inline { height: auto; padding: 0; font-size: inherit; }

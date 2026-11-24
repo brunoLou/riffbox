@@ -3,6 +3,7 @@
  * per skill (measured by three short tests, or self-assessed). Pure logic, no browser.
  */
 import type { RoutineStep } from './routine';
+import type { Progress } from './coachProgress';
 
 export type Goal = 'chords' | 'rhythm' | 'solo' | 'songs' | 'singing';
 export type Style = 'blues' | 'rock' | 'folk' | 'chanson' | 'funk' | 'pop';
@@ -191,7 +192,7 @@ export const dayNumber = (d = new Date()) => Math.floor((d.getTime() - d.getTime
  * Today's routine: a warm-up, then blocks for the goals (the weakest skill gets more time), in the
  * time the player has. With more goals than room, they take turns from one day to the next.
  */
-export function coachRoutine(p: Profile, day = dayNumber()): RoutineStep[] {
+export function coachRoutine(p: Profile, day = dayNumber(), progress: Progress = {}): RoutineStep[] {
   const lv = levels(p);
   const style = p.styles.length ? p.styles[day % p.styles.length] : 'blues';
   const ctx = { style, m: p.measures, day };
@@ -223,5 +224,16 @@ export function coachRoutine(p: Profile, day = dayNumber()): RoutineStep[] {
   const warmLevel = Math.min(lv.technique, lv.chords) as Level;
   const steps: RoutineStep[] = [{ ...EXERCISES.warm(warmLevel, ctx), id: 'coach-warm', short: '', min: warmMin }];
   blocks.forEach((b, i) => steps.push({ ...EXERCISES[b.ex](b.level, ctx), id: `coach-${b.ex}`, short: '', min: mins[i] }));
-  return steps.map(s => ({ ...s, short: s.detail.split(/[.:;]/)[0].slice(0, 34) }));
+  // The tempo the coach has reached with the player replaces the starting one.
+  const tempoOf = (id: string) => progress[id.replace(/^coach-/, '') as keyof Progress]?.bpm;
+  return steps.map(s => {
+    const bpm = tempoOf(s.id);
+    const step = { ...s, short: s.detail.split(/[.:;]/)[0].slice(0, 34) };
+    if (!bpm || !s.link?.set || !('metro.bpm' in s.link.set)) return step;
+    return {
+      ...step,
+      detail: `${s.detail.replace(/à \d+ BPM/, `à ${bpm} BPM`)}${/\d+ BPM/.test(s.detail) ? '' : ` Tempo du jour : ${bpm} BPM.`}`,
+      link: { ...s.link, set: { ...s.link.set, 'metro.bpm': bpm } },
+    };
+  });
 }

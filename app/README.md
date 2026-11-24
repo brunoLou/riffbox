@@ -31,6 +31,15 @@ niveau indiqué à la main. Le coach compose chaque jour une routine dans le tem
 chaque compétence (la plus faible d’abord), dont chaque étape ouvre l’outil déjà réglé (tempo, gamme, backing
 track). « Revenir à ma routine » rend la routine personnelle.
 
+### Coach dans la durée
+
+Après chaque exercice à tempo de la routine du coach (échauffement, accords, rythme, gammes), le
+joueur dit comment c’était : **Facile** (+4 BPM la fois suivante), **Juste** (même tempo, +2 après
+deux fois de suite) ou **Difficile** (−4). L’écran Coach montre le **bilan de la semaine** (minutes,
+jours joués, tempos gagnés, un conseil) et propose le **test du mois** quatre semaines après le
+dernier bilan : les trois tests, comparés au précédent et au bilan de départ (`coach.progress`,
+`coach.tests`, synchronisés).
+
 ## Looper
 
 Pratiquer › Looper : une boucle de 1 à 8 mesures au tempo choisi, enregistrée après une mesure de
@@ -158,6 +167,7 @@ dans le dossier temporaire du système.
 | `tests/unit/cloudSync.test.ts` | synchronisation par un stockage distant : échange entre deux appareils, rien de renvoyé sans changement, suppressions, enregistrements manquants |
 | `tests/unit/driveToken.test.ts` | fonction Vercel de connexion durable : échange du code, cookie illisible par la page, renouvellement, refus des autres sites |
 | `tests/unit/pageSong.test.ts` | page entière copiée (type Ultimate Guitar) : la chanson seule, avec titre, artiste, tonalité et capo ; une grille seule garde l’import habituel |
+| `tests/unit/coachProgress.test.ts` | coach dans la durée : tempos selon le ressenti, une réponse par jour, routine aux tempos atteints, bilan de la semaine, test du mois |
 | `tests/unit/piano.test.ts` | piano : position de pianiste, notes exactes de la guitare, nom de l’accord touché au clavier, notes écrites selon l’accord |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises, backing tracks perso avec leur son |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
