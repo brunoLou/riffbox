@@ -5,7 +5,7 @@
  */
 import { useSyncExternalStore } from 'react';
 import { syncOnce, type SyncRemote, type SyncResult } from './cloudSync';
-import { consumeRedirect, DriveAuthError, driveConfigured, driveRemote, signIn, signOut, tokenValid } from './googleDrive';
+import { consumeRedirect, DriveAuthError, driveConfigured, driveRemote, finishRedirect, refreshSilently, signIn, signOut, tokenValid } from './googleDrive';
 export { preloadGoogle } from './googleDrive';
 import { onAnyWrite } from './store';
 
@@ -30,9 +30,13 @@ export const useDriveState = () => useSyncExternalStore(cb => { listeners.add(cb
 
 /** An in-memory remote that automated tests can put in place of the Drive. */
 const fake = () => (window as unknown as { __riffboxFakeDrive?: SyncRemote }).__riffboxFakeDrive;
+/** Tests: the simulated Drive still goes through the sign-in (to check how it is renewed). */
+const fakeWithAuth = () => !!(window as unknown as { __riffboxFakeDriveAuth?: boolean }).__riffboxFakeDriveAuth;
 export const syncAvailable = () => !!fake() || driveConfigured();
 
 let running: Promise<void> | null = null;
+/** Changes made here since the last sync started. */
+let dirty = false;
 /** One sync now. `interactive` (after a tap): may ask Google to sign in again. */
 export function syncNow(interactive = false): Promise<void> {
   if (!state.connected) return Promise.resolve();
@@ -40,10 +44,12 @@ export function syncNow(interactive = false): Promise<void> {
   running = (async () => {
     try {
       const remote = fake();
-      if (!remote && !tokenValid()) {
+      // An expired authorization is renewed silently when the lasting connection is on.
+      if ((!remote || fakeWithAuth()) && !tokenValid() && !(await refreshSilently())) {
         if (!interactive) { set({ status: 'needsTap' }); return; }
         await signIn(false, 'sync');
       }
+      dirty = false;
       set({ status: 'syncing', error: undefined });
       const r = await syncOnce(remote ?? driveRemote());
       set({ status: 'idle', lastSync: Date.now(), lastResult: r });
@@ -57,7 +63,7 @@ export function syncNow(interactive = false): Promise<void> {
 
 /** First connection (after a tap): Google asks for the permission, then a first sync. */
 export async function connectDrive() {
-  if (!fake()) await signIn(true, 'connect');
+  if (!fake() || fakeWithAuth()) await signIn(true, 'connect');
   set({ connected: true, status: 'idle', error: undefined });
   await syncNow(true);
 }
@@ -72,13 +78,22 @@ export function installAutoSync() {
   installed = true;
   // Back from Google's page (sign-in by redirect on phones).
   const back = consumeRedirect();
-  if (back?.error) set({ status: 'error', error: back.error });
-  else if (back) set({ connected: true, status: 'idle', error: undefined });
   let timer = 0;
-  // Writes made by the sync itself skip the hooks and are not reported here.
-  onAnyWrite(() => { clearTimeout(timer); timer = window.setTimeout(() => void syncNow(), 15_000); });
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void syncNow(); });
+  // Writes made by the sync itself skip the hooks and are not reported here. Sent a few seconds
+  // after the last change, and at once when the app leaves the screen (a phone may freeze it).
+  onAnyWrite(() => { dirty = true; clearTimeout(timer); timer = window.setTimeout(() => void syncNow(), 4_000); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void syncNow();
+    else if (dirty) { clearTimeout(timer); void syncNow(); }
+  });
+  window.addEventListener('pagehide', () => { if (dirty) void syncNow(); });
   window.addEventListener('online', () => void syncNow());
   window.setInterval(() => void syncNow(), 5 * 60_000);
-  void syncNow();
+  if (!back) { void syncNow(); return; }
+  // Back from Google's page: finish the sign-in, then sync.
+  void finishRedirect(back).then(error => {
+    if (error) { set({ status: 'error', error }); return; }
+    set({ connected: true, status: 'idle', error: undefined });
+    void syncNow();
+  });
 }

@@ -71,6 +71,14 @@ voyagent. Quand Google redemande la connexion (environ toutes les heures), un bo
 L’identifiant OAuth Google de l’app est dans `GOOGLE_CLIENT_ID` (`src/lib/googleDrive.ts`, public) ;
 sans lui, la carte l’explique et le transfert par fichier reste disponible.
 
+**Connexion durable.** Google ne donne à une app web qu’une autorisation d’une heure. La petite
+fonction Vercel `api/drive-token.ts` garde l’autorisation longue (« refresh token ») dans un cookie
+`HttpOnly` et redonne une autorisation à la demande : la synchronisation continue sans rien demander.
+Elle a besoin du secret du client OAuth dans les variables d’environnement Vercel
+(`GOOGLE_CLIENT_SECRET`) ; sans lui, l’app garde la reconnexion d’une heure. En mode « Test » chez
+Google, l’autorisation longue expire au bout de 7 jours : publier l’app (Google Auth Platform → Cible
+→ Publier) la rend permanente.
+
 ## Ordinateur
 
 Sur un écran d’au moins 900 px avec une souris, l’app quitte son cadre de téléphone : les onglets
@@ -137,6 +145,7 @@ dans le dossier temporaire du système.
 | `tests/unit/coach.test.ts` | coach : niveaux à partir des tests, changements d’accords comptés, régularité au clic (indépendante du retard de l’appareil), attaques détectées, routine du jour adaptée |
 | `tests/unit/pedals.test.ts` | pédales de l’accueil toutes différentes : couleur, dessin, commandes et footswitch |
 | `tests/unit/cloudSync.test.ts` | synchronisation par un stockage distant : échange entre deux appareils, rien de renvoyé sans changement, suppressions, enregistrements manquants |
+| `tests/unit/driveToken.test.ts` | fonction Vercel de connexion durable : échange du code, cookie illisible par la page, renouvellement, refus des autres sites |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises, backing tracks perso avec leur son |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
 | `tests/e2e/smoke.spec.ts` | chaque écran s’ouvre, navigation, anciennes adresses, micro refusé |

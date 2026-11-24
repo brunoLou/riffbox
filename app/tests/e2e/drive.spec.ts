@@ -121,3 +121,68 @@ test.describe('on a phone: sign-in through Google’s page and back', () => {
     await expect(page.getByRole('button', { name: 'Connecter Google Drive' })).toBeVisible();
   });
 });
+
+test.describe('lasting connection (the app\u2019s Vercel function keeps the authorization)', () => {
+  const SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
+
+  test('connecting asks Google once for a lasting authorization, then exchanges it', async ({ page }) => {
+    const calls: string[] = [];
+    await page.route('**/api/drive-token', async r => {
+      if (r.request().method() === 'GET') return r.fulfill({ json: { ready: true } });
+      const b = r.request().postDataJSON();
+      calls.push(b.action);
+      if (b.action === 'exchange') {
+        expect(b.code).toBe('code-de-google');
+        expect(b.redirect_uri).toMatch(/^http:\/\/localhost:\d+\/$/);
+        return r.fulfill({ json: { access_token: 'jeton', expires_in: 3599, scope: SCOPE, lasting: true } });
+      }
+      return r.fulfill({ status: 401, json: { error: 'no_session' } });
+    });
+    let asked: URL | null = null;
+    await page.route('https://accounts.google.com/gsi/**', r => r.fulfill({ contentType: 'text/javascript', body: '' }));
+    await page.route('https://accounts.google.com/o/oauth2/**', r => { asked = new URL(r.request().url()); return r.fulfill({ contentType: 'text/html', body: '<p>Google</p>' }); });
+    const drive = fakeDrive();
+    await drive.attach(page);
+    await page.addInitScript(() => { (window as unknown as { __riffboxFakeDriveAuth: boolean }).__riffboxFakeDriveAuth = true; });
+
+    await page.goto('#/reglages');
+    await page.getByRole('button', { name: 'Connecter Google Drive' }).click();
+    await expect.poll(() => asked?.pathname).toBe('/o/oauth2/v2/auth');
+    const q = asked!.searchParams;
+    expect([q.get('response_type'), q.get('access_type'), q.get('prompt')]).toEqual(['code', 'offline', 'consent']);
+
+    await page.goto(`/?state=${q.get('state')}&code=code-de-google&scope=${encodeURIComponent(SCOPE)}`);
+    await expect(page).toHaveURL(/\/#\/reglages$/);
+    await expect(page.locator('.drive-status')).toContainText('Synchronisé à l’instant');
+    expect(calls).toContain('exchange');
+    expect(drive.puts).toBe(1);
+  });
+
+  test('an expired authorization is renewed without asking: changes keep travelling', async ({ page }) => {
+    let refreshes = 0;
+    await page.route('**/api/drive-token', r => {
+      if (r.request().method() === 'GET') return r.fulfill({ json: { ready: true } });
+      refreshes++;
+      return r.fulfill({ json: { access_token: 'neuf', expires_in: 3599 } });
+    });
+    const drive = fakeDrive();
+    await drive.attach(page);
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem('prepared')) return;
+      sessionStorage.setItem('prepared', '1');
+      (window as unknown as { __riffboxFakeDriveAuth: boolean }).__riffboxFakeDriveAuth = true;
+      localStorage.setItem('riffbox-drive-state', JSON.stringify({ connected: true, status: 'needsTap' }));
+      // The hour is over.
+      localStorage.setItem('riffbox-drive-token', JSON.stringify({ access_token: 'vieux', expires_at: Date.now() - 1000 }));
+    });
+    await page.goto('#/reglages');
+    await expect(page.locator('.drive-status')).toContainText('Synchronisé à l’instant');
+    expect(refreshes).toBe(1);
+    expect(drive.puts).toBe(1);
+
+    // A change goes a few seconds later, still without any sign-in.
+    await page.goto('#/scene/morceau/s3');
+    await page.locator('.chordpro').fill('{c:Couplet}\n[A7]Changée plus tard');
+    await expect.poll(() => drive.puts, { timeout: 10_000 }).toBe(2);
+  });
+});

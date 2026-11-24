@@ -44,6 +44,42 @@ export const preloadGoogle = () => { if (driveConfigured()) loadGis().catch(() =
 const storeToken = (access_token: string, expiresIn: number) =>
   localStorage.setItem(TOKEN_KEY, JSON.stringify({ access_token, expires_at: Date.now() + expiresIn * 1000 }));
 
+/* ---------- Lasting connection (the app's small Vercel function, api/drive-token.ts) ---------- */
+
+const SERVER = '/api/drive-token';
+const post = (body: object) => fetch(SERVER, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), cache: 'no-store' });
+let ready: Promise<boolean> | null = null;
+/** Is the lasting connection available (the function deployed, with the client secret)? */
+export function serverReady(): Promise<boolean> {
+  ready ??= fetch(SERVER, { cache: 'no-store' }).then(
+    // No function there (the app served elsewhere): answers something that is not its JSON.
+    r => (r.ok ? r.json().then((j: { ready?: boolean }) => !!j?.ready, () => false) : false),
+    () => { ready = null; return false; }, // offline: ask again next time
+  );
+  return ready;
+}
+/** A new access token without asking the player (the function keeps the lasting authorization). */
+export async function refreshSilently(): Promise<boolean> {
+  if (!(await serverReady())) return false;
+  try {
+    const r = await post({ action: 'refresh' });
+    if (!r.ok) return false;
+    const j = await r.json() as { access_token: string; expires_in: number };
+    storeToken(j.access_token, j.expires_in);
+    return true;
+  } catch { return false; }
+}
+async function exchangeCode(code: string): Promise<string | null> {
+  try {
+    const r = await post({ action: 'exchange', code, redirect_uri: redirectUri() });
+    const j = await r.json() as { access_token?: string; expires_in?: number; scope?: string; error?: string };
+    if (!r.ok || !j.access_token) return `Connexion impossible (${j.error ?? r.status}).`;
+    if (j.scope && !j.scope.includes('drive.appdata')) return 'Autorisez l’accès au dossier de RIFFBOX dans votre Drive (case à cocher chez Google).';
+    storeToken(j.access_token, j.expires_in ?? 3600);
+    return null;
+  } catch { return 'Connexion impossible : pas de réseau ?'; }
+}
+
 /**
  * On a phone (or the installed app), Google's small window is often blocked or never answers: the
  * app goes to Google's page instead, and Google brings the player back with the token.
@@ -56,51 +92,62 @@ export const prefersRedirect = () => {
 /** The address Google sends the player back to (declared in the Google console). */
 export const redirectUri = () => location.origin + '/';
 
-export function authUrl(state: string, firstTime: boolean) {
+export function authUrl(state: string, firstTime: boolean, lasting = false) {
   const q = new URLSearchParams({
-    client_id: GOOGLE_CLIENT_ID, redirect_uri: redirectUri(), response_type: 'token', scope: SCOPE,
+    client_id: GOOGLE_CLIENT_ID, redirect_uri: redirectUri(), response_type: lasting ? 'code' : 'token', scope: SCOPE,
     include_granted_scopes: 'true', state,
   });
-  if (firstTime) q.set('prompt', 'consent');
+  // A lasting connection: Google gives the long-lived authorization only along with its consent page.
+  if (lasting) { q.set('access_type', 'offline'); q.set('prompt', 'consent'); }
+  else if (firstTime) q.set('prompt', 'consent');
   return 'https://accounts.google.com/o/oauth2/v2/auth?' + q.toString();
 }
 
-function redirectSignIn(firstTime: boolean, intent: SignInIntent): Promise<void> {
+function redirectSignIn(firstTime: boolean, intent: SignInIntent, lasting = false): Promise<void> {
   const state = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
   localStorage.setItem(REDIRECT_KEY, JSON.stringify({ state, intent, back: location.hash || '#/' }));
-  location.assign(authUrl(state, firstTime));
+  location.assign(authUrl(state, firstTime, lasting));
   return new Promise(() => { /* the page leaves for Google */ });
 }
 
-export interface RedirectAnswer { intent: SignInIntent; error?: string }
+export interface RedirectAnswer { intent: SignInIntent; error?: string; code?: string }
 /**
- * At start-up, before the screens: Google's answer in the address after a sign-in by redirect.
- * Keeps the token, puts back the screen the player was on, and says what was asked.
+ * At start-up, before the screens: Google's answer in the address after a sign-in by redirect
+ * (`#access_token=…`, or `?code=…` for a lasting connection). Keeps the token (or the code, to be
+ * exchanged by `finishRedirect`), puts back the screen the player was on, and says what was asked.
  */
 export function consumeRedirect(): RedirectAnswer | null {
-  if (!/^#(.*&)?(access_token|error)=/.test(location.hash)) return null;
-  const p = new URLSearchParams(location.hash.slice(1));
+  const inHash = /^#(.*&)?(access_token|error)=/.test(location.hash);
+  const inQuery = /[?&](code|error)=/.test(location.search) && /[?&]state=/.test(location.search);
+  if (!inHash && !inQuery) return null;
+  const p = new URLSearchParams(inHash ? location.hash.slice(1) : location.search.slice(1));
   let saved: { state: string; intent: SignInIntent; back: string } | null = null;
   try { saved = JSON.parse(localStorage.getItem(REDIRECT_KEY) ?? 'null'); } catch { /* none */ }
   localStorage.removeItem(REDIRECT_KEY);
-  history.replaceState(null, '', location.pathname + location.search + (saved?.back ?? '#/'));
+  history.replaceState(null, '', location.pathname + (saved?.back ?? '#/'));
   if (!saved || p.get('state') !== saved.state) return { intent: 'sync', error: 'Réponse de Google inattendue : réessayez.' };
   const err = p.get('error');
   if (err) return { intent: saved.intent, error: err === 'access_denied' ? 'Accès refusé.' : `Connexion impossible (${err}).` };
-  const token = p.get('access_token');
-  if (!token) return { intent: saved.intent, error: 'Connexion impossible.' };
   if (!(p.get('scope') ?? SCOPE).includes('drive.appdata')) {
     return { intent: saved.intent, error: 'Autorisez l’accès au dossier de RIFFBOX dans votre Drive (case à cocher chez Google).' };
   }
+  const code = p.get('code');
+  if (code) return { intent: saved.intent, code };
+  const token = p.get('access_token');
+  if (!token) return { intent: saved.intent, error: 'Connexion impossible.' };
   storeToken(token, Number(p.get('expires_in')) || 3600);
   return { intent: saved.intent };
 }
+/** For a lasting connection: trade Google's code for the token. Null when done, else the error. */
+export const finishRedirect = (a: RedirectAnswer) => (a.code ? exchangeCode(a.code) : Promise.resolve(a.error ?? null));
 
 /**
  * A token, asking Google when needed. `firstTime`: Google asks for the permission; afterwards it
  * answers without asking again. Must follow a tap or a click.
  */
 export async function signIn(firstTime = false, intent: SignInIntent = 'sync'): Promise<void> {
+  // The lasting connection goes through Google's page (on every device), so it never asks again.
+  if (await serverReady()) return redirectSignIn(firstTime, intent, true);
   if (prefersRedirect()) return redirectSignIn(firstTime, intent);
   const gis = await loadGis();
   await new Promise<void>((resolve, reject) => {
@@ -125,15 +172,22 @@ export async function signIn(firstTime = false, intent: SignInIntent = 'sync'): 
 export async function signOut() {
   const t = readToken();
   localStorage.removeItem(TOKEN_KEY);
+  if (await serverReady()) await post({ action: 'logout' }).catch(() => undefined);
   if (t) { try { (await loadGis()).accounts.oauth2.revoke(t.access_token); } catch { /* offline: the token expires anyway */ } }
 }
 
 export class DriveAuthError extends Error {}
-async function call(url: string, init: RequestInit = {}): Promise<Response> {
-  const t = readToken();
+async function call(url: string, init: RequestInit = {}, retried = false): Promise<Response> {
+  let t = readToken();
+  if ((!t || t.expires_at < Date.now() + 30_000) && await refreshSilently()) t = readToken();
   if (!t || t.expires_at < Date.now()) throw new DriveAuthError('Reconnexion à Google nécessaire.');
-  const r = await fetch(url, { ...init, headers: { ...(init.headers ?? {}), Authorization: `Bearer ${t.access_token}` } });
-  if (r.status === 401) { localStorage.removeItem(TOKEN_KEY); throw new DriveAuthError('Reconnexion à Google nécessaire.'); }
+  // Never an old copy from the browser's cache: the other device may just have sent a new one.
+  const r = await fetch(url, { ...init, cache: 'no-store', headers: { ...(init.headers ?? {}), Authorization: `Bearer ${t.access_token}` } });
+  if (r.status === 401) {
+    localStorage.removeItem(TOKEN_KEY);
+    if (!retried && await refreshSilently()) return call(url, init, true);
+    throw new DriveAuthError('Reconnexion à Google nécessaire.');
+  }
   if (!r.ok) throw new Error(`Google Drive : erreur ${r.status}`);
   return r;
 }
