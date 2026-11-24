@@ -3,6 +3,8 @@ import '../../src/lib/ideas';
 import { referencedAudio, syncOnce, type LocalAudio, type SyncRemote } from '../../src/lib/cloudSync';
 import { clearAllStored, readStored, withoutWriteHooks, writeStored } from '../../src/lib/store';
 import { installSync } from '../../src/lib/sync';
+import { INITIAL_SONGS } from '../../src/lib/setlists';
+import { INITIAL_GRIDS } from '../../src/lib/grids';
 
 installSync();
 beforeEach(() => clearAllStored());
@@ -68,6 +70,31 @@ describe('sync through the Drive', () => {
     withoutWriteHooks(() => writeStored('songs', [{ ...song('a', 'A'), updated: 1 }, { ...song('b', 'B'), updated: 1 }]));
     await syncOnce(remote, memAudio().a);
     expect(titles()).toEqual(['A']);
+  });
+
+  it('an example edited on the phone is not replaced by the untouched example of a computer launched later', async () => {
+    const { r, remote } = memRemote();
+    const t = (x: number) => 1_700_000_000_000 + x * 86_400_000;
+    // Phone, day 1: the example song s3 and the example grid get the player's changes.
+    withoutWriteHooks(() => {
+      writeStored('songs', INITIAL_SONGS.map(s => (s.id === 's3' ? { ...s, chordpro: '[A7]Ma version', updated: t(1) } : s)));
+      writeStored('grids', INITIAL_GRIDS.map((g, i) => (i === 0 ? { ...g, title: 'Ma grille', updated: t(1) } : g)));
+    });
+    await syncOnce(remote, memAudio().a);
+
+    // Computer, launched days later: its untouched examples carry later dates (first save, launch).
+    clearAllStored();
+    withoutWriteHooks(() => {
+      writeStored('songs', INITIAL_SONGS.map(s => ({ ...s, updated: t(5) })));
+      writeStored('grids', INITIAL_GRIDS.map(g => ({ ...g, created: t(5), updated: t(5) })));
+    });
+    await syncOnce(remote, memAudio().a);
+    // The computer gets the phone's versions…
+    expect(readStored<{ id: string; chordpro?: string }[]>('songs', []).find(s => s.id === 's3')!.chordpro).toBe('[A7]Ma version');
+    expect(readStored<{ title: string }[]>('grids', [])[0].title).toBe('Ma grille');
+    // …and the Drive keeps them (the phone will not get the example back).
+    expect((r.data!.songs as { id: string; chordpro?: string }[]).find(s => s.id === 's3')!.chordpro).toBe('[A7]Ma version');
+    expect((r.data!.grids as { title: string }[])[0].title).toBe('Ma grille');
   });
 
   it('device settings stay on each device', async () => {

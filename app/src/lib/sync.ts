@@ -127,6 +127,10 @@ export function planMerge(
 
   for (const list of SYNC_LISTS) {
     const s: MergeStats = { added: 0, updated: 0, removed: 0 };
+    // An example never changed by the player has no date that counts: it never wins over a real
+    // edit, whenever each device was first launched (the examples get their dates at launch).
+    const examples = new Map(((defaults[list] ?? []) as Item[]).filter(x => x && typeof x.id === 'string').map(x => [x.id, content(list, x)]));
+    const at = (x: Item) => (examples.get(x.id) === content(list, x) ? 0 : changedAt(x));
     const local = ((mine(list) ?? defaults[list] ?? []) as Item[]).filter(x => x && typeof x.id === 'string');
     const incoming = Array.isArray(theirs[list]) ? (theirs[list] as Item[]).filter(x => x && typeof x.id === 'string') : null;
     let result = local.slice();
@@ -134,15 +138,15 @@ export function planMerge(
     if (incoming) {
       for (const t of incoming) {
         const deletedHere = myTombs[tombId(list, t.id)];
-        if (deletedHere !== undefined && deletedHere >= changedAt(t)) continue; // deleted here afterwards
+        if (deletedHere !== undefined && deletedHere >= at(t)) continue; // deleted here afterwards
         const i = index.get(t.id);
         if (i === undefined) { result.push(t); index.set(t.id, result.length - 1); s.added++; audioIds.push(t.id); }
-        else if (changedAt(t) > changedAt(result[i]) && content(list, t) !== content(list, result[i])) { result[i] = t; s.updated++; audioIds.push(t.id); }
+        else if (at(t) > at(result[i]) && content(list, t) !== content(list, result[i])) { result[i] = t; s.updated++; audioIds.push(t.id); }
       }
     }
     // Deleted on the other device after the last change here.
     const before = result.length;
-    result = result.filter(x => { const at = theirTombs[tombId(list, x.id)]; return !(at !== undefined && at > changedAt(x)); });
+    result = result.filter(x => { const gone = theirTombs[tombId(list, x.id)]; return !(gone !== undefined && gone > at(x)); });
     s.removed = before - result.length;
     if (s.added || s.updated || s.removed) writes[list] = result;
     byList[list] = s;
