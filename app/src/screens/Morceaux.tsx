@@ -16,6 +16,7 @@ import { StressView } from '../components/StressView';
 import { useDialog } from '../lib/useDialog';
 import { looksLikeChordPro, textToChordPro } from '../lib/chordSheet';
 import { useDropped } from '../lib/dropped';
+import { onlyUrl, searchUrl, takeShare } from '../lib/shared';
 
 
 /** "Setlists | Morceaux" switch at the top of the Live tab. */
@@ -47,9 +48,15 @@ export function MorceauxScreen() {
   /** Text being pasted (null: the sheet is closed). */
   const [pasted, setPasted] = useState<string | null>(null);
   const [preview, setPreview] = useState<number | null>(null);
+  /** Web search sheet: what is looked for (null: closed). */
+  const [finding, setFinding] = useState<{ title: string; artist: string; sent: boolean } | null>(null);
+  /** The song looked for on the web, to name what is pasted next. */
+  const [hint, setHint] = useState<{ title: string; artist: string } | null>(null);
+  const [clipMsg, setClipMsg] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const dlgImport = useDialog(() => setFound(null));
-  const dlgPaste = useDialog(() => setPasted(null));
+  const dlgPaste = useDialog(() => { setPasted(null); setClipMsg(null); });
+  const dlgFind = useDialog(() => setFinding(null));
   const list = allSongs()
     .filter(s => !q.trim() || s.title.toLowerCase().includes(q.trim().toLowerCase()))
     .sort((a, b) => a.title.localeCompare(b.title, 'fr'));
@@ -98,10 +105,35 @@ export function MorceauxScreen() {
   const convertPasted = () => {
     if (!pasted?.trim()) return;
     setMsg(null);
-    const songs = looksLikeChordPro(pasted) ? importChordPro(pasted, 'Morceau collé') : withChords(importChordPro(textToChordPro(pasted), 'Morceau collé'));
-    setPasted(null);
+    const title = hint?.title.trim() || undefined;
+    let songs = looksLikeChordPro(pasted) ? importChordPro(pasted, 'Morceau collé') : withChords(importChordPro(textToChordPro(pasted, title), 'Morceau collé'));
+    // The song looked for gives its artist when the text has none.
+    if (hint?.artist.trim()) songs = songs.map(x => (x.artist ? x : { ...x, artist: hint.artist.trim().slice(0, 80) }));
+    setPasted(null); setClipMsg(null); setHint(null);
     offer(songs);
   };
+  /** The text copied on a site, read from the clipboard (after a tap: browsers ask for one). */
+  const pasteClipboard = async () => {
+    setClipMsg(null);
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text.trim()) { setPasted(pasted ?? ''); setClipMsg('Le presse-papiers est vide : copiez d’abord la chanson sur le site.'); return; }
+      setPasted(text);
+    } catch {
+      setPasted(pasted ?? '');
+      setClipMsg('Le navigateur n’a pas donné le presse-papiers : touchez longuement le cadre, puis « Coller ».');
+    }
+  };
+  // A song shared from another app (Android: « Partager → RIFFBOX »).
+  useEffect(() => {
+    const shared = takeShare();
+    if (!shared) return;
+    if (onlyUrl(shared)) {
+      setMsg({ text: 'RIFFBOX a reçu l’adresse de la page, pas la chanson : sélectionnez la chanson sur la page (accords et paroles), puis Partager → RIFFBOX.', error: true });
+      return;
+    }
+    setPasted(shared.text);
+  }, []);
   // « / » or Ctrl+F (Cmd+F): search the library (on a computer).
   const search = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -144,12 +176,13 @@ export function MorceauxScreen() {
         <input ref={search} className="text-input search" type="search" placeholder="Rechercher un titre  ( / )" value={q} onChange={e => setQ(e.target.value)} aria-label="Rechercher un titre" />
         <div className="cp-row">
           <button className="btn-outline cp-btn" onClick={() => fileInput.current?.click()} disabled={reading}>{reading ? 'Lecture…' : 'Importer…'}</button>
+          <button className="btn-outline cp-btn" onClick={() => setFinding({ title: q, artist: '', sent: false })}>Chercher…</button>
           <button className="btn-outline cp-btn" onClick={() => setPasted('')}>Coller…</button>
           <button className="btn-outline cp-btn" onClick={exportAll}>Tout exporter</button>
           <input ref={fileInput} type="file" multiple hidden accept={[...CHORDPRO_EXT, '.pdf', 'application/pdf'].join(',')} aria-label="Fichiers de morceaux" onChange={e => void pickFiles(e.target.files)} />
         </div>
         {msg && <p className={'cp-msg' + (msg.error ? ' error' : '')} role="status">{msg.text}</p>}
-        <p className="help cp-help">Importer : fichiers ChordPro, PDF ou texte (accords au-dessus des paroles). Coller : le texte d’une grille copiée sur un site.</p>
+        <p className="help cp-help">Chercher : trouver une grille sur le web, la copier, puis la coller ici. Importer : fichiers ChordPro, PDF ou texte (accords au-dessus des paroles). Coller : le texte d’une grille copiée sur un site.</p>
 
         {list.map(s => {
           // What the stage will show, including a linked grid's chords.
@@ -206,9 +239,39 @@ export function MorceauxScreen() {
               <button className="player-close" onClick={() => setPasted(null)} aria-label="Fermer">✕</button>
             </div>
             <p className="help">Collez une grille copiée sur un site ou dans un document : titre sur la première ligne, accords au-dessus des paroles (ou déjà en ChordPro).</p>
+            <button className="btn-outline" onClick={() => void pasteClipboard()}>Coller depuis le presse-papiers</button>
+            {clipMsg && <p className="cp-msg error" role="status">{clipMsg}</p>}
+            {hint && <p className="help cp-hint">Pour : <b>{hint.title}</b>{hint.artist ? ` · ${hint.artist}` : ''}</p>}
             <textarea className="chordpro cp-paste" value={pasted} onChange={e => setPasted(e.target.value)} aria-label="Texte du morceau" spellCheck={false}
               placeholder={'Le titre\n\nG          D         Em\nJ’ai pris la route avant le jour'} />
             <button className="btn-primary" disabled={!pasted.trim()} onClick={convertPasted}>Convertir</button>
+          </div>
+        </div>
+      )}
+      {finding && (
+        <div className="sheet-backdrop" onClick={() => setFinding(null)}>
+          <div className="set-sheet cp-sheet" ref={dlgFind} role="dialog" aria-label="Chercher un morceau sur le web" onClick={e => e.stopPropagation()}>
+            <div className="set-sheet-head">
+              <span className="kicker sheet-kicker">Chercher sur le web</span>
+              <button className="player-close" onClick={() => setFinding(null)} aria-label="Fermer">✕</button>
+            </div>
+            <input className="text-input" placeholder="Titre" aria-label="Titre du morceau" value={finding.title} autoFocus
+              onChange={e => setFinding({ ...finding, title: e.target.value })} />
+            <input className="text-input" placeholder="Artiste (facultatif)" aria-label="Artiste" value={finding.artist}
+              onChange={e => setFinding({ ...finding, artist: e.target.value })} />
+            <button className="btn-primary" disabled={!finding.title.trim()} onClick={() => {
+              window.open(searchUrl(finding.title, finding.artist), '_blank', 'noopener');
+              setHint({ title: finding.title.trim(), artist: finding.artist.trim() });
+              setFinding({ ...finding, sent: true });
+            }}>Chercher dans le navigateur</button>
+            <ol className="cp-steps">
+              <li>Sur une page de grille (accords au-dessus des paroles), sélectionnez la chanson et copiez-la. Sur Android, vous pouvez aussi faire Partager → RIFFBOX.</li>
+              <li>Revenez ici et touchez « Coller depuis le presse-papiers » : RIFFBOX la convertit en ChordPro, avec un aperçu avant d’enregistrer.</li>
+            </ol>
+            <button className={finding.sent ? 'btn-primary' : 'btn-outline'} onClick={() => {
+              if (!hint && finding.title.trim()) setHint({ title: finding.title.trim(), artist: finding.artist.trim() });
+              setFinding(null); void pasteClipboard();
+            }}>Coller depuis le presse-papiers</button>
           </div>
         </div>
       )}

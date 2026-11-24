@@ -61,3 +61,5 @@
 .cp-preview-btn { align-self: flex-start; margin: -4px 0 2px 40px; }
 .cp-preview { padding: 10px 12px; border-radius: 12px; background: var(--surface-2); max-height: 260px; overflow-y: auto; }
 .cp-more { color: var(--muted-3); }
+.cp-steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.4; color: var(--muted-3); }
+.cp-hint b { color: var(--cream); }

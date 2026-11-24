@@ -50,6 +50,15 @@ noms français (Lam, Sol7) deviennent des lettres ; sections, capo, tempo, titre
 tonalité est déduite des accords ; un recueil PDF est découpé à chaque titre. Les PDF sont lus sur
 l’appareil avec pdf.js (Mozilla, licence Apache 2.0).
 
+## Chercher un morceau sur le web
+
+Live → Morceaux → « Chercher… » : titre et artiste, puis le navigateur s’ouvre sur une recherche
+« accords paroles ». On copie la grille sur la page choisie, puis « Coller depuis le presse-papiers »
+la convertit en ChordPro (avec aperçu), au nom du morceau cherché. Sur Android (app installée),
+« Partager → RIFFBOX » depuis la page envoie le texte sélectionné directement à l’import
+(`share_target` du manifeste, adresse `/share-target`). L’app ne récupère jamais les pages elle-même :
+les sites de grilles l’interdisent et les paroles sont protégées.
+
 ## Exporter vers un logiciel de musique
 
 Réglages › « Exporter pour un logiciel de musique » : tous les enregistrements (carnet, prises vocales) en
@@ -173,6 +182,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/schemas-live.spec.ts` | prompteur : schémas de l’accord en cours et du suivant, qui suivent la lecture ; masquables |
 | `tests/e2e/suivre.spec.ts` | « Suivre ma guitare » : faux micro jouant les accords de Minuit Shuffle, le texte suit |
 | `tests/e2e/tonalite-ecoute.spec.ts` | « Quel ton ? » : faux micro jouant un morceau en Ré majeur, gamme ouverte, tonalité appliquée au morceau |
+| `tests/e2e/chercher.spec.ts` | chercher sur le web, coller depuis le presse-papiers (nommé d’après la recherche), partage Android reçu, refus du presse-papiers |
 | `tests/e2e/drive.spec.ts` | Google Drive (simulé) : deux appareils connectés s’échangent leurs changements sans fichier, déconnexion |
 | `tests/e2e/transfert.spec.ts` | téléphone ⇄ tablette : deux appareils simulés s’échangent leurs données dans les deux sens |
 | `tests/e2e/voyants.spec.ts` | voyants de l’accueil : allumés par un vrai usage du jour, éteints le lendemain |
