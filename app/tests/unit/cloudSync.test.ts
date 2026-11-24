@@ -97,13 +97,25 @@ describe('sync through the Drive', () => {
     expect((r.data!.grids as { title: string }[])[0].title).toBe('Ma grille');
   });
 
+  it('the home board (pedals, order, size) is the same on every device', async () => {
+    const { remote } = memRemote();
+    // Computer: the player adds the Looper and the Coach.
+    writeStored('home.layout', [{ id: 'tuner', wide: false }, { id: 'looper', wide: false }, { id: 'coach', wide: true }]);
+    await syncOnce(remote, memAudio().a);
+    // Phone, with the board it started with: it gets the computer's.
+    clearAllStored();
+    withoutWriteHooks(() => writeStored('home.layout', [{ id: 'tuner', wide: false }]));
+    await syncOnce(remote, memAudio().a);
+    expect(readStored<{ id: string }[]>('home.layout', []).map(s => s.id)).toEqual(['tuner', 'looper', 'coach']);
+  });
+
   it('device settings stay on each device', async () => {
     const { r, remote } = memRemote();
     writeStored('settings.theme', 'light');
-    writeStored('home.layout', [{ id: 'tuner', wide: false }]);
+    writeStored('pedal.keys', { right: 'PageDown' });
     await syncOnce(remote, memAudio().a);
     expect(r.data!['settings.theme']).toBeUndefined();
-    expect(r.data!['home.layout']).toBeUndefined();
+    expect(r.data!['pedal.keys']).toBeUndefined();
   });
 
   it('only recordings that the data refers to travel', () => {

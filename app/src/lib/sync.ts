@@ -9,9 +9,9 @@ import { markUsed } from './usage';
 /** Collections of items with an `id`, synced item by item. */
 export const SYNC_LISTS = ['ideas', 'grids', 'songs', 'setlists', 'voice.takes', 'tuner.custom', 'backing.mine'] as const;
 /** Single values synced as a whole (the most recent wins). */
-export const SYNC_VALUES = ['routine.steps', 'voice.range', 'grid.voicings', 'coach.profile'] as const;
+export const SYNC_VALUES = ['routine.steps', 'voice.range', 'grid.voicings', 'coach.profile', 'home.layout'] as const;
 /** Device settings and bookkeeping that stay on each device. */
-export const LOCAL_KEYS = ['settings.theme', 'home.layout', 'pedal.keys', 'routine', 'practice.seeded', 'backup.last', 'backup.since',
+export const LOCAL_KEYS = ['settings.theme', 'pedal.keys', 'routine', 'practice.seeded', 'backup.last', 'backup.since',
   'backup.snooze', 'backup.remind', 'sync.lastSent', 'sync.lastReceived', 'stage.follow', 'usage.today',
   'coach.active', 'coach.day', 'coach.ownRoutine'];
 

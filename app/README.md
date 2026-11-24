@@ -62,7 +62,7 @@ Un enregistrement seul : « WAV ↓ » dans le carnet.
 
 Réglages → Synchronisation → « Connecter Google Drive », sur chaque appareil. Les données (idées,
 grilles, morceaux, setlists, enregistrements, backing tracks perso…) se synchronisent ensuite toutes
-seules : au démarrage, au retour sur l’app, 15 s après un changement et toutes les 5 minutes. Elles
+seules (ainsi que le pédalier de l’accueil) : au démarrage, au retour sur l’app, 15 s après un changement et toutes les 5 minutes. Elles
 vont dans le dossier caché de l’app dans le Drive du joueur (`drive.appdata` : le reste du Drive
 n’est jamais lu). Fusion : la version la plus récente de chaque élément gagne, les suppressions
 voyagent. Quand Google redemande la connexion (environ toutes les heures), un bouton

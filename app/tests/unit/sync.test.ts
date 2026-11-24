@@ -85,12 +85,12 @@ describe('receiving the other device’s data', () => {
 
   it('practice minutes: the larger per day; device settings stay', () => {
     const plan = planMerge(
-      { 'practice.log': { '2026-11-20': 30, '2026-11-21': 10 }, 'settings.theme': 'light', 'home.layout': [] },
+      { 'practice.log': { '2026-11-20': 30, '2026-11-21': 10 }, 'settings.theme': 'light', 'pedal.keys': {} },
       mine({ 'practice.log': { '2026-11-20': 20, '2026-11-21': 15 }, 'settings.theme': 'dark' }),
     );
     expect(plan.writes['practice.log']).toEqual({ '2026-11-20': 30, '2026-11-21': 15 });
     expect(plan.writes).not.toHaveProperty('settings.theme');
-    expect(plan.writes).not.toHaveProperty('home.layout');
+    expect(plan.writes).not.toHaveProperty('pedal.keys');
   });
 
   it('a single value (the routine) follows its most recent change', () => {
