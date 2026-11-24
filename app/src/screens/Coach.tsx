@@ -152,6 +152,7 @@ export default function Coach() {
           </div>
         </div>
         <WeekCard />
+        <button className="btn-link" onClick={() => nav('/pratiquer/progres')}>Tous mes progrès (tempos, semaines, bilans) ›</button>
         <MonthCard p={p} checkups={checkups} onStart={startMonthly} />
         <Summary p={p} />
         <div className="coach-nav">

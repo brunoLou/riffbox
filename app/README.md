@@ -48,6 +48,13 @@ sans changer la vitesse (`pitchShift.ts` : deux têtes de lecture dans une court
 relayées en fondu, en AudioWorklet). Forme d’onde pour se repérer ; espace, flèches, A et B au clavier.
 Le fichier reste sur l’appareil, avec sa vitesse, sa boucle et sa transposition.
 
+## Progrès
+
+Pratiquer → Voir mes progrès (ou depuis le Coach) : minutes de pratique par semaine sur douze
+semaines (barre touchée = valeur, vue en tableau), tempos de chaque exercice du coach séance après
+séance (une courbe par exercice, jusqu’au prochain tempo prévu), bilans du coach (départ → dernier
+test) et réussite à l’oreille.
+
 ## Métronome entraîneur
 
 Métronome → Entraîneur : **tempo qui monte** (+N BPM toutes les N mesures jusqu’au tempo visé, puis
@@ -193,6 +200,7 @@ dans le dossier temporaire du système.
 | `tests/unit/coachProgress.test.ts` | coach dans la durée : tempos selon le ressenti, une réponse par jour, routine aux tempos atteints, bilan de la semaine, test du mois |
 | `tests/unit/pitchShift.test.ts` | transposition sans changer la vitesse : la note entendue est la note transposée (−5 à +7 demi-tons), le niveau reste |
 | `tests/unit/ear.test.ts` | oreille : questions du niveau, jamais deux fois la même, accord à jouer reconnu, scores et réponse à revoir |
+| `tests/unit/progressStats.test.ts` | progrès : minutes par semaine (lundi–dimanche), tempos séance après séance |
 | `tests/unit/piano.test.ts` | piano : position de pianiste, notes exactes de la guitare, nom de l’accord touché au clavier, notes écrites selon l’accord |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises, backing tracks perso avec leur son |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
@@ -219,6 +227,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/piano.spec.ts` | clavier de piano : bibliothèque d’accords (pianiste ou notes de la guitare), du piano à la guitare, grilles et prompteur |
 | `tests/e2e/metronome-entraineur.spec.ts` | entraîneur : le tempo monte mesure après mesure puis revient ; les mesures muettes ne font vraiment aucun son |
 | `tests/e2e/oreille.spec.ts` | oreille : intervalles et accords avec la réponse montrée, scores gardés ; accord demandé joué au micro (simulé) |
+| `tests/e2e/progres.spec.ts` | progrès : douze semaines (graphique et tableau), courbes de tempo, bilans, oreille ; écran vide qui explique |
 | `tests/e2e/relever.spec.ts` | relever : forme d’onde, vitesse, boucle A–B respectée, transposition, tout retrouvé au retour |
 | `tests/e2e/schemas-live.spec.ts` | prompteur : schémas de l’accord en cours et du suivant, qui suivent la lecture ; masquables |
 | `tests/e2e/suivre.spec.ts` | « Suivre ma guitare » : faux micro jouant les accords de Minuit Shuffle, le texte suit |

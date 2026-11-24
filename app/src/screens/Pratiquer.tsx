@@ -147,6 +147,7 @@ export default function Pratiquer() {
         </div>
 
         <WeekChart days={week(r)} />
+        <button className="btn-outline" onClick={() => nav('/pratiquer/progres')}>Voir mes progrès ›</button>
       </div>
       <TabBar active={2} />
     </Phone>

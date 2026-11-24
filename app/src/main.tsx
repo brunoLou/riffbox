@@ -28,6 +28,7 @@ import DetecteurTon from './screens/DetecteurTon';
 import Looper from './screens/Looper';
 import Relever from './screens/Relever';
 import Oreille from './screens/Oreille';
+import Progres from './screens/Progres';
 import Coach from './screens/Coach';
 import { FileDrop } from './components/FileDrop';
 import { installAutoSync } from './lib/autoSync';
@@ -76,6 +77,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/pratiquer/looper" element={<Looper />} />
           <Route path="/pratiquer/relever" element={<Relever />} />
           <Route path="/pratiquer/oreille" element={<Oreille />} />
+          <Route path="/pratiquer/progres" element={<Progres />} />
           <Route path="/pratiquer/coach" element={<Coach />} />
           <Route path="/scene" element={<SetlistsScreen />} />
           <Route path="/scene/morceaux" element={<MorceauxScreen />} />
