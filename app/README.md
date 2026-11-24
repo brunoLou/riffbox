@@ -54,7 +54,9 @@ l’appareil avec pdf.js (Mozilla, licence Apache 2.0).
 
 Live → Morceaux → « Chercher… » : titre et artiste, puis le navigateur s’ouvre sur une recherche
 « accords paroles ». On copie la grille sur la page choisie, puis « Coller depuis le presse-papiers »
-la convertit en ChordPro (avec aperçu), au nom du morceau cherché. Sur Android (app installée),
+la convertit en ChordPro (avec aperçu), au nom du morceau cherché. On peut copier la page entière
+(« Tout sélectionner ») : `extractSong` y retrouve la chanson (sections, accords au-dessus des paroles),
+garde le titre, l’artiste, la tonalité et le capo affichés par le site, et laisse menus et commentaires. Sur Android (app installée),
 « Partager → RIFFBOX » depuis la page envoie le texte sélectionné directement à l’import
 (`share_target` du manifeste, adresse `/share-target`). L’app ne récupère jamais les pages elle-même :
 les sites de grilles l’interdisent et les paroles sont protégées.
@@ -155,6 +157,7 @@ dans le dossier temporaire du système.
 | `tests/unit/pedals.test.ts` | pédales de l’accueil toutes différentes : couleur, dessin, commandes et footswitch |
 | `tests/unit/cloudSync.test.ts` | synchronisation par un stockage distant : échange entre deux appareils, rien de renvoyé sans changement, suppressions, enregistrements manquants |
 | `tests/unit/driveToken.test.ts` | fonction Vercel de connexion durable : échange du code, cookie illisible par la page, renouvellement, refus des autres sites |
+| `tests/unit/pageSong.test.ts` | page entière copiée (type Ultimate Guitar) : la chanson seule, avec titre, artiste, tonalité et capo ; une grille seule garde l’import habituel |
 | `tests/unit/piano.test.ts` | piano : position de pianiste, notes exactes de la guitare, nom de l’accord touché au clavier, notes écrites selon l’accord |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises, backing tracks perso avec leur son |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |

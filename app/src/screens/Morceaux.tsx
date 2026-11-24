@@ -238,7 +238,7 @@ export function MorceauxScreen() {
               <span className="kicker sheet-kicker">Coller un morceau</span>
               <button className="player-close" onClick={() => setPasted(null)} aria-label="Fermer">✕</button>
             </div>
-            <p className="help">Collez une grille copiée sur un site ou dans un document : titre sur la première ligne, accords au-dessus des paroles (ou déjà en ChordPro).</p>
+            <p className="help">Collez une grille copiée sur un site ou dans un document (accords au-dessus des paroles, ou ChordPro). Une page entière copiée marche aussi : RIFFBOX y retrouve la chanson.</p>
             <button className="btn-outline" onClick={() => void pasteClipboard()}>Coller depuis le presse-papiers</button>
             {clipMsg && <p className="cp-msg error" role="status">{clipMsg}</p>}
             {hint && <p className="help cp-hint">Pour : <b>{hint.title}</b>{hint.artist ? ` · ${hint.artist}` : ''}</p>}
@@ -265,7 +265,7 @@ export function MorceauxScreen() {
               setFinding({ ...finding, sent: true });
             }}>Chercher dans le navigateur</button>
             <ol className="cp-steps">
-              <li>Sur une page de grille (accords au-dessus des paroles), sélectionnez la chanson et copiez-la. Sur Android, vous pouvez aussi faire Partager → RIFFBOX.</li>
+              <li>Sur la page de la grille, appui long → <b>Tout sélectionner</b> → Copier (ou Partager → RIFFBOX sur Android). Inutile de viser : RIFFBOX retrouve la chanson et laisse de côté menus, pubs et commentaires.</li>
               <li>Revenez ici et touchez « Coller depuis le presse-papiers » : RIFFBOX la convertit en ChordPro, avec un aperçu avant d’enregistrer.</li>
             </ol>
             <button className={finding.sent ? 'btn-primary' : 'btn-outline'} onClick={() => {

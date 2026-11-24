@@ -59,3 +59,28 @@ test('the browser refuses the clipboard: how to paste by hand', async ({ page })
   await paste.getByRole('button', { name: 'Coller depuis le presse-papiers' }).click();
   await expect(paste.locator('.cp-msg.error')).toContainText('touchez longuement le cadre');
 });
+
+test('a whole Ultimate Guitar page copied (« Tout sélectionner »): only the song is imported, with its title, artist and capo', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  const whole = ['ULTIMATE GUITAR', 'Log in', 'Sign up', 'Tabs', 'Courses',
+    "Fil d'argent Chords by Les Cordes", 'Difficulty: novice', 'Key: Em', 'Capo: 2nd fret', 'Chords', 'Em C G D', 'Strumming', 'X',
+    '[Verse 1]', 'Em           C', 'Sur la route au petit jour', 'G              D', "Je reviens chanter l'amour",
+    '', 'X', 'Autoscroll', 'Transpose', 'Rating', 'Comments', 'super tab merci !!', 'Related tabs', 'Welcome offer'].join('\n');
+  await page.goto('#/scene/morceaux');
+  await page.evaluate(t => navigator.clipboard.writeText(t), whole);
+  await button(page, 'Coller…').click();
+  const paste = page.getByRole('dialog', { name: 'Coller un morceau' });
+  await paste.getByRole('button', { name: 'Coller depuis le presse-papiers' }).click();
+  await paste.getByRole('button', { name: 'Convertir' }).click();
+  const found = page.getByRole('dialog', { name: 'Importer des morceaux' });
+  await expect(found.locator('.song-title')).toHaveText("Fil d'argent");
+  await expect(found.locator('.song-meta')).toContainText('Les Cordes');
+  await found.getByRole('button', { name: 'Importer 1 morceau' }).click();
+  await page.locator('.lib-row', { hasText: "Fil d'argent" }).click();
+  const cp = await page.locator('.chordpro').inputValue();
+  const saved = await page.evaluate(() => (JSON.parse(localStorage.getItem('riffbox:v1:songs') ?? '[]') as { title: string; capo: number; artist?: string }[])
+    .find(x => x.title === "Fil d'argent"));
+  expect(saved).toMatchObject({ capo: 2, artist: 'Les Cordes' }); // the page's capo becomes the song's
+  expect(cp).toContain('[Em]Sur la route [C]au petit jour');
+  expect(cp).not.toMatch(/ULTIMATE|Autoscroll|Comments|Welcome/);
+});

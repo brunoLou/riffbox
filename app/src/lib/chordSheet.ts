@@ -220,8 +220,64 @@ export function looksLikeChordPro(text: string): boolean {
 }
 
 /** Pasted text → ChordPro: the title is its first line (unless it is chords, a section or a field). */
+/* ---------- A whole web page copied ---------- */
+
+/** Buttons and labels of chord sites (Ultimate Guitar…) that may sit inside the song's part. */
+const SITE_UI = /^(x|print|autoscroll|strumming|tuning.*|difficulty.*|author.*|view official tab|transpose|simplify|font|edit|share|save|favorite|chords|tab|report bad tab|add to playlist|[+−-]\s*\d|\d+\s*(?:views?|vues?)|last (?:update|edit).*|rating.*|\d(?:[.,]\d)?\s*★?)$/i;
+
+export interface PageSong { body: string; title?: string; artist?: string; key?: string; capo?: string }
+
+/**
+ * A whole web page copied (« Tout sélectionner »): the song inside it, from its first section or
+ * chord line to its last, with the title, artist, key and capo the page shows (« Hotel California
+ * Chords by Eagles », « Key: Bm », « Capo: 2nd fret »). Null when the text is just a song.
+ */
+export function extractSong(text: string): PageSong | null {
+  const lines = textLines(text);
+  const t = (i: number) => lines[i]?.text.trim() ?? '';
+  const chord = (i: number) => !!t(i) && isChordLine(lines[i]);
+  const lyric = (i: number) => !!t(i) && !chord(i) && !sectionLabel(t(i)) && !SITE_UI.test(t(i)) && !TAB.test(lines[i].text);
+  // Lyrics under chords: words, not a page's label.
+  const words = (i: number) => lyric(i) && t(i).split(/\s+/).length >= 2;
+  const anchors: number[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (chord(i) && words(i + 1)) anchors.push(i, i + 1);
+    else if (sectionLabel(t(i)) && [1, 2, 3].some(k => chord(i + k))) anchors.push(i);
+  }
+  if (!anchors.length) return null;
+  const first = anchors[0];
+  let last = anchors[anchors.length - 1];
+  // Lyric lines without chords right after the last chords (the end of a verse).
+  for (let j = last + 1; j <= last + 8 && lyric(j); j++) last = j;
+  const outside = lines.filter((l, i) => (i < first || i > last) && l.text.trim()).length;
+  if (outside < 6) return null; // a song, maybe with a few lines around it: the usual import
+
+  const out: PageSong = { body: lines.slice(first, last + 1).map(l => l.text).filter(l => !SITE_UI.test(l.trim())).join('\n') };
+  const head = lines.slice(0, first).map(l => l.text.trim());
+  for (let i = 0; i < head.length; i++) {
+    const h = head[i];
+    const by = h.match(/^(.+?)\s+(?:ukulele\s+)?(?:chords|tabs?|accords?)\s+(?:by|de|par)\s+(.+)$/i);
+    if (by && !out.title) { out.title = by[1].trim(); out.artist = by[2].trim(); continue; }
+    const alone = h.match(/^(.+?)\s+(?:ukulele\s+)?(?:chords|tabs?|accords?)$/i);
+    const next = head.slice(i + 1).find(x => x);
+    if (alone && !out.title && next && /^(?:by|de|par)\s+\S/i.test(next)) { out.title = alone[1].trim(); out.artist = next.replace(/^(?:by|de|par)\s+/i, '').trim(); continue; }
+    const key = h.match(/^(?:key|tonalit[ée])\s*:?\s*([A-H][#b♯♭]?m?)\b/i);
+    if (key && !out.key) { out.key = key[1]; continue; }
+    const capo = h.match(/^capo\s*:?\s*(\d{1,2})/i);
+    if (capo && !out.capo) out.capo = capo[1];
+  }
+  return out;
+}
+
 export function textToChordPro(text: string, fallbackTitle?: string): string {
   if (looksLikeChordPro(text)) return text;
+  // A whole page: keep only its song, with what the page says about it.
+  const page = extractSong(text);
+  if (page) {
+    const head = [page.title && `Title: ${page.title}`, page.artist && `Artist: ${page.artist}`,
+      page.key && `Key: ${page.key}`, page.capo && `Capo: ${page.capo}`].filter(Boolean);
+    return sheetToChordPro(textLines([...head, '', page.body].join('\n')), { tolerance: 0.5, fallbackTitle }, () => false);
+  }
   const lines = textLines(text);
   const first = lines.findIndex(l => l.text.trim());
   return sheetToChordPro(lines, { tolerance: 0.5, fallbackTitle }, (l, i) => i === first && l.text.trim().length <= 80);
