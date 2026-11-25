@@ -38,7 +38,7 @@ test('from a song’s page, the key heard is applied to that song', async ({ pag
 
 test('the tile is in the catalog and the tool in Pratiquer', async ({ page }) => {
   await page.goto('#/pratiquer');
-  await page.locator('.prat-tool', { hasText: 'Quel ton ?' }).click();
+  await page.locator('[data-tile="detect"]').click();
   await expect(page).toHaveURL(/#\/outils\/ton$/);
   await expect(page.locator('h1')).toHaveText('QUEL TON ?');
 });

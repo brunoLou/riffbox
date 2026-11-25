@@ -39,7 +39,8 @@ export const TILES: Tile[] = [
 ];
 
 /** A tile on the home board: which one, and whether it spans both columns. */
-export interface Slot { id: string; wide: boolean }
+/** A pedal on the home board; `sec`: the compartment it is in (lib/homeBoard.ts). */
+export interface Slot { id: string; wide: boolean; sec?: string }
 export const DEFAULT_LAYOUT: Slot[] = TILES.filter(t => !t.extra).map(t => ({ id: t.id, wide: !!t.wide }));
 
 /** Placeholder lyrics written for the mock-up. */

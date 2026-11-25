@@ -45,18 +45,23 @@ const FootswitchView = ({ kind }: { kind: Footswitch }) =>
   kind === 'twin' ? <div className="footswitch twin"><span /><span /></div> : <div className={'footswitch ' + kind} />;
 
 export interface TileProps {
-  t: Tile; wide: boolean; edit: boolean; lifted: boolean;
-  onOpen: () => void; onRemove: () => void; onResize: () => void;
-  onGrip: (e: PointerEvent<HTMLButtonElement>) => void; onGripKey: (e: KeyboardEvent<HTMLButtonElement>) => void;
+  t: Tile; wide?: boolean; edit?: boolean; lifted?: boolean;
+  onOpen: () => void; onRemove?: () => void; onResize?: () => void;
+  onGrip?: (e: PointerEvent<HTMLButtonElement>) => void; onGripKey?: (e: KeyboardEvent<HTMLButtonElement>) => void;
+  /** Edit mode: opens the choice of compartment. */
+  onSort?: () => void;
+  /** Accessible name when the tap does something else than opening the tool (e.g. « Ajouter … »). */
+  label?: string;
 }
 
-/** A tool on the home board, drawn as its own effects pedal: LED, controls, drawing, name, footswitch. */
-export function PedalTile({ t, wide, edit, lifted, onOpen, onRemove, onResize, onGrip, onGripKey }: TileProps) {
+/** A tool drawn as its own effects pedal: LED, controls, drawing, name, footswitch (home board, Pratiquer, catalog). */
+export function PedalTile({ t, wide = false, edit = false, lifted = false, onOpen, onRemove, onResize, onGrip, onGripKey, onSort, label }: TileProps) {
   const look = lookOf(t.id);
   return (
     <div
       role={edit ? undefined : 'button'}
       tabIndex={edit ? undefined : 0}
+      aria-label={label}
       data-tile={t.id}
       className={`pedal finish-${look.finish}` + (wide ? ' wide' : '') + (edit ? ' editing' : '') + (lifted ? ' lifted' : '')}
       style={{ gridColumn: wide ? 'span 2' : 'span 1', background: t.bg, color: t.fg }}
@@ -77,7 +82,10 @@ export function PedalTile({ t, wide, edit, lifted, onOpen, onRemove, onResize, o
         {t.on && <span className="sr-only">, utilisé aujourd’hui</span>}
       </div>
       {edit
-        ? <button className="pedal-size" onClick={onResize} aria-label={wide ? `Réduire ${t.name}` : `Agrandir ${t.name}`}>{wide ? '↔ Petite' : '↔ Large'}</button>
+        ? <div className="pedal-edit-btns">
+            {onSort && <button className="pedal-size" onClick={onSort} aria-label={`Ranger ${t.name} dans un compartiment`}>▤ Ranger</button>}
+            <button className="pedal-size" onClick={onResize} aria-label={wide ? `Réduire ${t.name}` : `Agrandir ${t.name}`}>{wide ? '↔ Petite' : '↔ Large'}</button>
+          </div>
         : <FootswitchView kind={look.footswitch} />}
       {edit && <button className="pedal-remove" aria-label={`Retirer ${t.name}`} onClick={onRemove}>−</button>}
     </div>

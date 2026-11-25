@@ -29,16 +29,6 @@
 .routine-card .progress { background: rgba(0, 0, 0, .35); }
 .routine-go { height: 52px; border-radius: 26px; background: var(--amber); color: var(--ink); font-weight: 700; font-size: 16px; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .18); }
 
-.prat-tools { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.prat-tool {
-  position: relative; height: 96px; border-radius: 16px; padding: 12px 14px; text-align: left; background: var(--surface-3); color: var(--cream);
-  display: flex; flex-direction: column; justify-content: flex-end; gap: 2px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), inset 0 -3px 0 rgba(0, 0, 0, .25), 0 6px 14px rgba(0, 0, 0, .35);
-}
-.prat-tool.wood { background: #4a3020; color: var(--paper); }
-.prat-tool-led { position: absolute; top: 12px; left: 14px; width: 10px; height: 10px; }
-.prat-tool-name { font-family: var(--f-display); font-weight: 900; font-size: 22px; line-height: 1; text-transform: uppercase; white-space: nowrap; }
-.prat-tool-sub { font-size: 12px; font-weight: 500; opacity: .75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .week { padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 10px; }
 .week-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
@@ -59,7 +49,6 @@
 .week-axis span.today { color: var(--muted-3); font-weight: 700; }
 .week-axis span.sel { color: var(--cream); }
 .week-foot { font-size: 13px; color: var(--muted-2); }
-.prat-tool.cream { background: var(--paper); color: var(--ink); }
 .routine-head-r { display: flex; align-items: center; gap: 10px; }
 .routine-edit { height: 40px; padding: 0 12px; border-radius: 16px; border: 1.5px solid var(--line-2); color: var(--cream); font-size: 13px; font-weight: 700; }
 .coach-card { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 12px 16px; border-radius: 18px; background: var(--surface-2); border: 1.5px solid var(--amber); text-align: left; }

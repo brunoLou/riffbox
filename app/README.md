@@ -15,6 +15,12 @@ npm run preview    # sert dist/ sur http://localhost:4173
 
 Le micro (accordeur, voix, enregistrement) demande `localhost` ou une adresse en https.
 
+## Compartiments de l'accueil
+
+Sur l'accueil, **Modifier** puis **+ Nouveau compartiment** : vous lui donnez le nom que vous voulez (Outils, Entraînement, Organisation…, ou une suggestion). Pour y ranger une pédale : **▤ Ranger** sur la pédale, ou glissez-la par sa poignée ⠿ dans le compartiment (l'écran défile tout seul près du bord). Le nom se modifie directement, ↑ ↓ changent l'ordre, ✕ supprime le compartiment sans perdre ses pédales (elles reviennent dans « Non classées »). Hors modification, toucher le titre d'un compartiment le replie. Les compartiments suivent la synchronisation Google Drive (`home.sections`, et `sec` sur chaque pédale de `home.layout`).
+
+Les pédales ont le même dessin partout : accueil, Pratiquer et catalogue « + Ajouter une pédale ».
+
 ## Backing tracks perso
 
 Pratiquer › Backing tracks : dans le lecteur de chaque backing track (« Blues en La »…), « Son : RIFFBOX / Mon

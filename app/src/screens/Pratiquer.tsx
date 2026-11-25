@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Phone, StatusBar, TabBar } from '../components/Chrome';
-import { TRACKS } from '../lib/backing';
-import { scaleDef } from '../lib/scales';
-import { KEY_FR } from '../lib/music';
+import { PedalTile } from '../components/PedalTile';
+import { TILES } from '../lib/data';
+import { subFor } from '../lib/tileSub';
+import { useUsedToday } from '../lib/usage';
 import { doneSeconds, fmtHM, routine, streak, useRoutine, week, routineMin, routineSteps } from '../lib/routine';
 import { readStored } from '../lib/store';
 import './Pratiquer.css';
@@ -12,6 +13,12 @@ import { PROFILE_KEY, type Profile } from '../lib/coach';
 import { coachActive, refreshCoachRoutine } from '../lib/coachRoutine';
 
 const CHART_H = 112;
+/** The practice tools, drawn as the same pedals as on the home board (id, wide). */
+const PRAT_TOOLS: [string, boolean][] = [
+  ['manche', false], ['accords', false], ['backing', true], ['looper', false], ['relever', false],
+  ['oreille', false], ['detect', false], ['voix', true],
+];
+const byId = new Map(TILES.map(t => [t.id, t]));
 
 function WeekChart({ days }: { days: ReturnType<typeof week> }) {
   const [sel, setSel] = useState(days.length - 1);
@@ -56,8 +63,7 @@ export default function Pratiquer() {
   const doneMin = Math.floor(doneSeconds(r) / 60);
   const streakDays = streak(r).days;
   const started = doneSeconds(r) > 0;
-  const scaleKey = readStored('scale.key', 9);
-  const scale = scaleDef(readStored('scale.id', readStored('scale.maj', false) ? 'pmaj' : 'pmin'));
+  const used = useUsedToday();
 
   const action = r.done ? 'Recommencer la routine' : r.running ? 'Continuer · étape en cours' : started ? `▶  Reprendre · étape ${r.step + 1}/${routineSteps().length}` : '▶  Démarrer la routine';
   const go = () => { if (r.done) routine.restart(); nav('/pratiquer/routine'); };
@@ -103,47 +109,11 @@ export default function Pratiquer() {
           <button className="routine-go" onClick={go}>{action}</button>
         </div>
 
-        <div className="prat-tools">
-          <button className="prat-tool" onClick={() => nav('/pratiquer/gammes')}>
-            <span className="led on prat-tool-led" />
-            <span className="prat-tool-name">Gammes</span>
-            <span className="prat-tool-sub">{KEY_FR[scaleKey]} {scale.fr}</span>
-          </button>
-          <button className="prat-tool" onClick={() => nav('/pratiquer/accords')}>
-            <span className="led on prat-tool-led" />
-            <span className="prat-tool-name">Accords</span>
-            <span className="prat-tool-sub">17 types · formes CAGED</span>
-          </button>
-          <button className="prat-tool wood" style={{ gridColumn: 'span 2' }} onClick={() => nav('/pratiquer/backing')}>
-            <span className="led prat-tool-led" />
-            <span className="prat-tool-name">Backing tracks</span>
-            <span className="prat-tool-sub">{TRACKS.length} pistes · blues, rock, funk</span>
-          </button>
-          <button className="prat-tool" style={{ gridColumn: 'span 2' }} onClick={() => nav('/pratiquer/looper')}>
-            <span className="led prat-tool-led" />
-            <span className="prat-tool-name">Looper</span>
-            <span className="prat-tool-sub">Enregistrer une boucle et jouer par-dessus</span>
-          </button>
-          <button className="prat-tool" style={{ gridColumn: 'span 2' }} onClick={() => nav('/pratiquer/relever')}>
-            <span className="led prat-tool-led" />
-            <span className="prat-tool-name">Relever</span>
-            <span className="prat-tool-sub">Ralentir un morceau, boucler un passage, transposer</span>
-          </button>
-          <button className="prat-tool cream" style={{ gridColumn: 'span 2' }} onClick={() => nav('/pratiquer/oreille')}>
-            <span className="led prat-tool-led" />
-            <span className="prat-tool-name">Oreille</span>
-            <span className="prat-tool-sub">Reconnaître intervalles et accords, jouer l’accord demandé</span>
-          </button>
-          <button className="prat-tool wood" style={{ gridColumn: 'span 2' }} onClick={() => nav('/outils/ton')}>
-            <span className="led prat-tool-led" />
-            <span className="prat-tool-name">Quel ton ?</span>
-            <span className="prat-tool-sub">Trouver la tonalité d’un morceau à l’écoute</span>
-          </button>
-          <button className="prat-tool cream" style={{ gridColumn: 'span 2' }} onClick={() => nav('/voix')}>
-            <span className="led on prat-tool-led" />
-            <span className="prat-tool-name">Justesse vocale</span>
-            <span className="prat-tool-sub">Accordeur vocal, échauffements, mélodies, tessiture</span>
-          </button>
+        <div className="pedal-grid prat-pedals">
+          {PRAT_TOOLS.map(([id, wide]) => {
+            const t = byId.get(id)!;
+            return <PedalTile key={id} t={{ ...t, sub: subFor(t, r), on: used.has(id) }} wide={wide} onOpen={() => nav(t.to)} />;
+          })}
         </div>
 
         <WeekChart days={week(r)} />

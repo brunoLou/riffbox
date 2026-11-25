@@ -13,7 +13,7 @@ export const SYNC_LISTS = ['ideas', 'grids', 'songs', 'setlists', 'voice.takes',
  * neither a list above nor local to the device (preferences: tempo, lyrics size, a song's
  * transposition…), see `isSyncedValue`.
  */
-export const SYNC_VALUES = ['routine.steps', 'voice.range', 'grid.voicings', 'coach.profile', 'home.layout'] as const;
+export const SYNC_VALUES = ['routine.steps', 'voice.range', 'grid.voicings', 'coach.profile', 'home.layout', 'home.sections'] as const;
 /** Device settings and bookkeeping that stay on each device. */
 export const LOCAL_KEYS = ['settings.theme', 'pedal.keys', 'pedal.midi', 'pedal.midiOn', 'relever.track', 'looper.latencyMs', 'tuner.string', 'coach.testScale', 'home.removed', 'routine', 'practice.seeded', 'backup.last', 'backup.since',
   'backup.snooze', 'backup.remind', 'sync.lastSent', 'sync.lastReceived', 'stage.follow', 'usage.today',
