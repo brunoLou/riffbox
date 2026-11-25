@@ -15,7 +15,7 @@ export const SYNC_LISTS = ['ideas', 'grids', 'songs', 'setlists', 'voice.takes',
  */
 export const SYNC_VALUES = ['routine.steps', 'voice.range', 'grid.voicings', 'coach.profile', 'home.layout'] as const;
 /** Device settings and bookkeeping that stay on each device. */
-export const LOCAL_KEYS = ['settings.theme', 'pedal.keys', 'relever.track', 'looper.latencyMs', 'tuner.string', 'coach.testScale', 'home.removed', 'routine', 'practice.seeded', 'backup.last', 'backup.since',
+export const LOCAL_KEYS = ['settings.theme', 'pedal.keys', 'pedal.midi', 'pedal.midiOn', 'relever.track', 'looper.latencyMs', 'tuner.string', 'coach.testScale', 'home.removed', 'routine', 'practice.seeded', 'backup.last', 'backup.since',
   'backup.snooze', 'backup.remind', 'sync.lastSent', 'sync.lastReceived', 'stage.follow', 'usage.today',
   'coach.active', 'coach.day', 'coach.ownRoutine'];
 

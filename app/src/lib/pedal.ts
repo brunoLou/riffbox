@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { readStored, useStoredState } from './store';
 import { modalOpen } from './useDialog';
+import { MIDI_MAP_KEY, actionForMidi, isPress, onMidi, type MidiMap } from './midiPedal';
 
 /** Named after the pedal, not a meaning: each screen decides what a pedal does. */
 export type PedalAction = 'right' | 'left' | 'middle';
@@ -101,7 +102,18 @@ export function usePedal(handlers: Partial<Record<PedalAction, () => void>>) {
       fn();
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    // A MIDI footswitch taught to a pedal does the same (Réglages › Pédalier).
+    const offMidi = onMidi(m => {
+      if (!isPress(m) || modalOpen()) return;
+      const a = actionForMidi(readStored<MidiMap>(MIDI_MAP_KEY, {}), m);
+      const fn = a && ref.current[a];
+      if (!fn) return;
+      seen = true;
+      setSeen(true);
+      setFlash(f => f + 1);
+      fn();
+    });
+    return () => { window.removeEventListener('keydown', onKey); offMidi(); };
   }, []);
 
   useEffect(() => {

@@ -1,4 +1,5 @@
 import { exportForDaw, listRecordings } from '../lib/dawExport';
+import { MIDI_MAP_KEY, assignMidi, connectMidi, forgetMidi, isPress, midiLabel, midiSupported, onMidi, type MidiMap } from '../lib/midiPedal';
 import { connectDrive, disconnectDrive, preloadGoogle, syncAvailable, syncNow, useDriveState } from '../lib/autoSync';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -139,6 +140,7 @@ export default function Reglages() {
 
         <span className="kicker settings-section">Pédalier</span>
         <PedalCard />
+        <MidiPedalCard />
 
         <span className="kicker settings-section">Données sur cet appareil</span>
         <div className="settings-card">
@@ -621,6 +623,61 @@ function DriveCard() {
         {err && <p className="backup-msg error" role="alert">{err}</p>}
         <span className="settings-help">Faites-le sur chaque appareil. Vos données restent aussi sur l’appareil : sans réseau, tout fonctionne, et la synchronisation reprend au retour du réseau.</span>
       </div>
+    </div>
+  );
+}
+
+/** A MIDI pedalboard: connected once, each footswitch taught to a pedal (right, left, middle). */
+function MidiPedalCard() {
+  const [map, setMap] = useStoredState<MidiMap>(MIDI_MAP_KEY, {});
+  const [on, setOn] = useStoredState('pedal.midiOn', false);
+  const [inputs, setInputs] = useState<string[] | null>(null);
+  const [learning, setLearning] = useState<PedalAction | null>(null);
+  const [last, setLast] = useState<string>('');
+  const [err, setErr] = useState('');
+  const mapRef = useRef(map);
+  mapRef.current = map;
+  const learnRef = useRef(learning);
+  learnRef.current = learning;
+
+  const connect = async () => {
+    setErr('');
+    try { const a = await connectMidi(); setInputs(a.inputs); setOn(true); }
+    catch (e) { setErr((e as Error).message?.includes('MIDI') ? (e as Error).message : 'Accès au MIDI refusé : autorisez-le pour ce site.'); }
+  };
+  useEffect(() => { if (on && midiSupported()) void connect(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => onMidi(m => {
+    if (!isPress(m)) return;
+    const sig = `${m.kind}:${m.ch}:${m.num}`;
+    const a = learnRef.current;
+    if (a) { setMap(assignMidi(mapRef.current, a, sig)); setLearning(null); setLast(`${midiLabel(sig)} → ${PEDAL_NAMES[a]}`); return; }
+    const who = PEDAL_ACTIONS.find(x => mapRef.current[x] === sig);
+    setLast(`${midiLabel(sig)}${who ? ` · ${PEDAL_NAMES[who]}` : ' : non attribué'}`);
+  }), [setMap]);
+
+  return (
+    <div className="settings-card pedal-card" aria-label="Pédalier MIDI">
+      <div className="settings-action">
+        <span className="settings-label">Pédalier MIDI</span>
+        <span className="settings-help">Un pédalier ou un contrôleur MIDI (USB, ou Bluetooth MIDI) commande les mêmes pédales que ci-dessus : apprenez à chaque pédale son interrupteur.</span>
+        {!midiSupported() && <span className="settings-help">Ce navigateur ne gère pas le MIDI : utilisez Chrome (Android ou ordinateur).</span>}
+        {midiSupported() && !inputs && <button className="btn-outline" onClick={() => void connect()}>Connecter un pédalier MIDI</button>}
+        {inputs && <span className="settings-help" role="status">{inputs.length ? `Connecté : ${inputs.join(', ')}` : 'Aucun appareil MIDI branché : branchez-le, il sera reconnu.'}</span>}
+        {err && <p className="backup-msg error" role="alert">{err}</p>}
+      </div>
+      {inputs && PEDAL_ACTIONS.map(a => (
+        <div key={a} className={'settings-row col pedal-row' + (learning === a ? ' learning' : '')}>
+          <div className="settings-row-top">
+            <span className="settings-label">{PEDAL_NAMES[a]}</span>
+            <button className="btn-outline pedal-learn" aria-pressed={learning === a} aria-label={`${learning === a ? 'Annuler' : 'Apprendre'} : ${PEDAL_NAMES[a]} (MIDI)`}
+              onClick={() => { setLast(''); setLearning(learning === a ? null : a); }}>{learning === a ? 'Annuler' : 'Apprendre'}</button>
+          </div>
+          {learning === a ? <span className="pedal-wait" role="status">Appuyez sur l’interrupteur MIDI…</span>
+            : <span className="settings-help">{map[a] ? midiLabel(map[a]!) : 'Aucun interrupteur'}</span>}
+        </div>
+      ))}
+      {inputs && last && <span className="settings-help pedal-msg" role="status">{last}</span>}
+      {inputs && <div className="settings-action"><button className="btn-link" onClick={() => { forgetMidi(); setOn(false); setInputs(null); }}>Oublier le pédalier MIDI</button></div>}
     </div>
   );
 }

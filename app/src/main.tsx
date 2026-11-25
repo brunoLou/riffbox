@@ -33,6 +33,7 @@ import Coach from './screens/Coach';
 import { FileDrop } from './components/FileDrop';
 import { installAutoSync } from './lib/autoSync';
 import { consumeShare } from './lib/shared';
+import { restoreMidi } from './lib/midiPedal';
 import Backing from './screens/Backing';
 import Reglages from './screens/Reglages';
 
@@ -40,6 +41,7 @@ consumeShare(); // before the router reads the address
 installSync();
 installAutoSync();
 requestPersistence();
+restoreMidi();
 initTheme();
 
 createRoot(document.getElementById('root')!).render(

@@ -48,6 +48,14 @@ sans changer la vitesse (`pitchShift.ts` : deux têtes de lecture dans une court
 relayées en fondu, en AudioWorklet). Forme d’onde pour se repérer ; espace, flèches, A et B au clavier.
 Le fichier reste sur l’appareil, avec sa vitesse, sa boucle et sa transposition.
 
+## Pédalier MIDI
+
+Réglages → Pédalier MIDI (Chrome, Android ou ordinateur) : « Connecter », puis « Apprendre » pour
+chaque pédale (droite, gauche, milieu) et un appui sur l’interrupteur voulu (note, CC ou programme ;
+le relâchement ne compte pas). Les interrupteurs déclenchent ensuite les mêmes actions qu’un pédalier
+Bluetooth dans chaque écran (prompteur, métronome, looper, grille, backing, routine). La connexion
+revient seule au lancement ; réglage propre à l’appareil.
+
 ## Fiche de concert
 
 Dans une setlist (« Modifier ») : un **mémo par morceau** (accordage, capo, son, qui lance l’intro),
@@ -218,6 +226,7 @@ dans le dossier temporaire du système.
 | `tests/unit/progressStats.test.ts` | progrès : minutes par semaine (lundi–dimanche), tempos séance après séance |
 | `tests/unit/tab.test.ts` | tablatures : cases, texte (Mi aigu en haut), notes jouées par colonne, colonnes vides retirées |
 | `tests/unit/concert.test.ts` | fiche de concert : heure de début de chaque titre avec les enchaînements, check-list par défaut |
+| `tests/unit/midiPedal.test.ts` | MIDI : notes, CC, programmes lus ; appui et relâchement ; un interrupteur par pédale |
 | `tests/unit/piano.test.ts` | piano : position de pianiste, notes exactes de la guitare, nom de l’accord touché au clavier, notes écrites selon l’accord |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises, backing tracks perso avec leur son |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
@@ -243,6 +252,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/tablette.spec.ts` | tablette (iPad) : plein écran, colonne, prompteur large, manche entier, grille en deux colonnes |
 | `tests/e2e/piano.spec.ts` | clavier de piano : bibliothèque d’accords (pianiste ou notes de la guitare), du piano à la guitare, grilles et prompteur |
 | `tests/e2e/metronome-entraineur.spec.ts` | entraîneur : le tempo monte mesure après mesure puis revient ; les mesures muettes ne font vraiment aucun son |
+| `tests/e2e/midi.spec.ts` | pédalier MIDI (simulé) : connexion, apprentissage, essai, le métronome commandé au pied |
 | `tests/e2e/oreille.spec.ts` | oreille : intervalles et accords avec la réponse montrée, scores gardés ; accord demandé joué au micro (simulé) |
 | `tests/e2e/progres.spec.ts` | progrès : douze semaines (graphique et tableau), courbes de tempo, bilans, oreille ; écran vide qui explique |
 | `tests/e2e/tablature.spec.ts` | riff en tab : saisie case par case, nommé, affiché, écouté, modifié, gardé |
