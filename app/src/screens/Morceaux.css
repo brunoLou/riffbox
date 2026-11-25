@@ -11,7 +11,7 @@
 .search { width: 100%; }
 .lib-row { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 8px 14px; border-radius: 16px; background: var(--surface-2); border: 1px solid var(--card-border); text-align: left; }
 .lib-status { flex: none; height: 26px; padding: 0 10px; border-radius: 13px; display: flex; align-items: center; font-size: 12px; font-weight: 700; background: var(--surface-3); color: var(--muted-3); }
-.lib-status.lyrics { color: var(--led-text); }
+.lib-status.has-lyrics { color: var(--led-text); }
 .lib-status.chords { color: var(--amber-hi); }
 .lib-status.empty { background: transparent; border: 1.5px dashed var(--line-2); }
 .songs-empty { padding: 24px 16px; border-radius: 16px; border: 1.5px dashed var(--dash); text-align: center; color: var(--muted-3); font-size: 15px; }

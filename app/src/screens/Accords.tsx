@@ -104,6 +104,9 @@ export default function Accords() {
           ))}
         </div>
 
+        {/* Two columns on a computer's wide window (one after the other elsewhere): the guitar shape, then the piano and the neck. */}
+        <div className="chords-cols">
+          <div className="chords-col">
         <div className="chord-card">
           <div className="chord-id">
             <span className="chord-sym">{sym}</span>
@@ -153,8 +156,6 @@ export default function Accords() {
           </div>
         )}
 
-        <PianoChord root={root} type={type} voicing={v} />
-
         <span className="kicker" style={{ padding: '0 4px' }}>{showInv ? 'Renversements' : list.length === 5 ? 'Les 5 formes CAGED' : 'Positions'}</span>
         <div className="hscroll thumbs" data-theme="dark">
           {list.map((x, i) => (
@@ -166,6 +167,10 @@ export default function Accords() {
             </button>
           ))}
         </div>
+
+          </div>
+          <div className="chords-col">
+        <PianoChord root={root} type={type} voicing={v} />
 
         <span className="kicker" style={{ padding: '0 4px' }}>Sur le manche</span>
         <div className="neck-wrap" data-theme="dark">
@@ -208,6 +213,8 @@ export default function Accords() {
           setRoot(r); setTypeId(t.id); setMode('positions');
           scroller.current?.querySelector('.chord-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }} />
+          </div>
+        </div>
       </div>
       <TabBar active={2} />
     </Phone>

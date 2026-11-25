@@ -15,6 +15,7 @@ import './Setlists.css';
 
 export function SetlistsScreen() {
   const nav = useNavigate();
+  const { setId: openSet } = useParams();
   const [sets, setSets] = useSetlists();
   const sorted = sortSets(sets);
   const nextId = nextSet(sets)?.id;
@@ -42,7 +43,7 @@ export function SetlistsScreen() {
         {sorted.map(s => {
           const next = s.id === nextId;
           return (
-            <button key={s.id} className={'set-card' + (next ? ' next' : '')} onClick={() => nav(`/scene/${s.id}`)}>
+            <button key={s.id} className={'set-card' + (next ? ' next' : '') + (s.id === openSet ? ' sel' : '')} aria-current={s.id === openSet ? 'true' : undefined} onClick={() => nav(`/scene/${s.id}`)}>
               <div className="set-card-top">
                 <span className="set-date mono">{s.date !== undefined ? setDateLabel(s) : ''}</span>
                 {next && <span className="set-next"><span />Prochain</span>}

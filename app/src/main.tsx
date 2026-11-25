@@ -13,8 +13,6 @@ import Gammes from './screens/Gammes';
 import Prompteur from './screens/Prompteur';
 import Metronome from './screens/Metronome';
 import Carnet from './screens/Carnet';
-import { SetlistDetail, SetlistsScreen } from './screens/Setlists';
-import { MorceauRoute, MorceauxScreen } from './screens/Morceaux';
 import Voix, { VoixListe, VoixPrises } from './screens/Voix';
 import { VoixExercice, VoixPrise } from './screens/VoixSession';
 import { Tessiture, Tonalite } from './screens/VoixTessiture';
@@ -36,6 +34,7 @@ import { consumeShare } from './lib/shared';
 import { restoreMidi } from './lib/midiPedal';
 import Backing from './screens/Backing';
 import Reglages from './screens/Reglages';
+import { SetsPage, SongsPage } from './screens/LiveSplit';
 
 consumeShare(); // before the router reads the address
 installSync();
@@ -81,11 +80,11 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/pratiquer/oreille" element={<Oreille />} />
           <Route path="/pratiquer/progres" element={<Progres />} />
           <Route path="/pratiquer/coach" element={<Coach />} />
-          <Route path="/scene" element={<SetlistsScreen />} />
-          <Route path="/scene/morceaux" element={<MorceauxScreen />} />
-          <Route path="/scene/morceau/:songId" element={<MorceauRoute />} />
+          <Route path="/scene" element={<SetsPage />} />
+          <Route path="/scene/morceaux" element={<SongsPage />} />
+          <Route path="/scene/morceau/:songId" element={<SongsPage />} />
           <Route path="/scene/prompteur" element={<Navigate to="/scene/bar-du-port/play/2" replace />} />
-          <Route path="/scene/:setId" element={<SetlistDetail />} />
+          <Route path="/scene/:setId" element={<SetsPage />} />
           <Route path="/scene/:setId/play/:index" element={<Prompteur />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

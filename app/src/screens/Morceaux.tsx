@@ -31,7 +31,7 @@ export function SceneTabs({ active }: { active: 0 | 1 }) {
 }
 
 function status(s: Song) {
-  if (hasLyrics(s.chordpro)) return { label: 'Paroles', cls: 'lyrics' };
+  if (hasLyrics(s.chordpro)) return { label: 'Paroles', cls: 'has-lyrics' };
   if (s.chordpro) return { label: 'Accords', cls: 'chords' };
   return { label: 'À écrire', cls: 'empty' };
 }
@@ -40,6 +40,8 @@ function status(s: Song) {
 
 export function MorceauxScreen() {
   const nav = useNavigate();
+  /** The song open in the other pane (two-pane layout on a computer). */
+  const { songId: openSong } = useParams();
   const [songs, setSongs] = useSongs();
   const [q, setQ] = useState('');
   /** Songs found in the chosen files, waiting for confirmation. */
@@ -193,7 +195,7 @@ export function MorceauxScreen() {
           // What the stage will show, including a linked grid's chords.
           const st = status(songById(s.id) ?? s);
           return (
-            <button key={s.id} className="lib-row" onClick={() => nav(`/scene/morceau/${s.id}`)}>
+            <button key={s.id} className={'lib-row' + (s.id === openSong ? ' sel' : '')} aria-current={s.id === openSong ? 'true' : undefined} onClick={() => nav(`/scene/morceau/${s.id}`)}>
               <div className="song-text">
                 <span className="song-title">{s.title}</span>
                 <span className="song-meta">{s.artist ? `${s.artist} · ` : ''}{songMeta(s)} · {fmtDur(s.duration)}</span>

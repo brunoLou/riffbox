@@ -169,6 +169,12 @@ On peut déposer des fichiers sur la fenêtre : PDF, ChordPro ou texte vont à l
 dans « Mes fichiers » des backing tracks. « / » ou Ctrl+F (Cmd+F) cherche un morceau. Chrome et Edge
 proposent d’installer l’app, qui a alors sa fenêtre et fonctionne hors ligne.
 
+Sur une grande fenêtre (au moins 1200 px, souris) : **Live en deux volets** — la liste des morceaux
+ou des setlists à gauche, le morceau ou la fiche de concert à droite, sans quitter la liste (elle
+garde sa recherche, l’élément ouvert est repéré) — et **Accords en deux colonnes** (schéma et
+positions à gauche ; piano, manche et « du piano à la guitare » à droite, tout visible d’un coup).
+Les écrans s’affichent dans un volet grâce à `PaneContext` (sans onglets, ni barre d’état, ni retour).
+
 ## Tablette
 
 Sur un écran tactile plus large qu’un téléphone (ou une fois l’app installée), l’app passe en plein
@@ -262,6 +268,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/piano.spec.ts` | clavier de piano : bibliothèque d’accords (pianiste ou notes de la guitare), du piano à la guitare, grilles et prompteur |
 | `tests/e2e/metronome-entraineur.spec.ts` | entraîneur : le tempo monte mesure après mesure puis revient ; les mesures muettes ne font vraiment aucun son |
 | `tests/e2e/midi.spec.ts` | pédalier MIDI (simulé) : connexion, apprentissage, essai, le métronome commandé au pied |
+| `tests/e2e/ordinateur-volets.spec.ts` | grande fenêtre : morceaux et setlists en deux volets (la liste reste), accords en deux colonnes |
 | `tests/e2e/oreille.spec.ts` | oreille : intervalles et accords avec la réponse montrée, scores gardés ; accord demandé joué au micro (simulé) |
 | `tests/e2e/progres.spec.ts` | progrès : douze semaines (graphique et tableau), courbes de tempo, bilans, oreille ; écran vide qui explique |
 | `tests/e2e/tablature.spec.ts` | riff en tab : saisie case par case, nommé, affiché, écouté, modifié, gardé |
