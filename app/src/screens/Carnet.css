@@ -1,6 +1,6 @@
 .carnet-scroll {
   height: calc(100% - 50px); overflow-y: auto; scrollbar-width: none;
-  padding: 6px 18px 190px; display: flex; flex-direction: column; gap: 12px;
+  padding: 6px 18px 250px; display: flex; flex-direction: column; gap: 12px;
 }
 .carnet-scroll > * { flex-shrink: 0; }
 .carnet-count { height: 36px; padding: 0 12px; border-radius: 18px; background: var(--surface-2); display: flex; align-items: center; font-size: 13px; font-weight: 700; color: var(--muted-3); white-space: nowrap; }
@@ -80,8 +80,11 @@
 .rec-error { margin: 0; font-size: 15px; line-height: 1.4; color: var(--muted-3); }
 .idea-action.danger { margin-left: auto; color: var(--muted-3); border-color: var(--line); }
 
-.carnet-actions { position: absolute; left: 18px; right: 18px; bottom: 104px; display: flex; gap: 10px; }
-.carnet-actions .rec-cta { position: static; flex: 1; min-width: 0; }
+.carnet-actions { position: absolute; left: 18px; right: 18px; bottom: 104px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+/* « Enregistrer » takes the whole first row, so it stays readable on a phone. */
+.carnet-actions .rec-cta { position: static; grid-column: 1 / -1; min-width: 0; height: 52px; white-space: nowrap; }
+.carnet-actions .grid-to-set { min-width: 0; height: 44px; padding: 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 .idea-links { display: flex; gap: 6px; flex-wrap: wrap; }
 .idea-link { height: 40px; padding: 0 12px; border-radius: 16px; background: var(--panel); border: 1.5px solid var(--line); color: var(--amber-hi); font-size: 13px; font-weight: 700; }
 .pick-row.new-grid { background: var(--surface-3); box-shadow: inset 0 0 0 1.5px var(--amber); }
