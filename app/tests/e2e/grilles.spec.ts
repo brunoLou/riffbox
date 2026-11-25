@@ -23,7 +23,7 @@ test('edits chords, key, name, tempo and groove', async ({ page }) => {
   await page.getByLabel('Monter d’un demi-ton').click();
   await expect(page.locator('.hub-key')).toHaveText('Si♭');
   await page.locator('.grid-head').click();
-  await page.locator('.text-input').fill('Minuit v2');
+  await page.getByLabel('Nom', { exact: true }).fill('Minuit v2');
   await page.getByLabel('Accélérer').click();
   await page.locator('.set-sheet .seg button', { hasText: 'Rock' }).click();
   await expect(page.locator('.riff-title')).toHaveText('Riff shuffle en La');

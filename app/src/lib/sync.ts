@@ -7,7 +7,7 @@ import { readStored, registerFallbackWriteHook, registerWriteHook, serialized, w
 import { markUsed } from './usage';
 
 /** Collections of items with an `id`, synced item by item. */
-export const SYNC_LISTS = ['ideas', 'grids', 'songs', 'setlists', 'voice.takes', 'tuner.custom', 'backing.mine'] as const;
+export const SYNC_LISTS = ['ideas', 'grids', 'songs', 'setlists', 'voice.takes', 'tuner.custom', 'backing.mine', 'rhythms'] as const;
 /**
  * Single values synced as a whole, the most recent wins: these, and every other saved value that is
  * neither a list above nor local to the device (preferences: tempo, lyrics size, a song's
@@ -80,7 +80,7 @@ function pruneTombstones(t: Tombstones, now = Date.now()): Tombstones {
 
 /** Home board tile lit when a collection changes. */
 const TILE_OF: Record<(typeof SYNC_LISTS)[number], string> = {
-  ideas: 'carnet', grids: 'grilles', songs: 'morceaux', setlists: 'setlists', 'voice.takes': 'voix', 'tuner.custom': 'tuner', 'backing.mine': 'backing',
+  ideas: 'carnet', grids: 'grilles', songs: 'morceaux', setlists: 'setlists', 'voice.takes': 'voix', 'tuner.custom': 'tuner', 'backing.mine': 'backing', rhythms: 'rythme',
 };
 
 /** Install the stamping on every write (once, at start-up). */

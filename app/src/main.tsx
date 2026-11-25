@@ -37,6 +37,8 @@ import { restoreMidi } from './lib/midiPedal';
 import Backing from './screens/Backing';
 import Reglages from './screens/Reglages';
 import MicTest from './screens/MicTest';
+import Rythme from './screens/Rythme';
+import RythmeSaisie from './screens/RythmeSaisie';
 import { SetsPage, SongsPage } from './screens/LiveSplit';
 
 // Start-up steps: none of them may keep the app from opening (each failure is only logged).
@@ -61,6 +63,8 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/reglages" element={<Reglages />} />
           <Route path="/reglages/design" element={<DesignSystem />} />
           <Route path="/reglages/micro" element={<MicTest />} />
+          <Route path="/pratiquer/rythme" element={<Rythme />} />
+          <Route path="/pratiquer/rythme/saisie" element={<RythmeSaisie />} />
           <Route path="/idee" element={<Navigate to="/composer" replace state={{ record: true }} />} />
           <Route path="/composer" element={<Carnet />} />
           <Route path="/composer/grilles" element={<Carnet initialKind="grille" />} />

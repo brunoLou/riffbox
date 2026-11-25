@@ -50,10 +50,10 @@ test('the catalog adds tiles, the layout persists and can be reset', async ({ pa
   await button(page, 'Modifier').click();
   await page.getByText('+ Ajouter une pédale').click();
   // The catalog shows the pedals themselves.
-  await expect(page.locator('.catalog-list .pedal-name')).toHaveText(['Accords', 'Morceaux', 'Tonalité', 'Quel ton ?', 'Looper', 'Relever', 'Oreille', 'Coach', 'Réglages']);
-  await expect(page.locator('.catalog-list .pedal-motif')).toHaveCount(9);
+  await expect(page.locator('.catalog-list .pedal-name')).toHaveText(['Accords', 'Morceaux', 'Tonalité', 'Quel ton ?', 'Looper', 'Relever', 'Oreille', 'Rythme', 'Coach', 'Réglages']);
+  await expect(page.locator('.catalog-list .pedal-motif')).toHaveCount(10);
   await page.getByRole('button', { name: 'Ajouter Accords' }).click();
-  await expect(page.locator('.catalog-list .pedal-name')).toHaveText(['Morceaux', 'Tonalité', 'Quel ton ?', 'Looper', 'Relever', 'Oreille', 'Coach', 'Réglages']);
+  await expect(page.locator('.catalog-list .pedal-name')).toHaveText(['Morceaux', 'Tonalité', 'Quel ton ?', 'Looper', 'Relever', 'Oreille', 'Rythme', 'Coach', 'Réglages']);
   await page.getByLabel('Fermer').click();
   await button(page, 'Terminé').click();
   await expect(page.locator('.pedal-name').last()).toHaveText('Accords');
@@ -131,8 +131,8 @@ test('compartments: named by the player, pedals sorted into them, kept after a r
 
 test('Pratiquer shows its tools as the home pedals', async ({ page }) => {
   await page.goto('#/pratiquer');
-  await expect(page.locator('.prat-pedals .pedal-name')).toHaveText(['Manche', 'Accords', 'Backing tracks', 'Looper', 'Relever', 'Oreille', 'Quel ton ?', 'Voix']);
-  await expect(page.locator('.prat-pedals .pedal-motif')).toHaveCount(8);
+  await expect(page.locator('.prat-pedals .pedal-name')).toHaveText(['Manche', 'Accords', 'Backing tracks', 'Looper', 'Relever', 'Oreille', 'Quel ton ?', 'Rythme', 'Voix']);
+  await expect(page.locator('.prat-pedals .pedal-motif')).toHaveCount(9);
   await page.locator('.prat-pedals [data-tile="looper"]').click();
   await expect(page).toHaveURL(/#\/pratiquer\/looper$/);
 });

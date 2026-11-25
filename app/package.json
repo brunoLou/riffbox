@@ -13,6 +13,7 @@
     "test:all": "vitest run && playwright test"
   },
   "dependencies": {
+    "@coderline/alphatab": "1.9.0",
     "@fontsource/barlow": "5.1.0",
     "@fontsource/big-shoulders-display": "5.1.0",
     "@fontsource/space-mono": "5.1.0",

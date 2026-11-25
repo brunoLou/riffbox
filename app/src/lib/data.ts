@@ -34,6 +34,7 @@ export const TILES: Tile[] = [
   { id: 'looper', name: 'Looper', sub: 'Boucles et couches', bg: '#161616', fg: '#f2f2f2', a: 60, b: -90, to: '/pratiquer/looper', extra: true },
   { id: 'relever', name: 'Relever', sub: 'Ralentir, boucler, transposer', bg: '#5c6b2e', fg: '#f3f6e6', a: -15, b: 70, to: '/pratiquer/relever', extra: true },
   { id: 'oreille', name: 'Oreille', sub: 'Intervalles et accords', bg: '#57406e', fg: '#f1eafb', a: 40, b: -30, to: '/pratiquer/oreille', extra: true },
+  { id: 'rythme', name: 'Rythme', sub: 'Coups ↓ ↑ à suivre', bg: '#7d5a1e', fg: '#fbf1dc', a: 35, b: -85, to: '/pratiquer/rythme', extra: true },
   { id: 'coach', name: 'Coach', sub: 'Programme à mon niveau', bg: '#8a2a4a', fg: '#fdeef3', a: 25, b: 110, to: '/pratiquer/coach', extra: true },
   { id: 'reglages', name: 'Réglages', sub: 'Données et sauvegarde', bg: '#9aa0a8', fg: '#121315', a: -120, b: 10, to: '/reglages', extra: true },
 ];

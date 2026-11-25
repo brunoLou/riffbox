@@ -1,6 +1,7 @@
 import { GRID_INITIAL } from './data';
 import { chordName, type Chord } from './music';
 import { readStored } from './store';
+import type { Stroke } from './strum';
 
 export type GridGroove = 'shuffle' | 'rock' | 'funk';
 export const GRID_GROOVES: { id: GridGroove; label: string; style: string }[] = [
@@ -11,6 +12,9 @@ export const GRID_GROOVES: { id: GridGroove; label: string; style: string }[] = 
 export const GRID_SECTIONS = ['Couplet', 'Refrain', 'Pont'];
 export const GRID_MAX_CHORDS = 8;
 export const GRID_BPM = { min: 40, max: 220 };
+
+/** A strumming pattern the grid plays instead of its groove (copied from Pratiquer › Rythme). */
+export interface GridStrum { id: string; name: string; den: 4 | 8; swing?: boolean; bars: Stroke[][] }
 
 export interface Grid {
   id: string;
@@ -28,6 +32,8 @@ export interface Grid {
   style?: import('./generate').GenStyle;
   /** Catalog song this grid belongs to; otherwise the grid is its own song ("g:<id>"). */
   songId?: string;
+  /** Strumming pattern played over the chords (drums and bass follow), instead of the groove. */
+  strum?: GridStrum;
 }
 
 const m = (pc: number): Chord => ({ pc, m: true });

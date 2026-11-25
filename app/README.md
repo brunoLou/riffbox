@@ -21,6 +21,19 @@ Sur l'accueil, **Modifier** puis **+ Nouveau compartiment** : vous lui donnez le
 
 Les pédales ont le même dessin partout : accueil, Pratiquer et catalogue « + Ajouter une pédale ».
 
+## Rythme (coups de médiator)
+
+**Pratiquer › Rythme** (`#/pratiquer/rythme`) montre un motif de grattage en flèches ↓ ↑ qui défilent sous une ligne, avec clic et son de grattage (ou clic seul). On peut changer le tempo et l'accord joué. Des modèles sont fournis : pop/folk, croches, rock, reggae, ballade 6/8, funk, shuffle.
+
+Trois façons d'ajouter un rythme :
+- **Importer un fichier Guitar Pro** (.gp, .gp3, .gp4, .gp5, .gpx), lu par [alphaTab](https://www.alphatab.net) (licence MPL-2.0, chargé seulement à l'import). On choisit la piste, puis on garde soit le morceau entier avec ses accords, soit l'un de ses motifs les plus fréquents. Les sens ↓ ↑ notés dans le fichier sont respectés ; sinon ils viennent du va-et-vient de la main.
+- **Recopier une partition** : on tape les valeurs de notes mesure par mesure (ronde à double croche, pointées, silences, notes liées). La photo de la partition peut rester affichée au-dessus ; elle reste sur l'appareil.
+- **Les modèles**.
+
+La règle du va-et-vient : ↓ sur les temps, ↑ entre les temps (en doubles croches dès que le rythme en contient). Un silence ou une note liée donne un coup « dans le vide ».
+
+**Dans une grille**, Réglages de la grille › « Motif de grattage » : la boucle joue les accords avec ce motif, avec batterie et basse, à la place du groove. Les rythmes se synchronisent (liste `rhythms`).
+
 ## Test du micro
 
 **Réglages › Tester le micro** (`#/reglages/micro`). Le test mesure d'abord le bruit de la pièce pendant 2 secondes de silence. Ensuite, en jouant, il montre :

@@ -21,6 +21,8 @@ import { readStored } from '../lib/store';
 import { useGrids, useSetlists } from '../lib/hooks';
 import './Grille.css';
 import { useDialog } from '../lib/useDialog';
+import { MODEL_RHYTHMS, strokeText, type Rhythm, type Stroke } from '../lib/strum';
+import { strumPattern } from '../lib/strumPlay';
 import { markUsed } from '../lib/usage';
 
 const R = 159; // wheel radius (318 / 2)
@@ -36,6 +38,10 @@ export default function GrilleRoute() {
 }
 
 function loopPattern(g: Grid, chords: Chord[]): Pattern {
+  if (g.strum?.bars.length) {
+    const s = g.strum;
+    return strumPattern(chords.map((c, i) => ({ slots: s.bars[i % s.bars.length], chord: chordName(c) })), { bpm: g.bpm, den: s.den, swing: s.swing, band: true });
+  }
   return buildBacking({
     id: g.id, name: g.title, style: grooveDef(g.groove).style, groove: g.groove, key: g.key, bpm: g.bpm, form: '',
     bars: chords.map(c => ({ deg: mod12(c.pc - g.key), q: chordTypeId(c) })),
@@ -49,7 +55,7 @@ function Grille({ id }: { id: string }) {
   const [sec, setSec] = useState(0);
   const [mode, setMode] = useState<'add' | 'key'>('add');
   const [playing, setPlaying] = useState(false);
-  const [pos, setPos] = useState({ bar: 0, beat: -1 });
+  const [pos, setPos] = useState({ bar: 0, beat: -1, slot: -1 });
   const [sheet, setSheet] = useState<null | 'settings' | 'setlist'>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   /** Chord of the section shown in the diagram sheet. */
@@ -57,6 +63,7 @@ function Grille({ id }: { id: string }) {
   const dlgSet = useDialog(() => closeSheet());
   const dlgSettings = useDialog(() => closeSheet());
   const [sets, setSets] = useSetlists();
+  const rhythms = [...readStored<Rhythm[]>('rhythms', []), ...MODEL_RHYTHMS];
   const riffPlayer = useRef<Playback | null>(null);
   const [riffPlaying, setRiffPlaying] = useState(false);
 
@@ -69,10 +76,15 @@ function Grille({ id }: { id: string }) {
     engine.current = new MetronomeEngine(() => {
       const { g: cur, sec: s } = live.current;
       const chords = cur!.prog[s];
-      const sig = JSON.stringify([s, cur!.key, cur!.bpm, cur!.groove, chords]);
+      const sig = JSON.stringify([s, cur!.key, cur!.bpm, cur!.groove, chords, cur!.strum]);
       if (cache.current?.sig !== sig) cache.current = { sig, p: loopPattern(cur!, chords) };
       return cache.current.p;
-    }, (beat, bar) => setPos({ bar, beat }));
+    }, (beat, bar) => {
+      // With a strumming pattern each sixteenth reports its position: the beat is counted from it.
+      const st = live.current.g?.strum;
+      if (st) setPos({ bar, beat: Math.floor(beat / (st.den === 8 ? 6 : 4)), slot: beat });
+      else setPos({ bar, beat, slot: -1 });
+    });
   }
   useEffect(() => () => { engine.current?.dispose(); riffPlayer.current?.stop(); }, []);
 
@@ -108,10 +120,10 @@ function Grille({ id }: { id: string }) {
   };
   const toggleLoop = () => {
     const e = engine.current!;
-    if (playing) { e.stop(); setPlaying(false); setPos({ bar: 0, beat: -1 }); return; }
-    e.rewind(); setPos({ bar: 0, beat: -1 }); e.start(); setPlaying(true); markUsed('grilles');
+    if (playing) { e.stop(); setPlaying(false); setPos({ bar: 0, beat: -1, slot: -1 }); return; }
+    e.rewind(); setPos({ bar: 0, beat: -1, slot: -1 }); e.start(); setPlaying(true); markUsed('grilles');
   };
-  const pickSection = (i: number) => { setSec(i); setChordAt(null); setPos({ bar: 0, beat: -1 }); engine.current!.rewind(); };
+  const pickSection = (i: number) => { setSec(i); setChordAt(null); setPos({ bar: 0, beat: -1, slot: -1 }); engine.current!.rewind(); };
   const removeChord = (i: number) => {
     updateSection(p => p.filter((_, j) => j !== i));
     const left = chords.length - 1;
@@ -164,7 +176,7 @@ function Grille({ id }: { id: string }) {
           <div className="head-l">
             <BackButton fallback="/composer/grilles" />
             <button className="head-titles grid-head" onClick={() => setSheet('settings')} aria-label="Réglages de la grille">
-              <span className="kicker grid-kicker">{g.bpm} BPM · {grooveDef(g.groove).label} ▾</span>
+              <span className="kicker grid-kicker">{g.bpm} BPM · {g.strum ? 'Grattage' : grooveDef(g.groove).label} ▾</span>
               <span className="display grid-title">{g.title.toUpperCase()}</span>
             </button>
           </div>
@@ -206,6 +218,13 @@ function Grille({ id }: { id: string }) {
             <button className="slot-add" onClick={() => setMode('add')} aria-label="Ajouter un accord">+</button>
           )}
         </div>
+
+        {g.strum && chords.length > 0 && (
+          <button className="strum-strip" onClick={() => setSheet('settings')} aria-label={`Motif de grattage : ${g.strum.name}`}>
+            <span className="strum-name">Grattage · {g.strum.name}</span>
+            <StrumCells slots={g.strum.bars[(playing ? pos.bar : 0) % g.strum.bars.length]} lit={playing ? pos.slot : -1} />
+          </button>
+        )}
 
         {playing && <LiveChords chords={chords} bar={pos.bar} />}
 
@@ -305,14 +324,26 @@ function Grille({ id }: { id: string }) {
                 <button onClick={() => update(x => ({ ...x, bpm: Math.min(GRID_BPM.max, x.bpm + 2) }))} aria-label="Accélérer">+</button>
               </div>
             </div>
-            <div className="sheet-field">
+            <label className="sheet-field">
+              <span>Motif de grattage</span>
+              <select className="text-input" value={g.strum?.id ?? ''} onChange={e => {
+                const r = rhythms.find(x => x.id === e.target.value);
+                update(x => ({ ...x, strum: r ? { id: r.id, name: r.name, den: r.den, ...(r.swing ? { swing: true } : {}), bars: r.bars.slice(0, GRID_MAX_CHORDS).map(b => b.slots) } : undefined }));
+              }}>
+                <option value="">Aucun : le groove joue les accords</option>
+                {g.strum && !rhythms.some(r => r.id === g.strum!.id) && <option value={g.strum.id}>{g.strum.name}</option>}
+                {rhythms.map(r => <option key={r.id} value={r.id}>{r.name} · {strokeText(r.bars[0].slots)}</option>)}
+              </select>
+            </label>
+            <button className="btn-link strum-link" onClick={() => nav('/pratiquer/rythme')}>Créer ou importer un rythme (Guitar Pro, partition) ›</button>
+            {!g.strum && <div className="sheet-field">
               <span>Groove de la boucle</span>
               <div className="seg" style={{ gridTemplateColumns: 'repeat(3,minmax(0,1fr))' }}>
                 {GRID_GROOVES.map(x => (
                   <button key={x.id} className={g.groove === x.id ? 'on' : ''} onClick={() => update(y => ({ ...y, groove: x.id }))}>{x.label}</button>
                 ))}
               </div>
-            </div>
+            </div>}
             <div className="sheet-field">
               <span>Riff de départ</span>
               {idea ? (
@@ -341,5 +372,21 @@ function Grille({ id }: { id: string }) {
       )}
       <TabBar active={1} />
     </Phone>
+  );
+}
+
+/** One bar of a strumming pattern; the stroke being played lights up. */
+function StrumCells({ slots, lit }: { slots: Stroke[]; lit: number }) {
+  const sixteenths = slots.some((x, i) => x !== '-' && i % 2 === 1);
+  const step = sixteenths ? 1 : 2;
+  const cells = slots.map((x, i) => ({ x, i })).filter(c => c.i % step === 0);
+  return (
+    <span className="strum-cells" aria-hidden>
+      {cells.map(c => (
+        <span key={c.i} className={'strum-cell' + (c.i % (step * (sixteenths ? 4 : 2)) === 0 ? ' beat' : '') + (lit >= c.i && lit < c.i + step ? ' lit' : '')}>
+          {c.x === 'D' ? '↓' : c.x === 'U' ? '↑' : '·'}
+        </span>
+      ))}
+    </span>
   );
 }

@@ -16,7 +16,7 @@ const CHART_H = 112;
 /** The practice tools, drawn as the same pedals as on the home board (id, wide). */
 const PRAT_TOOLS: [string, boolean][] = [
   ['manche', false], ['accords', false], ['backing', true], ['looper', false], ['relever', false],
-  ['oreille', false], ['detect', false], ['voix', true],
+  ['oreille', false], ['detect', false], ['rythme', false], ['voix', false],
 ];
 const byId = new Map(TILES.map(t => [t.id, t]));
 
