@@ -63,10 +63,22 @@ export function registerSerializer<T>(key: string, fn: (v: T) => unknown) {
 /** A value as it is saved on disk (transient fields stripped). */
 export const serialized = (key: string, v: unknown) => (SERIALIZERS[key] ? SERIALIZERS[key](v) : v);
 
+/**
+ * A saved value of the expected shape (a list where a list is expected, a number for a number…).
+ * Anything else (damaged on this device, or received from another one) is ignored: the screens get
+ * the default rather than failing.
+ */
+export function sameShape(value: unknown, def: unknown): boolean {
+  if (def === null || def === undefined) return true;
+  if (Array.isArray(def)) return Array.isArray(value);
+  if (typeof def === 'object') return !!value && typeof value === 'object' && !Array.isArray(value);
+  return typeof value === typeof def;
+}
+
 /** Read a stored value without subscribing (e.g. for a summary on another screen). */
 export function readStored<T>(key: string, fallback: T): T {
   const r = load<T>(key);
-  return r.found ? (r.value as T) : fallback;
+  return r.found && sameShape(r.value, fallback) ? (r.value as T) : fallback;
 }
 
 /**
@@ -76,20 +88,21 @@ export function readStored<T>(key: string, fallback: T): T {
 export function useStoredState<T>(key: string, init: T) {
   const [v, setV] = useState<T>(() => {
     const r = load<T>(key);
-    if (r.found) return r.value as T;
+    if (r.found && sameShape(r.value, init)) return r.value as T;
     mem.set(key, init);
     return init;
   });
   const set = useCallback((u: T | ((prev: T) => T)) => {
-    const prev = mem.get(key) as T;
+    const stored = mem.get(key);
+    const prev = (sameShape(stored, init) ? stored : init) as T;
     const next = typeof u === 'function' ? (u as (p: T) => T)(prev) : u;
     writeStored(key, next);
     // What was written, write hooks included (e.g. modification dates).
     setV(mem.get(key) as T);
-  }, [key]);
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
   // Another screen (e.g. the quick capture over the notebook) may write the same key.
   useEffect(() => {
-    const fn = (val: unknown) => setV(val as T);
+    const fn = (val: unknown) => { if (sameShape(val, init)) setV(val as T); };
     let set = subs.get(key);
     if (!set) subs.set(key, (set = new Set()));
     set.add(fn);

@@ -1,6 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import type { ReactNode } from 'react';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import './fonts';
 import './styles.css';
 import { requestPersistence } from './lib/store';
@@ -36,18 +38,21 @@ import Backing from './screens/Backing';
 import Reglages from './screens/Reglages';
 import { SetsPage, SongsPage } from './screens/LiveSplit';
 
-consumeShare(); // before the router reads the address
-installSync();
-installAutoSync();
-requestPersistence();
-restoreMidi();
-initTheme();
+// Start-up steps: none of them may keep the app from opening (each failure is only logged).
+const step = (name: string, fn: () => unknown) => { try { fn(); } catch (e) { console.error(`RIFFBOX : ${name}`, e); } };
+step('partage reçu', consumeShare); // before the router reads the address
+step('synchronisation', installSync);
+step('Google Drive', installAutoSync);
+step('stockage', requestPersistence);
+step('pédalier MIDI', restoreMidi);
+step('thème', initTheme);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HashRouter>
       <FileDrop />
       <div className="stage">
+        <Guarded>
         <Routes>
           <Route path="/" element={<Accueil />} />
           <Route path="/accordeur" element={<Accordeur />} />
@@ -88,7 +93,21 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/scene/:setId/play/:index" element={<Prompteur />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Guarded>
       </div>
     </HashRouter>
   </StrictMode>,
 );
+
+/** A failing screen shows a message (and its detail) rather than a blank page. */
+function Guarded({ children }: { children: ReactNode }) {
+  const loc = useLocation();
+  return <ErrorBoundary resetKey={loc.pathname}><TestCrash path={loc.pathname} />{children}</ErrorBoundary>;
+}
+/** Automated tests only: makes one screen fail on purpose (sessionStorage « riffbox-test-crash »). */
+function TestCrash({ path }: { path: string }) {
+  let target: string | null = null;
+  try { target = sessionStorage.getItem('riffbox-test-crash'); } catch { /* private mode */ }
+  if (target && target === path) throw new Error('Échec volontaire (test)');
+  return null;
+}

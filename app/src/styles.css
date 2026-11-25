@@ -315,3 +315,11 @@ h1 { margin: 0; font-weight: inherit; }
   .pane-empty { align-items: center; justify-content: center; padding: 40px; text-align: center; color: var(--muted-2); font-size: 16px; }
   .lib-row.sel, .set-card.sel { box-shadow: inset 0 0 0 2px var(--amber); }
 }
+
+/* ---------- A screen that failed ---------- */
+.phone.crash { display: flex; flex-direction: column; gap: 14px; padding: 60px 24px; color: var(--cream); }
+.crash h1 { font-size: 40px; color: var(--amber); }
+.crash p { margin: 0; font-size: 16px; line-height: 1.4; }
+.crash-actions { display: flex; flex-direction: column; gap: 10px; }
+.crash details { font-size: 14px; color: var(--muted-3); }
+.crash-detail { white-space: pre-wrap; word-break: break-word; font: 12px/1.4 var(--f-mono); background: var(--surface-2); padding: 10px; border-radius: 10px; }

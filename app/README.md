@@ -243,6 +243,7 @@ dans le dossier temporaire du système.
 | `tests/unit/midiPedal.test.ts` | MIDI : notes, CC, programmes lus ; appui et relâchement ; un interrupteur par pédale |
 | `tests/unit/songbookPdf.test.ts` | recueil PDF : accords placés sur les syllabes, accents, PDF relu par pdf.js (ordre du set, paroles, accord au-dessus du bon mot) |
 | `tests/unit/piano.test.ts` | piano : position de pianiste, notes exactes de la guitare, nom de l’accord touché au clavier, notes écrites selon l’accord |
+| `tests/unit/store.test.ts` | une valeur enregistrée de la mauvaise forme est ignorée au profit de la valeur par défaut |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises, backing tracks perso avec leur son |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
 | `tests/e2e/smoke.spec.ts` | chaque écran s’ouvre, navigation, anciennes adresses, micro refusé |
@@ -269,6 +270,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/metronome-entraineur.spec.ts` | entraîneur : le tempo monte mesure après mesure puis revient ; les mesures muettes ne font vraiment aucun son |
 | `tests/e2e/midi.spec.ts` | pédalier MIDI (simulé) : connexion, apprentissage, essai, le métronome commandé au pied |
 | `tests/e2e/ordinateur-volets.spec.ts` | grande fenêtre : morceaux et setlists en deux volets (la liste reste), accords en deux colonnes |
+| `tests/e2e/erreur.spec.ts` | données abîmées ignorées (les écrans s’ouvrent) ; un écran qui échoue affiche un message, le détail et une sortie |
 | `tests/e2e/oreille.spec.ts` | oreille : intervalles et accords avec la réponse montrée, scores gardés ; accord demandé joué au micro (simulé) |
 | `tests/e2e/progres.spec.ts` | progrès : douze semaines (graphique et tableau), courbes de tempo, bilans, oreille ; écran vide qui explique |
 | `tests/e2e/tablature.spec.ts` | riff en tab : saisie case par case, nommé, affiché, écouté, modifié, gardé |
