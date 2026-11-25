@@ -79,6 +79,11 @@ export function strummedChords(name: string, chords: number[][], secs = 1.6, pic
   });
 }
 
+/** A tone far too loud for the microphone: it is cut at full scale (clipping). */
+export function clippedTone(name: string, hz: number): string {
+  return writeWav(name, 12, t => 2.5 * Math.sin(2 * Math.PI * hz * t));
+}
+
 /** Launch options for a test file whose microphone plays `wav`. */
 export const fakeMic = (wav: string) => ({
   permissions: ['microphone'],

@@ -17,7 +17,7 @@ export const SYNC_VALUES = ['routine.steps', 'voice.range', 'grid.voicings', 'co
 /** Device settings and bookkeeping that stay on each device. */
 export const LOCAL_KEYS = ['settings.theme', 'pedal.keys', 'pedal.midi', 'pedal.midiOn', 'relever.track', 'looper.latencyMs', 'tuner.string', 'coach.testScale', 'home.removed', 'routine', 'practice.seeded', 'backup.last', 'backup.since',
   'backup.snooze', 'backup.remind', 'sync.lastSent', 'sync.lastReceived', 'stage.follow', 'usage.today',
-  'coach.active', 'coach.day', 'coach.ownRoutine'];
+  'coach.active', 'coach.day', 'coach.ownRoutine', 'mictest.device'];
 
 export const DELETED_KEY = 'sync.deleted';
 export const VALUE_TIMES_KEY = 'sync.valueTimes';

@@ -21,6 +21,15 @@ Sur l'accueil, **Modifier** puis **+ Nouveau compartiment** : vous lui donnez le
 
 Les pédales ont le même dessin partout : accueil, Pratiquer et catalogue « + Ajouter une pédale ».
 
+## Test du micro
+
+**Réglages › Tester le micro** (`#/reglages/micro`). Le test mesure d'abord le bruit de la pièce pendant 2 secondes de silence. Ensuite, en jouant, il montre :
+- le niveau qui arrive : trop faible, bon, très fort ou saturé, avec un conseil ;
+- ce que l'app entend : la note, les notes d'un accord en barres, et l'accord reconnu ;
+- quatre vérifications : pièce calme, note seule reconnue, accord reconnu sans saturer, aucune saturation.
+
+Les conseils changent selon la guitare (acoustique ou électrique). Si plusieurs micros sont branchés (une interface audio USB, par exemple), on choisit celui à utiliser ; ce choix reste sur l'appareil (`mictest.device`, non synchronisé).
+
 ## Backing tracks perso
 
 Pratiquer › Backing tracks : dans le lecteur de chaque backing track (« Blues en La »…), « Son : RIFFBOX / Mon

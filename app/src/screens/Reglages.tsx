@@ -138,6 +138,14 @@ export default function Reglages() {
           </div>
         </div>
 
+        <span className="kicker settings-section">Micro</span>
+        <div className="settings-card">
+          <Link to="/reglages/micro" className="settings-row settings-link">
+            <span className="settings-label">Tester le micro</span>
+            <span className="settings-chev">Niveau, saturation, notes entendues ›</span>
+          </Link>
+        </div>
+
         <span className="kicker settings-section">Pédalier</span>
         <PedalCard />
         <MidiPedalCard />
