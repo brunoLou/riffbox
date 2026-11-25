@@ -7,6 +7,7 @@ import {
 } from '../lib/setlists';
 import { useSetlists, useSongs } from '../lib/hooks';
 import { SceneTabs } from './Morceaux';
+import { setlistPdf, sharePdf } from '../lib/songbook';
 import './Setlists.css';
 
 
@@ -223,6 +224,9 @@ export function SetlistDetail() {
           </label>
         )}
         <Checklist items={checklistOf(set)} edit={edit} onChange={setChecklist} />
+        {!edit && set.songIds.length > 0 && (
+          <button className="btn-outline set-pdf" onClick={() => void sharePdf(set.name, setlistPdf(set))}>PDF du set (pour le groupe ou à imprimer)</button>
+        )}
         {edit && (
           <div className="set-delete">
             {confirmDelete ? (

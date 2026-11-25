@@ -71,3 +71,4 @@
 .set-check-row input { width: 20px; height: 20px; accent-color: var(--amber); flex: none; }
 .set-check-row .rm { width: 32px; height: 32px; border-radius: 50%; background: var(--surface-3); color: #e07a5f; font-weight: 700; }
 .set-check-add { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 4px; }
+.set-pdf { margin-top: 8px; width: 100%; }

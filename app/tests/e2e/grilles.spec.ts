@@ -232,14 +232,19 @@ test('while the grid loops, the diagram of the chord being played follows the ba
   // Always the chord lit in the grid, and the one after it.
   const seen = new Set<string>();
   for (let k = 0; k < 30 && seen.size < 3; k++) { // a bar lasts 2.6 s at 92 BPM
-    const on = (await page.locator('.slot.on .slot-name').textContent({ timeout: 3000 }).catch(() => null))?.trim();
-    const shown = (await live.locator('.live-now .live-name').textContent())!.trim();
-    if (on && on === shown) {
-      seen.add(shown);
+    // Everything read at the same instant (a bar can change between two separate reads).
+    const snap = await page.evaluate(() => ({
+      on: document.querySelector('.slot.on .slot-name')?.textContent?.trim(),
+      shown: document.querySelector('.live-now .live-name')?.textContent?.trim(),
+      kicker: document.querySelector('.live-now .live-kicker')?.textContent ?? '',
+      next: document.querySelector('.live-next .live-name')?.textContent?.trim(),
+    }));
+    if (snap.on && snap.on === snap.shown) {
+      seen.add(snap.shown!);
       const order = ['A', 'D', 'A', 'E'];
-      const bar = Number((await live.locator('.live-now .live-kicker').textContent())!.match(/(\d)\/4/)![1]);
-      expect(order[bar - 1]).toBe(shown);
-      await expect(live.locator('.live-next .live-name')).toHaveText(order[bar % 4]);
+      const bar = Number(snap.kicker.match(/(\d)\/4/)![1]);
+      expect(order[bar - 1]).toBe(snap.shown);
+      expect(snap.next).toBe(order[bar % 4]);
     }
     await page.waitForTimeout(500);
   }

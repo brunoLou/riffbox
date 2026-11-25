@@ -17,6 +17,7 @@ import { useDialog } from '../lib/useDialog';
 import { looksLikeChordPro, textToChordPro } from '../lib/chordSheet';
 import { useDropped } from '../lib/dropped';
 import { onlyUrl, searchUrl, takeShare } from '../lib/shared';
+import { libraryPdf, sharePdf } from '../lib/songbook';
 
 
 /** "Setlists | Morceaux" switch at the top of the Live tab. */
@@ -179,6 +180,10 @@ export function MorceauxScreen() {
           <button className="btn-outline cp-btn" onClick={() => setFinding({ title: q, artist: '', sent: false })}>Chercher…</button>
           <button className="btn-outline cp-btn" onClick={() => setPasted('')}>Coller…</button>
           <button className="btn-outline cp-btn" onClick={exportAll}>Tout exporter</button>
+          <button className="btn-outline cp-btn" onClick={() => {
+            const all = allSongs().map(x => songById(x.id) ?? x).sort((a, b) => a.title.localeCompare(b.title, 'fr'));
+            void sharePdf('Recueil RIFFBOX', libraryPdf(all)).then(how => how !== 'cancelled' && setMsg({ text: `Recueil PDF de ${all.length} morceaux prêt.` }));
+          }}>Recueil PDF</button>
           <input ref={fileInput} type="file" multiple hidden accept={[...CHORDPRO_EXT, '.pdf', 'application/pdf'].join(',')} aria-label="Fichiers de morceaux" onChange={e => void pickFiles(e.target.files)} />
         </div>
         {msg && <p className={'cp-msg' + (msg.error ? ' error' : '')} role="status">{msg.text}</p>}
