@@ -18,8 +18,15 @@ export interface Song {
   melodyHigh?: number;
 }
 
+export interface CheckItem { id: string; text: string; done: boolean }
 export interface Setlist {
   id: string; name: string;
+  /** Concert sheet: a memo per song for this set (tuning, capo, sound, who starts…). */
+  memos?: Record<string, string>;
+  /** Seconds between two songs (tuning, a word to the audience). */
+  gap?: number;
+  /** « Avant de monter sur scène ». */
+  checklist?: CheckItem[];
   /** Date and time of the gig; none for a set that is not tied to a date. */
   date?: number;
   songIds: string[];
@@ -113,6 +120,26 @@ export const INITIAL_SETLISTS: Setlist[] = [
 ];
 
 export const setDuration = (s: Setlist) => s.songIds.reduce((t, id) => t + (songById(id)?.duration ?? 0), 0);
+
+/* ---------- Concert sheet ---------- */
+
+export const DEFAULT_GAP = 30;
+export const GAPS = [0, 15, 30, 45, 60, 90, 120];
+export const DEFAULT_CHECKLIST = [
+  'Accorder toutes les guitares', 'Cordes et médiators de rechange', 'Câbles, piles, alimentations',
+  'Tablette chargée, veille désactivée', 'Pédalier Bluetooth connecté', 'De l’eau',
+];
+export const checklistOf = (s: Setlist): CheckItem[] =>
+  s.checklist ?? DEFAULT_CHECKLIST.map((text, i) => ({ id: 'c' + i, text, done: false }));
+
+/** When each song starts, in seconds from the beginning of the set (with the gaps), and the set's length. */
+export function setTimeline(durations: number[], gap: number): { starts: number[]; total: number } {
+  const starts: number[] = [];
+  let t = 0;
+  durations.forEach((d, i) => { starts.push(t); t += d + (i < durations.length - 1 ? gap : 0); });
+  return { starts, total: t };
+}
+export const fmtClock = (t: number) => new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(t);
 export const fmtMin = (sec: number) => `${Math.round(sec / 60)} min`;
 export const fmtDur = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
 export function fmtDate(t: number) {

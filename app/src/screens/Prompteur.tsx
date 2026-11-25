@@ -136,6 +136,7 @@ function Prompteur({ set, index, song }: { set: Setlist; index: number; song: So
           </div>
         </div>
         <h1 className="display stage-title">{song.title.toUpperCase()}</h1>
+        {set.memos?.[song.id] && <p className="stage-memo" aria-label="Mémo">{set.memos[song.id]}</p>}
         <div className="stage-tags">
           <span className="stage-tag key"><span>Ton :</span><span>{songKey(song, trans)}</span></span>
           <span className="stage-tag">{song.bpm} BPM · {song.feel}</span>

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import {
-  allSongs, hasLyrics, fmtDur, fmtMin, nextSet, setDateLabel, setDuration, songById, songMeta, sortSets, titlesLabel, toLocalInput, type Setlist,
+  DEFAULT_GAP, GAPS, allSongs, checklistOf, fmtClock, hasLyrics, fmtDur, fmtMin, nextSet, setDateLabel, setDuration, setTimeline, songById, songMeta,
+  sortSets, titlesLabel, toLocalInput, type CheckItem, type Setlist,
 } from '../lib/setlists';
 import { useSetlists, useSongs } from '../lib/hooks';
 import { SceneTabs } from './Morceaux';
@@ -99,6 +100,16 @@ export function SetlistDetail() {
     if (Number.isNaN(t)) { const { date: _, ...rest } = s; return rest; }
     return { ...s, date: t };
   });
+  const gap = set.gap ?? DEFAULT_GAP;
+  const songs = set.songIds.map(id => songById(id));
+  const timeline = setTimeline(songs.map(x => x?.duration ?? 0), gap);
+  const setMemo = (id: string, text: string) => update(s => {
+    const memos = { ...(s.memos ?? {}) };
+    if (text.trim()) memos[id] = text.slice(0, 160); else delete memos[id];
+    return { ...s, memos };
+  });
+  const setChecklist = (fn: (c: CheckItem[]) => CheckItem[]) => update(s => ({ ...s, checklist: fn(checklistOf(s)) }));
+  const fmtHMs = (sec: number) => { const m = Math.round(sec / 60); return m >= 60 ? `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}` : `${m} min`; };
   const addDate = () => { const d = new Date(Date.now() + 7 * 86400000); d.setHours(21, 0, 0, 0); update(s => ({ ...s, date: d.getTime() })); };
 
   return (
@@ -141,6 +152,7 @@ export function SetlistDetail() {
           <span>{titlesLabel(set.songIds.length)}</span>
           <span className="sep">·</span>
           <span>{fmtMin(setDuration(set))}</span>
+          {gap > 0 && set.songIds.length > 1 && <><span className="sep">·</span><span>{fmtHMs(timeline.total)} avec les enchaînements</span></>}
         </div>
 
         <div className="songs">
@@ -155,6 +167,11 @@ export function SetlistDetail() {
                 <div className="song-text" onClick={() => edit && nav(`/scene/morceau/${s.id}`)}>
                   <span className="song-title">{s.title}{edit && <span className="song-edit"> ✎</span>}</span>
                   <span className="song-meta">{songMeta(s)}{hasLyrics(s.chordpro) ? '' : s.chordpro ? ' · accords' : ' · à écrire'}</span>
+                  {!edit && set.memos?.[id] && <span className="song-memo">{set.memos[id]}</span>}
+                  {edit && (
+                    <input className="text-input song-memo-input" value={set.memos?.[id] ?? ''} placeholder="Mémo : accordage, capo, son, qui lance l’intro…"
+                      aria-label={`Mémo pour ${s.title}`} onClick={e => e.stopPropagation()} onChange={e => setMemo(id, e.target.value)} />
+                  )}
                 </div>
                 {edit ? (
                   <div className="song-tools">
@@ -163,7 +180,10 @@ export function SetlistDetail() {
                     <button className="rm" onClick={() => remove(i)} aria-label={`Retirer ${s.title}`}>−</button>
                   </div>
                 ) : (
-                  <span className="song-dur mono">{fmtDur(s.duration)}</span>
+                  <span className="song-dur mono">
+                    {set.date !== undefined && <span className="song-at" aria-label={`Début prévu à ${fmtClock(set.date + timeline.starts[i] * 1000)}`}>{fmtClock(set.date + timeline.starts[i] * 1000)}</span>}
+                    {fmtDur(s.duration)}
+                  </span>
                 )}
               </div>
             );
@@ -195,6 +215,14 @@ export function SetlistDetail() {
             </div>
           )}
         </div>
+        {edit && set.songIds.length > 1 && (
+          <label className="set-gap">Entre deux morceaux
+            <select value={gap} onChange={e => update(s => ({ ...s, gap: Number(e.target.value) }))} aria-label="Temps entre deux morceaux">
+              {GAPS.map(g => <option key={g} value={g}>{g === 0 ? 'aucune pause' : g < 60 ? `${g} s` : `${g / 60} min`}</option>)}
+            </select>
+          </label>
+        )}
+        <Checklist items={checklistOf(set)} edit={edit} onChange={setChecklist} />
         {edit && (
           <div className="set-delete">
             {confirmDelete ? (
@@ -216,5 +244,37 @@ export function SetlistDetail() {
       )}
       <TabBar active={3} />
     </Phone>
+  );
+}
+
+/** « Avant de monter sur scène »: ticked off before the concert, edited with « Modifier ». */
+function Checklist({ items, edit, onChange }: { items: CheckItem[]; edit: boolean; onChange: (fn: (c: CheckItem[]) => CheckItem[]) => void }) {
+  const [draft, setDraft] = useState('');
+  const done = items.filter(x => x.done).length;
+  const add = () => { if (draft.trim()) { onChange(c => [...c, { id: 'c' + Date.now(), text: draft.trim().slice(0, 80), done: false }]); setDraft(''); } };
+  return (
+    <section className="set-check" aria-label="Avant de monter sur scène">
+      <div className="set-check-head">
+        <span className="kicker">Avant de monter sur scène</span>
+        <span className="mono">{done}/{items.length}</span>
+      </div>
+      {items.map(x => (
+        <div key={x.id} className="set-check-row">
+          <label className={x.done ? 'done' : ''}>
+            <input type="checkbox" checked={x.done} onChange={() => onChange(c => c.map(y => (y.id === x.id ? { ...y, done: !y.done } : y)))} />
+            {x.text}
+          </label>
+          {edit && <button className="rm" aria-label={`Retirer « ${x.text} »`} onClick={() => onChange(c => c.filter(y => y.id !== x.id))}>−</button>}
+        </div>
+      ))}
+      {edit && (
+        <div className="set-check-add">
+          <input className="text-input" value={draft} placeholder="Ajouter (ex. capo, jack de secours)" aria-label="Nouvelle chose à vérifier"
+            onChange={e => setDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') add(); }} />
+          <button className="btn-outline" disabled={!draft.trim()} onClick={add}>Ajouter</button>
+        </div>
+      )}
+      {done > 0 && <button className="btn-link small" onClick={() => onChange(c => c.map(y => ({ ...y, done: false })))}>Tout décocher (prochain concert)</button>}
+    </section>
   );
 }

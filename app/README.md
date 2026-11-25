@@ -48,6 +48,14 @@ sans changer la vitesse (`pitchShift.ts` : deux têtes de lecture dans une court
 relayées en fondu, en AudioWorklet). Forme d’onde pour se repérer ; espace, flèches, A et B au clavier.
 Le fichier reste sur l’appareil, avec sa vitesse, sa boucle et sa transposition.
 
+## Fiche de concert
+
+Dans une setlist (« Modifier ») : un **mémo par morceau** (accordage, capo, son, qui lance l’intro),
+affiché dans la liste et en haut du prompteur ; le **temps entre deux morceaux** (30 s par défaut),
+d’où la durée réelle du set et, si le concert est daté, l’heure prévue de chaque titre ; une
+**check-list « Avant de monter sur scène »** prête à l’emploi, à cocher, compléter, et décocher pour
+le concert suivant. Tout voyage avec la setlist (synchronisée).
+
 ## Tablatures dans le carnet
 
 Carnet → « + Tab » (nouveau riff) ou « Tablature » sur une idée : une grille six cordes × temps
@@ -209,6 +217,7 @@ dans le dossier temporaire du système.
 | `tests/unit/ear.test.ts` | oreille : questions du niveau, jamais deux fois la même, accord à jouer reconnu, scores et réponse à revoir |
 | `tests/unit/progressStats.test.ts` | progrès : minutes par semaine (lundi–dimanche), tempos séance après séance |
 | `tests/unit/tab.test.ts` | tablatures : cases, texte (Mi aigu en haut), notes jouées par colonne, colonnes vides retirées |
+| `tests/unit/concert.test.ts` | fiche de concert : heure de début de chaque titre avec les enchaînements, check-list par défaut |
 | `tests/unit/piano.test.ts` | piano : position de pianiste, notes exactes de la guitare, nom de l’accord touché au clavier, notes écrites selon l’accord |
 | `tests/unit/sync.test.ts` | transfert entre appareils : dates de modification, version la plus récente, suppressions transmises, backing tracks perso avec leur son |
 | `tests/unit/tools.test.ts` | capodastre, grilles et morceaux, backing tracks, fichiers de sauvegarde |
@@ -242,6 +251,7 @@ dans le dossier temporaire du système.
 | `tests/e2e/suivre.spec.ts` | « Suivre ma guitare » : faux micro jouant les accords de Minuit Shuffle, le texte suit |
 | `tests/e2e/tonalite-ecoute.spec.ts` | « Quel ton ? » : faux micro jouant un morceau en Ré majeur, gamme ouverte, tonalité appliquée au morceau |
 | `tests/e2e/chercher.spec.ts` | chercher sur le web, coller depuis le presse-papiers (nommé d’après la recherche), partage Android reçu, refus du presse-papiers |
+| `tests/e2e/concert.spec.ts` | fiche de concert : mémo (aussi au prompteur), enchaînements et heures, check-list gardée puis remise à zéro |
 | `tests/e2e/drive.spec.ts` | Google Drive (simulé) : deux appareils connectés s’échangent leurs changements sans fichier, déconnexion |
 | `tests/e2e/transfert.spec.ts` | téléphone ⇄ tablette : deux appareils simulés s’échangent leurs données dans les deux sens |
 | `tests/e2e/voyants.spec.ts` | voyants de l’accueil : allumés par un vrai usage du jour, éteints le lendemain |
