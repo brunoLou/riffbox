@@ -1,0 +1,26 @@
+.theory-only { display: flex; flex-direction: column; gap: 6px; }
+.theory-kind { color: var(--accent-text); }
+.theory-prompt { margin: 0; font-size: 18px; font-weight: 700; line-height: 1.35; text-align: center; color: var(--cream); }
+.theory-prog { padding: 12px 14px; border-radius: 14px; background: var(--surface-2); border: 1.5px solid var(--line); font-size: 22px; font-weight: 700; text-align: center; color: var(--accent-text); }
+/* Answers are sentences (« Fa♯ mineur (F♯m) »): one per line. */
+.theory-choices { grid-template-columns: minmax(0, 1fr); }
+.theory-explain { margin: 0; padding: 10px 14px; border-radius: 14px; background: var(--hint-bg); border: 1px solid var(--wood-border); font-size: 14.5px; line-height: 1.45; color: var(--amber-hi); }
+
+/* Session without a guitar */
+.off-scroll { height: calc(100% - 50px); overflow-y: auto; scrollbar-width: none; padding: 6px 18px 190px; display: flex; flex-direction: column; gap: 12px; }
+.off-scroll > * { flex-shrink: 0; }
+.off-intro { margin: 0; font-size: 15px; line-height: 1.45; color: var(--muted-3); }
+.off-today { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.off-today-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.off-today-min { font-size: 14px; color: var(--muted-2); }
+.off-today-min b { color: var(--cream); font-size: 16px; }
+.off-step { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: var(--surface-2); border: 1.5px solid var(--line); color: var(--cream); text-align: left; }
+.off-step.done { border-color: var(--led); }
+.off-step-dot { flex: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--line-2); font-weight: 800; font-size: 14px; }
+.off-step.done .off-step-dot { background: var(--led); border-color: var(--led); color: #10200f; }
+.off-step-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.off-step-name { font-weight: 800; font-size: 16px; }
+.off-step-detail { font-size: 13px; color: var(--muted-2); }
+.off-step-time { flex: none; font-size: 13px; color: var(--muted-3); }
+.off-step-chev { flex: none; color: var(--accent-text); font-size: 20px; }
+.off-tip { margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--muted-2); }

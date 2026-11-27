@@ -163,6 +163,10 @@ export default function Coach() {
           <button className="btn-outline" onClick={() => { setDraft(p); setSetup(0); }}>Refaire le bilan</button>
         </div>
         {active && <p className="coach-help">Chaque jour, le coach compose une nouvelle routine dans Pratiquer › Routine du jour.</p>}
+        <button className="off-card" onClick={() => nav('/pratiquer/sans-guitare')}>
+          <span className="off-card-name">Pas de guitare aujourd’hui ?</span>
+          <span className="off-card-sub">Séance sans guitare : théorie et oreille, 10 min. Elle compte dans vos jours de pratique ›</span>
+        </button>
       </div>
       <TabBar active={2} />
     </Phone>

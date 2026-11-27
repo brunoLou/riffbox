@@ -30,6 +30,7 @@ const MOTIFS: Record<Motif, ReactNode> = {
   slow: <><path d="M4 34 Q10 14 16 34 T28 34 T40 34 T52 34 T64 34 T76 34 T88 34 T96 34" /><path d="M30 8 L30 56" className="thick" /><path d="M70 8 L70 56" className="thick" /><path d="M30 10 L38 10 M70 10 L62 10" /></>,
   quiz: <><circle cx="30" cy="40" r="7" className="fill" /><path d="M37 40 L37 10 L52 16" /><circle cx="66" cy="44" r="7" className="fill" /><path d="M73 44 L73 14" /><path d="M84 18 Q84 8 92 8 Q99 8 98 16 Q97 22 91 25 L91 31" /><circle cx="91" cy="38" r="2" className="fill" /></>,
   strum: <>{[14, 50, 86].map(x => <g key={x}><path d={`M${x} 8 L${x} 48`} /><path d={`M${x - 8} 40 L${x} 50 L${x + 8} 40`} /></g>)}{[32, 68].map(x => <g key={x}><path d={`M${x} 52 L${x} 12`} className="thin" /><path d={`M${x - 7} 20 L${x} 10 L${x + 7} 20`} className="thin" /></g>)}</>,
+  book: <><path d="M50 14 Q34 6 12 10 L12 52 Q34 48 50 56 Q66 48 88 52 L88 10 Q66 6 50 14 Z" /><path d="M50 14 L50 56" />{[20, 28, 36].map(y => <g key={y}><path d={`M20 ${y} L42 ${y + 2}`} className="thin" /><path d={`M58 ${y + 2} L80 ${y}`} className="thin" /></g>)}</>,
   gear: <><circle cx="50" cy="30" r="10" />{Array.from({ length: 8 }, (_, i) => { const a = (i * Math.PI) / 4; return <path key={i} d={`M${50 + 14 * Math.cos(a)} ${30 + 14 * Math.sin(a)} L${50 + 22 * Math.cos(a)} ${30 + 22 * Math.sin(a)}`} className="thick" />; })}</>,
 };
 

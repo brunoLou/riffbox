@@ -4,7 +4,9 @@ import { BackButton, Phone, StatusBar, TabBar } from '../components/Chrome';
 import { EX_FR, PROGRESS_KEY, TESTS_KEY, compareCheckups, type Checkup, type Progress, type TempoEx } from '../lib/coachProgress';
 import { EAR_STATS_KEY, summary, type EarStats } from '../lib/ear';
 import { dateOfDay, tempoSeries, weeklyMinutes, type TempoPoint } from '../lib/progressStats';
-import { doneSeconds, fmtHM, useRoutine } from '../lib/routine';
+import { dayKey, doneSeconds, fmtHM, useRoutine } from '../lib/routine';
+import { OFF_KEY, offMinutes, withOff, type OffLog } from '../lib/offGuitar';
+import { THEORY_KIND_FR, THEORY_STATS_KEY, theorySummary, type TheoryStats } from '../lib/theory';
 import { useStoredState } from '../lib/store';
 import './Pratiquer.css';
 import './Progres.css';
@@ -20,11 +22,15 @@ export default function Progres() {
   const [progress] = useStoredState<Progress>(PROGRESS_KEY, {});
   const [checkups] = useStoredState<Checkup[]>(TESTS_KEY, []);
   const [ear] = useStoredState<EarStats>(EAR_STATS_KEY, {});
-  const weeks = weeklyMinutes(log, new Date(), Math.floor(doneSeconds(r) / 60));
+  const [off] = useStoredState<OffLog>(OFF_KEY, {});
+  const [theory] = useStoredState<TheoryStats>(THEORY_STATS_KEY, {});
+  // Practice without a guitar (theory, ear) is added day by day.
+  const weeks = weeklyMinutes(withOff(log, off), new Date(), Math.floor(doneSeconds(r) / 60) + offMinutes(dayKey(), off));
   const series = tempoSeries(progress);
   const changes = checkups.length > 1 ? compareCheckups(checkups[0].measures, checkups[checkups.length - 1].measures) : [];
-  const earRows = (['intervals', 'chords', 'play'] as const).map(m => ({ m, s: summary(ear, m) })).filter(x => x.s.n > 0);
-  const EAR_FR = { intervals: 'Intervalles', chords: 'Accords à l’oreille', play: 'Accords joués' };
+  const earRows = (['intervals', 'chords', 'progressions', 'play'] as const).map(m => ({ m, s: summary(ear, m) })).filter(x => x.s.n > 0);
+  const EAR_FR = { intervals: 'Intervalles', chords: 'Accords à l’oreille', progressions: 'Suites d’accords', play: 'Accords joués' };
+  const th = theorySummary(theory);
 
   return (
     <Phone label="Progrès">
@@ -79,6 +85,25 @@ export default function Progres() {
                   <span className="prog-tile-sub">sur {s.n} essai{s.n > 1 ? 's' : ''}</span>
                 </div>
               ))}
+            </div>
+          </section>
+        )}
+
+        {th.n > 0 && (
+          <section className="card prog-card" aria-label="Théorie">
+            <span className="week-title">Théorie</span>
+            <div className="prog-tiles">
+              <div className="prog-tile">
+                <span className="prog-tile-label">Réussite</span>
+                <b className="mono">{th.rate} %</b>
+                <span className="prog-tile-sub">sur {th.n} question{th.n > 1 ? 's' : ''}</span>
+              </div>
+              {th.weakest && (
+                <div className="prog-tile">
+                  <span className="prog-tile-label">À revoir</span>
+                  <b className="prog-tile-text">{THEORY_KIND_FR[th.weakest]}</b>
+                </div>
+              )}
             </div>
           </section>
         )}

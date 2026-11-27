@@ -109,6 +109,11 @@ export default function Pratiquer() {
           <button className="routine-go" onClick={go}>{action}</button>
         </div>
 
+        <button className="off-card" onClick={() => nav('/pratiquer/sans-guitare')}>
+          <span className="off-card-name">Pas de guitare sous la main ?</span>
+          <span className="off-card-sub">Séance sans guitare · théorie et oreille, 10 min ›</span>
+        </button>
+
         <div className="pedal-grid prat-pedals">
           {PRAT_TOOLS.map(([id, wide]) => {
             const t = byId.get(id)!;

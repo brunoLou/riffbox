@@ -4,8 +4,9 @@
  */
 import { chordType, voicingMidi, voicings } from './chords';
 import { KEY_FR, mod12 } from './music';
+import { above, chordShow, keyTonic, minorTonic, noteFr, type TChord } from './theory';
 
-export type EarMode = 'intervals' | 'chords' | 'play';
+export type EarMode = 'intervals' | 'chords' | 'progressions' | 'play';
 export type EarLevel = 1 | 2 | 3;
 export const EAR_LEVEL_FR: Record<EarLevel, string> = { 1: 'Débutant', 2: 'Intermédiaire', 3: 'Avancé' };
 
@@ -30,6 +31,32 @@ const PLAY_SETS: Record<EarLevel, string[]> = {
 };
 export const playable = (lv: EarLevel) => PLAY_SETS[lv];
 
+/** Chord progressions to recognise: each chord as semitones above the tonic, its letter step, and minor or not. */
+interface ProgDef { id: string; label: string; minorKey?: boolean; chords: [semis: number, steps: number, minor: boolean][] }
+export const PROGRESSIONS: ProgDef[] = [
+  { id: 'I-IV-V-I', label: 'I – IV – V – I', chords: [[0, 0, false], [5, 3, false], [7, 4, false], [0, 0, false]] },
+  { id: 'I-V-vi-IV', label: 'I – V – vi – IV (pop)', chords: [[0, 0, false], [7, 4, false], [9, 5, true], [5, 3, false]] },
+  { id: 'I-vi-IV-V', label: 'I – vi – IV – V (années 50)', chords: [[0, 0, false], [9, 5, true], [5, 3, false], [7, 4, false]] },
+  { id: 'ii-V-I', label: 'ii – V – I (jazz)', chords: [[2, 1, true], [7, 4, false], [0, 0, false], [0, 0, false]] },
+  { id: 'vi-IV-I-V', label: 'vi – IV – I – V', chords: [[9, 5, true], [5, 3, false], [0, 0, false], [7, 4, false]] },
+  { id: 'I-bVII-IV-I', label: 'I – ♭VII – IV – I (rock)', chords: [[0, 0, false], [10, 6, false], [5, 3, false], [0, 0, false]] },
+  { id: 'i-bVII-bVI-V', label: 'i – ♭VII – ♭VI – V (andalouse)', minorKey: true, chords: [[0, 0, true], [10, 6, false], [8, 5, false], [7, 4, false]] },
+  { id: 'I-IV-vi-V', label: 'I – IV – vi – V', chords: [[0, 0, false], [5, 3, false], [9, 5, true], [7, 4, false]] },
+  { id: 'I-iii-IV-V', label: 'I – iii – IV – V', chords: [[0, 0, false], [4, 2, true], [5, 3, false], [7, 4, false]] },
+];
+const PROG_SETS: Record<EarLevel, string[]> = {
+  1: ['I-IV-V-I', 'I-V-vi-IV', 'I-vi-IV-V'],
+  2: ['I-IV-V-I', 'I-V-vi-IV', 'I-vi-IV-V', 'ii-V-I', 'vi-IV-I-V', 'I-bVII-IV-I'],
+  3: PROGRESSIONS.map(p => p.id),
+};
+export const progressionDef = (id: string) => PROGRESSIONS.find(p => p.id === id);
+/** The chords of a progression in a key, spelled (« G – D – Em – C »). */
+export function progressionChords(id: string, key: number): TChord[] {
+  const p = progressionDef(id)!;
+  const t = p.minorKey ? minorTonic(key) : keyTonic(key);
+  return p.chords.map(([semis, steps, minor]) => ({ root: above(t, semis, steps), type: chordType(minor ? 'm' : 'maj') }));
+}
+
 export interface Question {
   mode: EarMode;
   /** What to play (MIDI notes; for an interval, low then high). */
@@ -39,6 +66,8 @@ export interface Question {
   choices: { id: string; label: string }[];
   /** For « play »: the chord to play, and the others it must not be taken for. */
   chord?: string; candidates?: string[];
+  /** For a progression: one chord after the other (MIDI notes each), and what they were. */
+  seq?: number[][]; reveal?: string;
 }
 
 type Rng = () => number;
@@ -73,6 +102,24 @@ export function makeQuestion(mode: EarMode, lv: EarLevel, rnd: Rng = Math.random
     const root = Math.floor(rnd() * 12);
     const v = voicings(root, chordType(q))[0];
     return { mode, notes: v ? voicingMidi(v) : [], answer: q, choices: set.map(id => ({ id, label: QUALITY_FR[id] })) };
+  }
+  if (mode === 'progressions') {
+    const set = PROG_SETS[lv];
+    let id = pick(set, rnd);
+    if (id === avoid && set.length > 1) id = set[(set.indexOf(id) + 1) % set.length];
+    const key = Math.floor(rnd() * 12);
+    const chords = progressionChords(id, key);
+    const p = progressionDef(id)!;
+    // Close voicings around the middle of the guitar, the root in the bass.
+    const seq = chords.map(c => {
+      const root = 40 + mod12(c.root.pc - 4);
+      const third = c.type.id === 'm' ? 3 : 4;
+      return [root, root + 7, root + 12, root + 12 + third, root + 19];
+    });
+    return {
+      mode, notes: [], seq, answer: id, choices: set.map(x => ({ id: x, label: progressionDef(x)!.label })),
+      reveal: `En ${noteFr(p.minorKey ? minorTonic(key) : keyTonic(key))} ${p.minorKey ? 'mineur' : 'majeur'} : ${chords.map(chordShow).join(' – ')}`,
+    };
   }
   const set = PLAY_SETS[lv];
   let chord = pick(set, rnd);

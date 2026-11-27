@@ -29,7 +29,7 @@ test('ear training: intervals then chords, with the answer shown and the scores 
   expect(['Quarte juste', 'Quinte juste', 'Octave']).toContain(right);
 
   // Chords, intermediate: five qualities to tell apart.
-  await page.getByRole('group', { name: 'Exercice' }).getByRole('button', { name: 'Accords' }).click();
+  await page.getByRole('group', { name: 'Exercice' }).getByRole('button', { name: 'Accords', exact: true }).click();
   await page.getByRole('group', { name: 'Niveau' }).getByRole('button', { name: 'Intermédiaire' }).click();
   await button(page, 'Commencer').click();
   await expect(choices).toHaveText(['Majeur', 'Mineur', 'Septième (7)', 'Septième majeure (maj7)', 'Mineur 7 (m7)']);
@@ -38,7 +38,7 @@ test('ear training: intervals then chords, with the answer shown and the scores 
 
   // Kept for next time.
   await page.reload();
-  await expect(page.getByRole('group', { name: 'Exercice' }).getByRole('button', { name: 'Accords' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('group', { name: 'Exercice' }).getByRole('button', { name: 'Accords', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByLabel('Vos scores')).toContainText('sur 1 question');
 });
 

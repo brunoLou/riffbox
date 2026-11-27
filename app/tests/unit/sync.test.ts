@@ -93,6 +93,14 @@ describe('receiving the other device’s data', () => {
     expect(plan.writes).not.toHaveProperty('pedal.keys');
   });
 
+  it('practice without a guitar: the larger per day and exercise', () => {
+    const plan = planMerge(
+      { 'practice.off': { '2026-11-27': { theory: 300, ear: 60 }, '2026-11-26': { progressions: 120 } } },
+      mine({ 'practice.off': { '2026-11-27': { theory: 200, progressions: 90 } } }),
+    );
+    expect(plan.writes['practice.off']).toEqual({ '2026-11-27': { theory: 300, ear: 60, progressions: 90 }, '2026-11-26': { progressions: 120 } });
+  });
+
   it('a single value (the routine) follows its most recent change', () => {
     const steps = [{ id: 's', name: 'Gammes', min: 5 }];
     expect(planMerge({ 'routine.steps': steps, 'sync.valueTimes': { 'routine.steps': 900 } }, mine({ 'routine.steps': [], 'sync.valueTimes': { 'routine.steps': 100 } })).writes['routine.steps']).toEqual(steps);

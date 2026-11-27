@@ -9,6 +9,7 @@ import { INITIAL_SETLISTS, nextSet, readSongs, titlesLabel } from './setlists';
 import { readStored } from './store';
 import { currentTuning } from './tunings';
 import { readRange, noteFr } from './voice';
+import { OFF_SESSION_MIN, offSeconds, readOff } from './offGuitar';
 
 export function subFor(t: Tile, r: RoutineState): string {
   const plural = (n: number, w: string) => `${n} ${w}${n > 1 ? 's' : ''}`;
@@ -18,6 +19,7 @@ export function subFor(t: Tile, r: RoutineState): string {
     case 'carnet': return plural(readStored('ideas', INITIAL_IDEAS).length + readGrids().length, 'idée');
     case 'grilles': return plural(readGrids().length, 'grille');
     case 'manche': return `${scaleDef(readStored('scale.id', readStored('scale.maj', false) ? 'pmaj' : 'pmin')).chip} · ${KEY_FR[readStored('scale.key', 9)]}`;
+    case 'sansguitare': return `${Math.floor(offSeconds(readOff()) / 60)}/${OFF_SESSION_MIN} min aujourd’hui`;
     case 'routine': return `${Math.floor(doneSeconds(r) / 60)}/${routineMin()} min aujourd’hui`;
     case 'morceaux': return plural(readSongs().length, 'titre');
     case 'tonalite': { const v = readRange(); return v.measured ? `${noteFr(v.low)} – ${noteFr(v.high)}` : t.sub; }

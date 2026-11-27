@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { readStored, writeStored } from './store';
 import { markUsed } from './usage';
+import { offMinutes } from './offGuitar';
 
 export interface RoutineStep {
   id: string; name: string; short: string; detail: string; min: number;
@@ -180,7 +181,8 @@ export function clearDemoPractice() {
 /** Consecutive days with practice, ending today (or yesterday if today is still empty). */
 export function streak(s: RoutineState) {
   const log = readLog();
-  const minutesOn = (d: Date) => (dayKey(d) === s.date ? Math.floor(doneSeconds(s) / 60) : log[dayKey(d)] ?? 0);
+  // Practice without a guitar counts too.
+  const minutesOn = (d: Date) => (dayKey(d) === s.date ? Math.floor(doneSeconds(s) / 60) : log[dayKey(d)] ?? 0) + offMinutes(dayKey(d));
   let n = 0;
   const day = new Date();
   if (!minutesOn(day)) day.setDate(day.getDate() - 1);
@@ -198,7 +200,7 @@ export function week(s: RoutineState) {
     const long = new Intl.DateTimeFormat('fr-FR', { weekday: 'long' }).format(d);
     days.push({
       label: long.charAt(0).toUpperCase(), long: long.charAt(0).toUpperCase() + long.slice(1),
-      min: i === 0 ? Math.floor(doneSeconds(s) / 60) : log[dayKey(d)] ?? 0,
+      min: (i === 0 ? Math.floor(doneSeconds(s) / 60) : log[dayKey(d)] ?? 0) + offMinutes(dayKey(d)),
       today: i === 0,
     });
   }

@@ -15,7 +15,7 @@ export type Finish = 'solid' | 'brushed' | 'sparkle' | 'hammered' | 'stripe' | '
 export type Footswitch = 'round' | 'square' | 'twin' | 'button';
 export type Motif =
   | 'needle' | 'pendulum' | 'lines' | 'grid' | 'speaker' | 'frets' | 'progress' | 'wave' | 'capo' | 'list'
-  | 'dots' | 'lyrics' | 'circle' | 'ear' | 'loop' | 'target' | 'gear' | 'slow' | 'quiz' | 'strum';
+  | 'dots' | 'lyrics' | 'circle' | 'ear' | 'loop' | 'target' | 'gear' | 'slow' | 'quiz' | 'strum' | 'book';
 
 export interface PedalLook { finish: Finish; controls: Control[]; footswitch: Footswitch; motif: Motif }
 
@@ -40,6 +40,7 @@ export const LOOKS: Record<string, PedalLook> = {
   relever: { finish: 'brushed', controls: [k('chrome', -60, true), { kind: 'slider', at: 0.45 }], footswitch: 'twin', motif: 'slow' },
   oreille: { finish: 'sparkle', controls: [k('cream', 110, true), { kind: 'jacks' }], footswitch: 'square', motif: 'quiz' },
   rythme: { finish: 'stripe', controls: [k('red', 40, true), { kind: 'toggle' }], footswitch: 'twin', motif: 'strum' },
+  sansguitare: { finish: 'hammered', controls: [k('chicken', -30, true), { kind: 'lcd', text: '?' }], footswitch: 'square', motif: 'book' },
   coach: { finish: 'brushed', controls: [k('cream', -120), { kind: 'slider', at: 0.3 }], footswitch: 'round', motif: 'target' },
   reglages: { finish: 'hammered', controls: [k('black', 70), k('black', -40), { kind: 'toggle' }], footswitch: 'button', motif: 'gear' },
 };

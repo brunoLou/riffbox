@@ -22,11 +22,13 @@ export const LOCAL_KEYS = ['settings.theme', 'pedal.keys', 'pedal.midi', 'pedal.
 export const DELETED_KEY = 'sync.deleted';
 export const VALUE_TIMES_KEY = 'sync.valueTimes';
 const PRACTICE_LOG = 'practice.log';
+/** Practice without a guitar: seconds per day and exercise (lib/offGuitar.ts). */
+const PRACTICE_OFF = 'practice.off';
 
 /** A value synced as a whole, the most recently changed winning. */
 export function isSyncedValue(key: string) {
   return !(SYNC_LISTS as readonly string[]).includes(key) && !LOCAL_KEYS.includes(key)
-    && key !== VALUE_TIMES_KEY && key !== DELETED_KEY && key !== PRACTICE_LOG;
+    && key !== VALUE_TIMES_KEY && key !== DELETED_KEY && key !== PRACTICE_LOG && key !== PRACTICE_OFF;
 }
 /** Deletions older than this are forgotten. */
 const TOMBSTONE_DAYS = 365;
@@ -193,6 +195,19 @@ export function planMerge(
     const log = { ...myLog };
     for (const [day, min] of Object.entries(theirLog as Record<string, number>)) if (typeof min === 'number') log[day] = Math.max(log[day] ?? 0, min);
     if (JSON.stringify(log) !== JSON.stringify(myLog)) writes['practice.log'] = log;
+  }
+  // The same, per exercise, for practice without a guitar.
+  const theirOff = theirs[PRACTICE_OFF];
+  if (theirOff && typeof theirOff === 'object') {
+    const myOff = (mine(PRACTICE_OFF) as Record<string, Record<string, number>> | undefined) ?? {};
+    const off: Record<string, Record<string, number>> = { ...myOff };
+    for (const [day, kinds] of Object.entries(theirOff as Record<string, Record<string, number>>)) {
+      if (!kinds || typeof kinds !== 'object') continue;
+      const d = { ...(off[day] ?? {}) };
+      for (const [k, sec] of Object.entries(kinds)) if (typeof sec === 'number') d[k] = Math.max(d[k] ?? 0, sec);
+      off[day] = d;
+    }
+    if (JSON.stringify(off) !== JSON.stringify(myOff)) writes[PRACTICE_OFF] = off;
   }
 
   // Deletions known on either side, so they keep travelling.

@@ -21,6 +21,15 @@ Sur l'accueil, **Modifier** puis **+ Nouveau compartiment** : vous lui donnez le
 
 Les pédales ont le même dessin partout : accueil, Pratiquer et catalogue « + Ajouter une pédale ».
 
+## Sans guitare
+
+**Pratiquer › Sans guitare** (`#/pratiquer/sans-guitare`) : une séance de 10 minutes quand on n'a pas de guitare sous la main. Elle est aussi proposée dans Pratiquer, sous la routine, et dans le Coach. Elle a trois parties :
+- **Théorie et accords** (`#/pratiquer/theorie`), 4 min, sur 3 niveaux. Les questions portent sur les diagrammes d'accords, les notes d'un accord, les relatifs majeur et mineur, les degrés d'une tonalité, le capodastre et la tonalité d'une suite. Une explication suit chaque réponse. Les notes sont écrites selon la tonalité (Si♭ en Fa majeur).
+- **Suites d'accords**, 3 min : un mode de l'Oreille qui fait reconnaître une progression jouée dans une tonalité au hasard (I–IV–V–I, I–V–vi–IV, ii–V–I, ♭VII rock, andalouse…).
+- **Intervalles et accords**, 3 min : l'Oreille habituelle.
+
+Seul le temps passé à répondre compte : jusqu'à 45 s entre deux réponses (`practice.off`, en secondes par jour et par exercice). Ce temps s'ajoute aux minutes de pratique : jours d'affilée, semaine, Progrès, bilan du coach. Il se synchronise en gardant, pour chaque jour et chaque exercice, la plus grande valeur.
+
 ## Rythme (coups de médiator)
 
 **Pratiquer › Rythme** (`#/pratiquer/rythme`) montre un motif de grattage en flèches ↓ ↑ qui défilent sous une ligne, avec clic et son de grattage (ou clic seul). On peut changer le tempo et l'accord joué. Des modèles sont fournis : pop/folk, croches, rock, reggae, ballade 6/8, funk, shuffle.
